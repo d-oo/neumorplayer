@@ -1,0 +1,8 @@
+import { useContext } from "react";
+import { AuthContext } from "./auth-context";
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth는 AuthProvider 안에서만 사용하세요.");
+  return ctx;
+}
