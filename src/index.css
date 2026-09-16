@@ -1,12 +1,81 @@
+@import "tailwindcss";
+
 :root {
-  color-scheme: light dark;
-  font-family: system-ui, sans-serif;
+  color-scheme: dark light;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic",
+    sans-serif;
+
+  /* ytmusic 디자인 토큰 — 다크 베이스 + 비비드 바이올렛 포인트 (givemeticket과는 무관한
+     이 앱만의 톤). 화면을 늘려갈 때도 이 변수들을 재사용하세요. */
+  --bg: #0b0b0f;
+  --surface: #16161c;
+  --surface-hover: #1d1d26;
+  --field-bg: #0f0f14;
+  --border: #2a2a35;
+  --text: #f2f2f5;
+  --text-muted: #9a9aa7;
+  --accent: #8b5cf6;
+  --accent-hover: #7c4de0;
+  --accent-text: #ffffff;
+  --danger: #f87171;
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 10px;
 }
 
-* {
-  box-sizing: border-box;
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f7f7fb;
+    --surface: #ffffff;
+    --surface-hover: #f1f1f6;
+    --field-bg: #f7f7fb;
+    --border: #e3e3ea;
+    --text: #16161c;
+    --text-muted: #6c6c78;
+    --accent: #7c3aed;
+    --accent-hover: #6a2fd1;
+    --accent-text: #ffffff;
+    --danger: #dc2626;
+  }
 }
 
+:root[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --surface-hover: #f1f1f6;
+  --field-bg: #f7f7fb;
+  --border: #e3e3ea;
+  --text: #16161c;
+  --text-muted: #6c6c78;
+  --accent: #7c3aed;
+  --accent-hover: #6a2fd1;
+  --accent-text: #ffffff;
+  --danger: #dc2626;
+}
+
+/* 위의 --bg/--accent 등 원래 토큰을 Tailwind의 테마 네임스페이스로도 노출합니다.
+   var()로 참조만 하므로 라이트/다크 전환 시에도 그대로 따라갑니다. 이렇게 하면
+   bg-surface, text-muted, border-border, bg-accent 같은 유틸리티 클래스를 그대로
+   쓸 수 있습니다 (색상 값을 여기서 다시 정의하지 마세요 — 위 토큰이 원본입니다). */
+@theme {
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont,
+    "Malgun Gothic", sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-field: var(--field-bg);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-danger: var(--danger);
+}
+
+/* box-sizing 리셋, 폼 요소의 font-family 상속 등은 Tailwind의 preflight(위 @import에
+   포함됨)가 이미 처리합니다 — 여기서는 우리 토큰을 쓰는 부분만 남겨둡니다. */
 body {
-  margin: 0;
+  background: var(--bg);
+  color: var(--text);
 }

@@ -2,8 +2,6 @@
 // `supabase gen types typescript --linked > src/lib/database.types.ts` 로 자동 생성된
 // 파일로 교체하세요 (컬럼을 바꿀 때마다 손으로 맞추는 걸 피하기 위함입니다).
 
-export type Category = "Song" | "Inst";
-
 export interface Database {
   public: {
     Tables: {
@@ -14,7 +12,6 @@ export interface Database {
           title: string;
           artist: string[];
           video_id: string;
-          category: Category;
           tags: string[];
           duration: number;
           play_count: number;
@@ -27,7 +24,6 @@ export interface Database {
           title: string;
           artist: string[];
           video_id: string;
-          category: Category;
           tags?: string[];
           duration: number;
           play_count?: number;

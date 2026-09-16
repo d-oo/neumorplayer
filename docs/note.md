@@ -28,7 +28,8 @@
    ```
    cp .env.example .env.local
    ```
-   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`: Supabase 프로젝트 설정 → API에서 확인
+   - `VITE_SUPABASE_URL`: Project Settings → Data API에서 확인
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`: Project Settings → API Keys의 Publishable key(`sb_publishable_...`)에서 확인 (예전 이름: anon key)
    - `YOUTUBE_API_KEY`: 새로 발급받은 YouTube Data API v3 키 (old-src에 있던 키는 이미 공개 배포되어 노출됐으니 재사용 금지, 새로 발급)
 
 4. 로컬 개발 서버
@@ -41,7 +42,7 @@
 
 Vercel 프로젝트 설정 → Environment Variables에 아래를 등록:
 
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — 클라이언트 번들에 포함되어도 안전 (RLS가 실제 접근 제어)
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — 클라이언트 번들에 포함되어도 안전 (RLS가 실제 접근 제어). secret key는 여기 포함하지 마세요.
 - `YOUTUBE_API_KEY` — **절대 `VITE_` 접두사를 붙이지 마세요.** `/api` 함수 안에서만 `process.env`로 읽히며 브라우저에 노출되지 않습니다.
 
 ## 폴더 구조

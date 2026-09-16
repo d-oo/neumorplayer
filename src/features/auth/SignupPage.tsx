@@ -5,21 +5,30 @@ import AuthLayout from "./AuthLayout";
 import GoogleIcon from "./GoogleIcon";
 import { Field, PrimaryButton, GoogleButton, Divider, FormError } from "./AuthForm";
 
-export default function LoginPage() {
-  const { signInWithGoogle, signInWithEmail } = useAuth();
+export default function SignupPage() {
+  const { signInWithGoogle, signUpWithEmail } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+
+    if (password !== passwordConfirm) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await signInWithEmail(email, password);
+      await signUpWithEmail(email, password);
+      // 가입 확인 이메일을 꺼둔 상태라 성공하면 바로 세션이 생기고,
+      // GuestOnly가 이를 감지해서 자동으로 메인 화면으로 보내줍니다.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
+      setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }
@@ -27,20 +36,20 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="다시 오셨네요"
-      subtitle="로그인하고 내 라이브러리를 이어서 들어보세요."
+      title="계정 만들기"
+      subtitle="가입하고 내 음악 라이브러리를 만들어보세요."
       footer={
         <>
-          계정이 없으신가요?{" "}
-          <Link className="font-semibold text-accent hover:underline" to="/signup">
-            회원가입
+          이미 계정이 있으신가요?{" "}
+          <Link className="font-semibold text-accent hover:underline" to="/login">
+            로그인
           </Link>
         </>
       }
     >
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <Field
-          id="login-email"
+          id="signup-email"
           label="이메일"
           type="email"
           placeholder="you@example.com"
@@ -50,19 +59,30 @@ export default function LoginPage() {
           required
         />
         <Field
-          id="login-password"
+          id="signup-password"
           label="비밀번호"
           type="password"
-          placeholder="••••••"
+          placeholder="6자 이상"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
+          autoComplete="new-password"
+          required
+          minLength={6}
+        />
+        <Field
+          id="signup-password-confirm"
+          label="비밀번호 확인"
+          type="password"
+          placeholder="••••••"
+          value={passwordConfirm}
+          onChange={(e) => setPasswordConfirm(e.target.value)}
+          autoComplete="new-password"
           required
           minLength={6}
         />
         {error ? <FormError>{error}</FormError> : null}
         <PrimaryButton type="submit" disabled={submitting}>
-          {submitting ? "로그인 중..." : "로그인"}
+          {submitting ? "가입 중..." : "회원가입"}
         </PrimaryButton>
       </form>
 
