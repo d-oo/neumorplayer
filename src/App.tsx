@@ -5,6 +5,7 @@ import LoginPage from "@/features/auth/LoginPage";
 import SignupPage from "@/features/auth/SignupPage";
 import HomeLayout from "@/routes/HomeLayout";
 import SearchPage from "@/routes/SearchPage";
+import ExplorePage from "@/routes/ExplorePage";
 import MusicInfoPage from "@/routes/MusicInfoPage";
 import PlaylistInfoPage from "@/routes/PlaylistInfoPage";
 import NotFoundPage from "@/routes/NotFoundPage";
@@ -38,6 +39,7 @@ export default function App() {
           }
         >
           <Route index element={<SearchPage />} />
+          <Route path="explore" element={<ExplorePage />} />
           <Route path="music/:musicId" element={<MusicInfoPage />} />
           <Route path="playlist/:playlistId" element={<PlaylistInfoPage />} />
           <Route path="*" element={<NotFoundPage />} />

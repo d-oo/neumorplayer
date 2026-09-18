@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: subscription } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
         setSession(nextSession);
-      }
+      },
     );
 
     return () => subscription.subscription.unsubscribe();
@@ -51,10 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) throw error;
       },
     }),
-    [session, loading]
+    [session, loading],
   );
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

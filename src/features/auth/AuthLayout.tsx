@@ -18,7 +18,7 @@ export default function AuthLayout({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_circle_at_50%_20%,color-mix(in_srgb,var(--accent)_20%,transparent),transparent_70%)]"
       />
-      <div className="relative w-full max-w-[380px] rounded-2xl border border-border bg-surface px-8 pt-9 pb-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full max-w-95 rounded-2xl border border-border bg-surface px-8 pt-9 pb-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)]">
         <div className="mb-7 flex items-center gap-2 text-[15px] font-bold tracking-tight text-text">
           <span
             aria-hidden="true"

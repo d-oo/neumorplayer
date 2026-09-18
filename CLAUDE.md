@@ -9,6 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
+탐색(YouTube 검색으로 곡 추가) → 라이브러리(추가된 곡 검색/목록) → 재생목록 → 재생(단일 곡
+또는 재생목록)으로 이어지는 제품 흐름과 접근 권한 정책은 `docs/product-flow.md`에 정리되어
+있습니다 — 화면/라우트/권한 관련 작업 전에 먼저 확인하세요.
+
 4년 전에 만든 CRA + IndexedDB 기반 유튜브 음악 앱을 다시 만드는 프로젝트입니다. `old-src/`는
 **참고용 원본**으로만 남겨둔 것입니다 — `react-scripts` 기반의 순수 JS이고, 이 프로젝트의
 ESLint 설정(`eslint.config.js`)에서 명시적으로 제외되어 있으며, `src/`나 `api/`의 코드는

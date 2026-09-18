@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { useAuth } from "./useAuth";
 import AuthLayout from "./AuthLayout";
 import GoogleIcon from "./GoogleIcon";
-import { Field, PrimaryButton, GoogleButton, Divider, FormError } from "./AuthForm";
+import {
+  Field,
+  PrimaryButton,
+  GoogleButton,
+  Divider,
+  FormError,
+} from "./AuthForm";
 
 export default function LoginPage() {
   const { signInWithGoogle, signInWithEmail } = useAuth();
@@ -32,7 +38,10 @@ export default function LoginPage() {
       footer={
         <>
           계정이 없으신가요?{" "}
-          <Link className="font-semibold text-accent hover:underline" to="/signup">
+          <Link
+            className="font-semibold text-accent hover:underline"
+            to="/signup"
+          >
             회원가입
           </Link>
         </>

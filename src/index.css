@@ -53,6 +53,53 @@
   --danger: #dc2626;
 }
 
+/* docs/design/의 Claude 디자인 도구 시안("데스크탑 뮤직 플레이어 대시보드" 1b, 라이트
+   뉴모피즘)에서 그대로 가져온 토큰입니다. 위 --bg/--accent 등 다크 톤 토큰과는 별개의
+   네임스페이스(--neu-*)로 둡니다 — 로그인 페이지가 아직 이 디자인으로 안 바뀌었기
+   때문에 두 톤이 같은 화면에 공존할 일은 없지만, 나중에 로그인 페이지도 이 디자인으로
+   옮기게 되면 --neu-* 쪽을 원본 토큰으로 승격하고 --bg/--accent 쪽을 정리하면 됩니다. */
+:root {
+  --neu-bg: oklch(0.925 0.014 315);
+  --neu-surface: oklch(0.935 0.013 315);
+  --neu-surface-sunken: oklch(0.908 0.014 315);
+  --neu-ink: oklch(0.3 0.025 315);
+  --neu-muted: oklch(0.47 0.025 315);
+  --neu-hi: #6d1a9f;
+  --neu-accent: #b344ff;
+  --neu-shadow-raised: 15px 15px 30px rgba(142, 128, 166, 0.5),
+    -7px -7px 15px rgba(255, 255, 255, 0.65);
+  --neu-shadow-raised-sm: 4px 4px 10px rgba(146, 132, 170, 0.5),
+    -3px -3px 8px rgba(255, 255, 255, 0.95);
+  --neu-shadow-sunken: inset 4px 4px 9px rgba(146, 132, 170, 0.6),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.9);
+  /* 알약 모양 버튼(탐색의 "추가", 1b-A의 "셔플"/"저장" 등)을 누르는 순간의 그림자.
+     Tailwind의 다중 그림자 임의값 클래스(예: active:shadow-[...,...])는 콤마가
+     있으면 조용히 무시되는 경우가 있어, 여러 겹 그림자는 항상 이렇게 이름 붙은
+     토큰으로 등록하고 active:shadow-neu-pill-active처럼 씁니다. */
+  --neu-shadow-pill-active: inset 5px 5px 11px rgba(150, 136, 175, 0.5),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.95);
+  /* var(--acc, #b344ff)의 실제 계산값 — --acc는 항상 정의돼 있어서 폴백 #b344ff는
+     안 쓰이고 이 색이 실제로 렌더됩니다(호버 시 테두리 색 등에 사용). */
+  --neu-accent-light: color-mix(in oklab, #b344ff 82%, white);
+}
+
+@theme {
+  --font-neu: "Manrope", "Noto Sans KR", sans-serif;
+  --font-neu-mono: "IBM Plex Mono", monospace;
+  --color-neu-bg: var(--neu-bg);
+  --color-neu-surface: var(--neu-surface);
+  --color-neu-surface-sunken: var(--neu-surface-sunken);
+  --color-neu-ink: var(--neu-ink);
+  --color-neu-muted: var(--neu-muted);
+  --color-neu-hi: var(--neu-hi);
+  --color-neu-accent: var(--neu-accent);
+  --color-neu-accent-light: var(--neu-accent-light);
+  --shadow-neu-raised: var(--neu-shadow-raised);
+  --shadow-neu-raised-sm: var(--neu-shadow-raised-sm);
+  --shadow-neu-sunken: var(--neu-shadow-sunken);
+  --shadow-neu-pill-active: var(--neu-shadow-pill-active);
+}
+
 /* 위의 --bg/--accent 등 원래 토큰을 Tailwind의 테마 네임스페이스로도 노출합니다.
    var()로 참조만 하므로 라이트/다크 전환 시에도 그대로 따라갑니다. 이렇게 하면
    bg-surface, text-muted, border-border, bg-accent 같은 유틸리티 클래스를 그대로
@@ -78,4 +125,15 @@
 body {
   background: var(--bg);
   color: var(--text);
+}
+
+/* 1b-A(재생목록 정보) 트랙 테이블에서 "지금 재생 중인 곡" 번호 칸에 쓰는
+   막대 이퀄라이저 애니메이션 — docs/design/ 시안 그대로. */
+@keyframes neu-eq {
+  0% {
+    height: 22%;
+  }
+  100% {
+    height: 100%;
+  }
 }

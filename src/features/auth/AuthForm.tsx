@@ -19,7 +19,7 @@ export function Field({
       </label>
       <input
         id={id}
-        className="w-full rounded-[10px] border border-border bg-field px-3.5 py-[11px] text-sm text-text outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus-visible:border-accent focus-visible:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+        className="w-full rounded-[10px] border border-border bg-field px-3.5 py-2.75 text-sm text-text outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus-visible:border-accent focus-visible:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
         {...inputProps}
       />
     </div>
@@ -47,7 +47,7 @@ export function GoogleButton({
   return (
     <button
       type="button"
-      className="flex w-full items-center justify-center gap-2.5 rounded-[10px] border border-border bg-surface px-4 py-[11px] text-sm font-semibold text-text transition-colors duration-150 hover:bg-surface-hover"
+      className="flex w-full items-center justify-center gap-2.5 rounded-[10px] border border-border bg-surface px-4 py-2.75 text-sm font-semibold text-text transition-colors duration-150 hover:bg-surface-hover"
       {...props}
     >
       {children}
@@ -57,7 +57,7 @@ export function GoogleButton({
 
 export function Divider({ children }: { children: ReactNode }) {
   return (
-    <div className="my-[18px] flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+    <div className="my-4.5 flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
       {children}
     </div>
   );

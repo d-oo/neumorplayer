@@ -56,7 +56,9 @@ src/
   routes/                페이지 컴포넌트 (아직 뼈대만 있음 — TODO 주석 참고)
 docs/
   note.md                이 파일 (개발 노트)
+  product-flow.md         탐색/라이브러리/재생목록/재생 권한 등 확정된 제품 흐름
   migrations/            DB 스키마 + RLS 정책 SQL
+  design/                Claude 디자인 도구 핸드오프 산출물 (참고용, 코드 아님)
 old-src/                 4년 전 원본 프로젝트 (참고용, 새 코드에서 import 금지)
 ```
 
