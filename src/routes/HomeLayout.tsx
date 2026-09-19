@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useSearchParams } from "react-router-dom";
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import PlayerPanel from "@/features/player/PlayerPanel";
 import QueueCard from "@/features/player/QueueCard";
 import YouTubePlayer from "@/features/player/YouTubePlayer";

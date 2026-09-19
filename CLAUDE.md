@@ -13,6 +13,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 또는 재생목록)으로 이어지는 제품 흐름과 접근 권한 정책은 `docs/product-flow.md`에 정리되어
 있습니다 — 화면/라우트/권한 관련 작업 전에 먼저 확인하세요.
 
+## 관련 문서
+
+- `docs/product-flow.md` — 제품 흐름(탐색→라이브러리→재생목록→재생)과 접근 권한 정책
+- `docs/note.md` — 로컬 개발 환경(Supabase 프로젝트, `.env.local`) 셋업 절차
+- `docs/db-schema.md` — DB 테이블/인덱스/RLS 설계와 마이그레이션 운영 방식
+- `docs/todos.md` — 아직 진행 전인 예정 작업 목록
+- `docs/migrations/0001_init.sql` — 스키마 소스 오브 트루스(Supabase 대시보드 SQL Editor에
+  수동 적용)
+
 4년 전에 만든 CRA + IndexedDB 기반 유튜브 음악 앱을 다시 만드는 프로젝트입니다. `old-src/`는
 **참고용 원본**으로만 남겨둔 것입니다 — `react-scripts` 기반의 순수 JS이고, 이 프로젝트의
 ESLint 설정(`eslint.config.js`)에서 명시적으로 제외되어 있으며, `src/`나 `api/`의 코드는
@@ -69,22 +78,45 @@ Vercel Functions로만 존재합니다(특정 프레임워크와 무관한 Verce
 
 **인증**: `src/features/auth/AuthProvider.tsx`가 `supabase.auth`(세션 상태, Google OAuth,
 이메일/비밀번호 로그인/회원가입/로그아웃)를 context로 감쌉니다. context 객체와 `useAuth()`
-훅은 `react-refresh/only-export-components`를 만족시키기 위해 `auth-context.ts` /
-`useAuth.ts` / `AuthProvider.tsx`로 일부러 나눠져 있으니, 인증 코드를 건드릴 때 이 구조를
-유지하세요. `/login`, `/signup`은 실제 라우트로 존재하는 공개 페이지입니다(비로그인 상태에서
-검색+재생 정도는 허용할 계획이 있어, 나머지 라우트도 전부 로그인 필수로 남는다는 보장은
-없습니다 — `src/routes/*`에 새 공개 라우트를 추가할 땐 `App.tsx`에서 `RequireAuth` 밖에
-둬야 합니다). `RequireAuth.tsx`는 로그아웃 상태면 `<Navigate to="/login" />`으로 리다이렉트하고,
-반대로 `GuestOnly.tsx`는 로그인된 사용자가 `/login`·`/signup`에 들어오면 `/`로 돌려보냅니다 —
-새 인증 관련 라우트를 추가할 때 이 두 가드 중 맞는 쪽으로 감싸세요.
+훅은 `react-refresh/only-export-components`를 만족시키기 위해
+`hooks/auth-context.ts` / `hooks/useAuth.ts`로 나눠져 있고, `AuthProvider.tsx`는 앱 루트에
+한 번만 마운트되는 provider라 `pages/`·`components/` 어디에도 안 맞아서 feature 루트에
+그대로 둡니다 — 인증 코드를 건드릴 때 이 구조를 유지하세요. `/login`, `/signup`은 실제
+라우트로 존재하는 공개 페이지입니다 — 공개 라우트가 앞으로 더 늘어날 수 있으니
+(`docs/todos.md` 참고) `src/routes/*`에 새 공개 라우트를 추가할 땐
+`src/router/AppRoutes.tsx`에서 `RequireAuth` 밖에 둬야 합니다. `src/router/RequireAuth.tsx`는
+로그아웃 상태면 `<Navigate to="/login" />`으로 리다이렉트하고, 반대로
+`src/router/GuestOnly.tsx`는 로그인된 사용자가 `/login`·`/signup`에 들어오면 `/`로
+돌려보냅니다 — 새 인증 관련 라우트를 추가할 때 이 두 가드 중 맞는 쪽으로 감싸세요.
 
-**라우팅**(`src/App.tsx`): `/login`·`/signup`은 `GuestOnly`로 감싼 독립 라우트이고,
-`/`(및 그 하위 전부)는 `RequireAuth`로 감싼 `HomeLayout`(사이드바 + `<Outlet/>`) 아래에
-중첩됩니다 — 이는 old-src의 `Home.js` 셸에 대응합니다. `src/routes/` 아래의 페이지
-컴포넌트는 현재 뼈대 상태이고, 각각 old-src의 어떤 컴포넌트를 대체하는지와 구현 방향을
-코멘트로 달아뒀습니다(예: `SearchPage.tsx`는 old-src의 수동 IndexedDB 커서 페이지네이션을
-`useInfiniteQuery` + Supabase `.range()`로 대체해야 함). 페이지를 처음부터 구현하기 전에
-그 코멘트를 먼저 확인하세요.
+**라우팅**(`src/router/AppRoutes.tsx`): `/login`·`/signup`은 `GuestOnly`로 감싼 독립
+라우트이고, `/`(및 그 하위 전부)는 `RequireAuth`로 감싼 `HomeLayout`(사이드바 +
+`<Outlet/>`) 아래에 중첩됩니다 — 이는 old-src의 `Home.js` 셸에 대응합니다. `src/App.tsx`는
+이 라우트 트리를 `<BrowserRouter>`로 감싸 마운트하기만 하는 얇은 진입점입니다(라우트 코드
+자체는 여기 두지 않음). `src/routes/` 아래의 페이지 컴포넌트는 현재 뼈대 상태이고, 각각
+old-src의 어떤 컴포넌트를 대체하는지와 구현 방향을 코멘트로 달아뒀습니다(예:
+`SearchPage.tsx`는 old-src의 수동 IndexedDB 커서 페이지네이션을 `useInfiniteQuery` +
+Supabase `.range()`로 대체해야 함). 페이지를 처음부터 구현하기 전에 그 코멘트를 먼저
+확인하세요.
+
+**Feature 폴더 컨벤션**: `src/` 하위는 `features/`, `shared/`, `router/` 세 갈래로
+정리합니다. `router/`에는 라우팅 전용 코드만 두고(`AppRoutes.tsx`의 라우트 트리,
+`RequireAuth`/`GuestOnly` 같은 가드 — `App.tsx`는 그 위에서 `BrowserRouter`로 감싸기만
+합니다), 페이지 컴포넌트는 한 곳에 모으지 않고 각 feature의 `pages/` 하위에 둡니다.
+feature 안에는 필요한 만큼만 `api/`/`components/`/`lib/`/`hooks/`/`pages/`를 만들고, 그
+feature가 실제로 쓰지 않는 디렉터리는 만들지 않습니다 — `features/auth/`가 적용 예시입니다
+(`pages/`에 `LoginPage.tsx`/`SignupPage.tsx`, `components/`에 `AuthLayout.tsx`/
+`AuthForm.tsx`/`GoogleIcon.tsx`/`icons.tsx`, `hooks/`에 `useAuth.ts`/`auth-context.ts`;
+`api/`나 `lib/`는 auth엔 필요 없어서 안 만들었고, `AuthProvider.tsx`는 위에서 설명한
+이유로 feature 루트에 그대로 둠). 여러 feature가 공유하는 코드(`src/lib/`, `src/stores/`)는
+`shared/`로 묶습니다. **feature 안의 `api/`는 아래에서 설명하는 최상위 `api/`(Vercel
+Functions)와 별개**입니다 — feature의 `api/`는 그 feature가 `/api/...` 엔드포인트를
+호출하는 클라이언트 쪽 fetch 래퍼/쿼리 훅만 모아두는 용도이고, 최상위 `api/` 자체는
+Vercel이 프로젝트 루트를 보고 배포하는 파일 기반 컨벤션이라 feature 폴더 밑으로 옮기면
+배포가 깨지므로 이동 대상이 아닙니다(하위 디렉터리로 나누는 것 자체는 가능 — 아래
+YouTube API 항목 참고). 나머지 코드(`player`, `src/routes/`의 페이지들)를 이 컨벤션으로
+옮기는 작업은 `docs/todos.md`에 정리되어 있습니다 — 한 번에 다 옮기지 않고 단계적으로
+진행합니다.
 
 **스타일링**: Tailwind CSS v4를 `@tailwindcss/vite` 플러그인으로 씁니다 — v4는 CSS-first라
 `tailwind.config.js`/`postcss.config.js`가 없습니다. `src/index.css` 맨 위 `@import
@@ -94,42 +126,48 @@ Vercel Functions로만 존재합니다(특정 프레임워크와 무관한 Verce
 `text-muted`, `border-border` 같은 유틸리티 클래스가 우리 브랜드 색을 그대로 씁니다. 새
 색상을 추가할 땐 `@theme` 안에서 직접 정의하지 말고 `:root`의 원본 토큰을 늘린 뒤
 `@theme`에서 참조만 추가하세요. box-sizing 리셋, 폼 요소 font-family 상속 등은 Tailwind
-preflight가 처리하므로 `index.css`에 따로 두지 않습니다.
+preflight가 처리하므로 `index.css`에 따로 두지 않습니다. 컴포넌트는 전부 Tailwind 유틸리티
+클래스로 작성하고 CSS Modules는 이 프로젝트에서 더 이상 쓰지 않습니다(있던 것도 삭제함 —
+새 컴포넌트도 항상 Tailwind로). 정확한 픽셀 값(라운드 10px/16px, 패딩 11px 등)이 Tailwind
+기본 스케일과 안 맞는 곳은 임의값 문법(`rounded-[10px]`처럼)을 그대로 씁니다 — 어색해
+보여도 의도한 것이니 기본 스케일 값으로 반올림하지 마세요. 폰트는 Pretendard를 jsDelivr
+CDN에서 불러옵니다(`index.html`).
 
-**로그인/회원가입 화면**(`src/features/auth/LoginPage.tsx`, `SignupPage.tsx`): 다크 베이스 +
-비비드 바이올렛 포인트 컬러 톤입니다. 전부 Tailwind 유틸리티 클래스로 짜여 있고, CSS
-Modules는 이 프로젝트에서 더 이상 쓰지 않습니다(있던 것도 삭제함 — 새 컴포넌트도 항상
-Tailwind로). `AuthLayout.tsx`가 카드 껍데기, `AuthForm.tsx`가 `Field`/`PrimaryButton`/
-`GoogleButton`/`Divider`/`FormError` 같은 공유 폼 조각들을 내보냅니다 — 인증 관련 화면을
-더 추가할 땐 이 두 파일을 재사용하세요. 정확한 픽셀 값(라운드 10px/16px, 패딩 11px 등)이
-Tailwind 기본 스케일과 안 맞는 곳은 임의값 문법(`rounded-[10px]`처럼)을 그대로 씁니다 —
-어색해 보여도 의도한 것이니 기본 스케일 값으로 반올림하지 마세요. 폰트는 Pretendard를
-jsDelivr CDN에서 불러옵니다(`index.html`).
-인증 관련 화면을 더 추가할 땐 이 두 파일을 재사용하세요. Supabase 프로젝트의 "가입 확인
-이메일" 옵션이 꺼져 있다는 전제로, 회원가입
-성공 시 바로 세션이 생긴다고 가정하고 짜여 있습니다(별도의 "이메일 확인" 안내 화면 없음).
+**로그인/회원가입 화면**(`src/features/auth/pages/LoginPage.tsx`, `SignupPage.tsx`): 다른
+화면과 같은 라이트 뉴모피즘 톤(`docs/design/데스크탑 로그인 및 회원가입 화면.zip` 시안
+그대로, `--neu-*` 토큰)이고, 브랜드 패널(로고 자리·헤드라인·`Youtube Music Player`
+워드마크) + 폼 패널로 나뉜 2단 카드 구조입니다. `src/features/auth/components/`의
+`AuthLayout.tsx`가 이 카드 껍데기(`title`/`subtitle`은 왼쪽 브랜드 패널, `heading`은
+오른쪽 폼 위 소제목)를, 같은 디렉터리의 `AuthForm.tsx`가 `Field`/`PasswordField`(눈
+아이콘으로 표시/숨김 토글)/`AgreeCheckbox`/`PrimaryButton`/`GoogleButton`/`Divider`/
+`FormError` 같은 공유 폼 조각들을 내보냅니다 — 인증 관련 화면을 더 추가할 땐 이 두 파일과
+`icons.tsx`(이메일/자물쇠/눈/체크 아이콘, 같은 디렉터리)를 재사용하세요. 시안과
+의도적으로 다른 점: "로그인 상태 유지" 체크박스와 "비밀번호 찾기" 링크는 만들지 않았고,
+회원가입 화면은 시안의 이름 필드 대신 기존 "비밀번호 확인" 필드를 유지하며, Google
+버튼이 없는 것은 시안 그대로 의도한 것입니다. Supabase 프로젝트의 "가입 확인 이메일" 옵션이
+꺼져 있다는 전제로, 회원가입 성공 시 바로 세션이 생긴다고 가정하고 짜여 있습니다(별도의
+"이메일 확인" 안내 화면 없음).
 
 **YouTube Data API 키는 절대 클라이언트 코드에 닿으면 안 됩니다.** `api/_youtube.ts`가
 `process.env.YOUTUBE_API_KEY` 읽기를 한 곳에 모아두고 있고, `api/youtube-search.ts`와
 `api/youtube-video.ts`만이 이를 호출합니다(둘 다 Vercel Functions로 배포됨). YouTube Data
 API를 새로 써야 하면 `api/` 아래에 새 파일을 추가하고 프론트에서는 `fetch("/api/...")`로
-호출하세요 — `src/`에서 `googleapis.com`을 직접 호출하지 마세요. 환경변수 규칙은 이 저장소
+호출하세요 — `src/`에서 `googleapis.com`을 직접 호출하지 마세요. `api/` 아래를 하위
+디렉터리로 나누는 것 자체는 가능합니다(Vercel은 파일 경로를 그대로 라우트 경로로 매핑하므로
+`api/youtube/search.ts` → `/api/youtube/search`처럼 임의 depth의 중첩을 지원) — 나눌
+때는 프론트의 `fetch("/api/...")` 호출 경로도 함께 바꾸고, `api/_youtube.ts`처럼 `_`로
+시작하는 파일/폴더는 Vercel이 라우트로 배포하지 않는 비공개 헬퍼 컨벤션이니 재배치 후에도
+그대로 유지하세요. 환경변수 규칙은 이 저장소
 전체에서 하나입니다: `VITE_` 접두사가 붙은 변수는 빌드 시 클라이언트 번들에 그대로
 박히고(Supabase URL/publishable key는 이래도 안전한데, 실제 접근 제어는 RLS가 하기 때문;
 secret key는 RLS를 우회하므로 여기 해당하지 않음),
 접두사가 없는 변수는 서버 전용으로 `api/`에서만 읽을 수 있습니다.
 
-**DB 스키마**(`docs/migrations/0001_init.sql`): `tracks`, `playlists`, 그리고 순서
-관리를 위한 `position` 컬럼을 가진 join 테이블 `playlist_tracks`(재생목록 row에 순서
-배열을 두는 대신, `position`을 batch update하는 dnd-kit 재정렬 로직과 짝을 이루도록 설계).
-`tracks.artist`와 `tracks.tags`는 GIN 인덱스가 걸린 Postgres 배열 컬럼이고, `tracks.title`은
-부분 검색을 위한 trigram 인덱스(`pg_trgm`)를 가집니다. 이는 old-src의 수동 IndexedDB
-`multiEntry` 인덱스와 커서 기반 검색 루프를 대체합니다. `src/lib/database.types.ts`는
-현재 이 마이그레이션에 맞춰 손으로 작성되어 있으니, 스키마를 바꾸면 손으로 고치지 말고
-`supabase gen types typescript --linked`로 재생성하세요(파일 상단 코멘트 참고). 이 SQL은
-Supabase CLI가 기본으로 인식하는 `supabase/migrations/` 위치가 아니라 `docs/migrations/`에
-있으므로, `supabase db push` 같은 CLI 마이그레이션 명령은 이 파일을 자동으로 집어가지
-못합니다 — 지금은 Supabase 대시보드 SQL Editor에 수동으로 붙여넣는 워크플로를 전제로 합니다.
+**DB 스키마**: 테이블 구조, 인덱스 설계, RLS 정책, 마이그레이션 운영 방식은
+`docs/db-schema.md`에 정리되어 있습니다 — 스키마나 쿼리 관련 작업 전에 먼저 확인하세요.
+꼭 기억할 두 가지만 요약하면: 새 테이블/쿼리를 추가할 때 대응하는 RLS 정책이 없으면 에러
+없이 그냥 0건이 반환되고, `src/lib/database.types.ts`는 스키마가 바뀌면 손으로 고치지 말고
+`supabase gen types typescript --linked`로 재생성해야 합니다.
 
 **TypeScript 프로젝트 구조**: 루트 `tsconfig.json`이 세 개의 설정을 참조합니다 —
 `tsconfig.app.json`(`src/`, DOM 라이브러리, bundler 모듈 해석), `tsconfig.node.json`

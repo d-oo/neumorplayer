@@ -1,15 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "./useAuth";
-import AuthLayout from "./AuthLayout";
-import GoogleIcon from "./GoogleIcon";
+import { useAuth } from "../hooks/useAuth";
+import AuthLayout from "../components/AuthLayout";
+import GoogleIcon from "../components/GoogleIcon";
 import {
-  Field,
-  PrimaryButton,
-  GoogleButton,
   Divider,
+  Field,
   FormError,
-} from "./AuthForm";
+  GoogleButton,
+  PasswordField,
+  PrimaryButton,
+} from "../components/AuthForm";
 
 export default function LoginPage() {
   const { signInWithGoogle, signInWithEmail } = useAuth();
@@ -33,13 +34,26 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="다시 오셨네요"
-      subtitle="로그인하고 내 라이브러리를 이어서 들어보세요."
+      heading="로그인"
+      title={
+        <>
+          다시 만나서
+          <br />
+          반가워요
+        </>
+      }
+      subtitle={
+        <>
+          재생목록과 들은 기록이 모든 기기에서
+          <br />
+          그대로 이어집니다.
+        </>
+      }
       footer={
         <>
           계정이 없으신가요?{" "}
           <Link
-            className="font-semibold text-accent hover:underline"
+            className="font-bold text-neu-hi hover:underline"
             to="/signup"
           >
             회원가입
@@ -47,7 +61,7 @@ export default function LoginPage() {
         </>
       }
     >
-      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <Field
           id="login-email"
           label="이메일"
@@ -58,11 +72,10 @@ export default function LoginPage() {
           autoComplete="email"
           required
         />
-        <Field
+        <PasswordField
           id="login-password"
           label="비밀번호"
-          type="password"
-          placeholder="••••••"
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
@@ -73,14 +86,14 @@ export default function LoginPage() {
         <PrimaryButton type="submit" disabled={submitting}>
           {submitting ? "로그인 중..." : "로그인"}
         </PrimaryButton>
+
+        <Divider>또는</Divider>
+
+        <GoogleButton onClick={() => void signInWithGoogle()}>
+          <GoogleIcon />
+          Google로 계속하기
+        </GoogleButton>
       </form>
-
-      <Divider>또는</Divider>
-
-      <GoogleButton onClick={() => void signInWithGoogle()}>
-        <GoogleIcon />
-        Google로 계속하기
-      </GoogleButton>
     </AuthLayout>
   );
 }

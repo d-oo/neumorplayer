@@ -1,8 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { YOUTUBE_API_BASE, getApiKeyOrThrow } from "./_youtube.js";
 
-// GET /api/youtube-video?id=영상ID
+// GET /api/youtube-video?id=영상ID[,영상ID2,...]
 // old-src/src/components/AddMusic.js 의 videos 조회(제목/썸네일/재생시간)를 대체합니다.
+// YouTube Data API의 videos.list는 id에 콤마로 구분한 여러 ID를 한 번에 받을 수 있어서,
+// 검색 결과 카드 여러 개의 재생시간/조회수를 한 번의 요청으로 채울 때도 그대로 씁니다
+// (탐색 화면에서 검색 결과 각각을 개별 요청하지 않도록).
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const id = req.query.id;
   if (typeof id !== "string" || id.trim() === "") {
@@ -12,10 +15,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const apiKey = getApiKeyOrThrow();
     const url = new URL(`${YOUTUBE_API_BASE}/videos`);
-    url.searchParams.set("part", "snippet,contentDetails");
+    url.searchParams.set("part", "snippet,contentDetails,statistics");
     url.searchParams.set(
       "fields",
-      "items(snippet(thumbnails,title,channelTitle),contentDetails/duration)"
+      "items(id,snippet(thumbnails,title,channelTitle),contentDetails/duration,statistics/viewCount)"
     );
     url.searchParams.set("id", id);
     url.searchParams.set("key", apiKey);

@@ -123,8 +123,15 @@ async function main() {
   let exitCode = 0;
   try {
     const browser = await chromium.launch();
+    // 기본은 모바일 폭(480x800)입니다. 대시보드/로그인 화면처럼 데스크탑 고정폭
+    // 시안(예: 1200px, 812px 카드)을 확인할 땐 SCREENSHOT_WIDTH/SCREENSHOT_HEIGHT
+    // 환경변수로 뷰포트를 넓혀서 호출하세요(예:
+    // `SCREENSHOT_WIDTH=1280 SCREENSHOT_HEIGHT=900 node driver.mjs login`).
     const page = await browser.newPage({
-      viewport: { width: 480, height: 800 },
+      viewport: {
+        width: Number(process.env.SCREENSHOT_WIDTH) || 480,
+        height: Number(process.env.SCREENSHOT_HEIGHT) || 800,
+      },
     });
     const consoleErrors = [];
     page.on("console", (msg) => {

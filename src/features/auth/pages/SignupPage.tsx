@@ -1,21 +1,21 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "./useAuth";
-import AuthLayout from "./AuthLayout";
-import GoogleIcon from "./GoogleIcon";
+import { useAuth } from "../hooks/useAuth";
+import AuthLayout from "../components/AuthLayout";
 import {
+  AgreeCheckbox,
   Field,
-  PrimaryButton,
-  GoogleButton,
-  Divider,
   FormError,
-} from "./AuthForm";
+  PasswordField,
+  PrimaryButton,
+} from "../components/AuthForm";
 
 export default function SignupPage() {
-  const { signInWithGoogle, signUpWithEmail } = useAuth();
+  const { signUpWithEmail } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,6 +25,10 @@ export default function SignupPage() {
 
     if (password !== passwordConfirm) {
       setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    if (!agreed) {
+      setError("이용약관과 개인정보 처리방침에 동의해야 합니다.");
       return;
     }
 
@@ -42,21 +46,25 @@ export default function SignupPage() {
 
   return (
     <AuthLayout
+      heading="이메일로 회원가입"
       title="계정 만들기"
-      subtitle="가입하고 내 음악 라이브러리를 만들어보세요."
+      subtitle={
+        <>
+          이메일 하나면 충분합니다. 가입 즉시
+          <br />
+          재생목록을 만들 수 있어요.
+        </>
+      }
       footer={
         <>
           이미 계정이 있으신가요?{" "}
-          <Link
-            className="font-semibold text-accent hover:underline"
-            to="/login"
-          >
+          <Link className="font-bold text-neu-hi hover:underline" to="/login">
             로그인
           </Link>
         </>
       }
     >
-      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <Field
           id="signup-email"
           label="이메일"
@@ -67,40 +75,34 @@ export default function SignupPage() {
           autoComplete="email"
           required
         />
-        <Field
+        <PasswordField
           id="signup-password"
           label="비밀번호"
-          type="password"
-          placeholder="6자 이상"
+          placeholder="8자 이상"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
           required
-          minLength={6}
+          minLength={8}
         />
-        <Field
+        <PasswordField
           id="signup-password-confirm"
           label="비밀번호 확인"
-          type="password"
-          placeholder="••••••"
+          placeholder="••••••••"
           value={passwordConfirm}
           onChange={(e) => setPasswordConfirm(e.target.value)}
           autoComplete="new-password"
           required
-          minLength={6}
+          minLength={8}
         />
+        <AgreeCheckbox checked={agreed} onChange={setAgreed}>
+          서비스 이용약관과 개인정보 처리방침에 동의합니다.
+        </AgreeCheckbox>
         {error ? <FormError>{error}</FormError> : null}
         <PrimaryButton type="submit" disabled={submitting}>
           {submitting ? "가입 중..." : "회원가입"}
         </PrimaryButton>
       </form>
-
-      <Divider>또는</Divider>
-
-      <GoogleButton onClick={() => void signInWithGoogle()}>
-        <GoogleIcon />
-        Google로 계속하기
-      </GoogleButton>
     </AuthLayout>
   );
 }
