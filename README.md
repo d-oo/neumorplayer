@@ -1,4 +1,4 @@
-# ytmusic-remaster
+# neumorplayer
 
 ytmusic를 2026 트렌드에 맞게 새롭게 만든 버전입니다. 아직 README가 완성되지 않아, 후술된 부분은 이전 ytmusic의 README입니다.
 

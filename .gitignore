@@ -9,5 +9,5 @@ dist-ssr
 .DS_Store
 *.log
 old-src
-.claude/skills/run-ytmusic-remaster/screenshots/
+.claude/skills/run-neumorplayer/screenshots/
 .vercel

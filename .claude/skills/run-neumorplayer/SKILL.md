@@ -1,6 +1,6 @@
 ---
-name: run-ytmusic-remaster
-description: Build, run, and screenshot the ytmusic-remaster web app (Vite + React SPA). Use when asked to start ytmusic-remaster, run its dev server, take a screenshot of a page (e.g. /login, /signup), or verify a frontend change actually renders.
+name: run-neumorplayer
+description: Build, run, and screenshot the neumorplayer web app (Vite + React SPA). Use when asked to start neumorplayer, run its dev server, take a screenshot of a page (e.g. /login, /signup), or verify a frontend change actually renders.
 ---
 
 Vite + React SPA. Driven headlessly via `driver.mjs` in this same
@@ -45,7 +45,7 @@ code changes, separately from this driver.
 ## Run (agent path)
 
 ```bash
-node .claude/skills/run-ytmusic-remaster/driver.mjs login signup
+node .claude/skills/run-neumorplayer/driver.mjs login signup
 ```
 
 - If port 5173 already responds (e.g. you have `npm run dev` open in
@@ -59,9 +59,9 @@ node .claude/skills/run-ytmusic-remaster/driver.mjs login signup
 - **Pass route names without a leading slash** (`login`, not `/login`)
   — see Gotchas below for why.
 - No arguments defaults to `login signup`.
-- Screenshots land in `.claude/skills/run-ytmusic-remaster/screenshots/<route>.png`.
+- Screenshots land in `.claude/skills/run-neumorplayer/screenshots/<route>.png`.
 - When it spawns its own server, output is captured to
-  `.claude/skills/run-ytmusic-remaster/dev-server.log`.
+  `.claude/skills/run-neumorplayer/dev-server.log`.
 - Prints any browser console errors/pageerrors it captured and exits
   non-zero if there were any.
 
@@ -125,7 +125,7 @@ are the actual verification surface.
 ## Troubleshooting
 
 - **"Dev server never came up on http://localhost:5173"**: check
-  `.claude/skills/run-ytmusic-remaster/dev-server.log` for the actual
+  `.claude/skills/run-neumorplayer/dev-server.log` for the actual
   Vite error (usually a missing `.env.local` value or a port already
   held by a process the pre-kill couldn't see).
 - **`page.goto: ... Cannot navigate to invalid URL

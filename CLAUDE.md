@@ -41,8 +41,8 @@ npm run preview   # 프로덕션 빌드 미리보기
 테스트 러너는 아직 구성되어 있지 않습니다.
 
 화면을 실제로 띄워서 스크린샷으로 확인하려면(`/login`, `/signup` 등) 직접 dev 서버를
-띄우고 브라우저 도구를 짜지 말고 `.claude/skills/run-ytmusic-remaster/SKILL.md`를
-따르세요 — `node .claude/skills/run-ytmusic-remaster/driver.mjs <route> ...` 한 줄로
+띄우고 브라우저 도구를 짜지 말고 `.claude/skills/run-neumorplayer/SKILL.md`를
+따르세요 — `node .claude/skills/run-neumorplayer/driver.mjs <route> ...` 한 줄로
 서버 기동/스크린샷/정리까지 다 해줍니다(Git Bash에서 경로 인자에 슬래시를 붙이면 안 되는
 등 이미 겪은 함정들이 그 파일에 정리되어 있습니다).
 

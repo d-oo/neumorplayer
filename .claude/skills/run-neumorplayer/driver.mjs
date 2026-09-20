@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// Driver for the run-ytmusic-remaster skill.
+// Driver for the run-neumorplayer skill.
 //
 // Starts the Vite dev server, visits one or more routes with a headless
 // Chromium (via the project's own `playwright` devDependency), screenshots
 // each one, prints any browser console errors, then shuts the server down.
 //
 // Usage:
-//   node .claude/skills/run-ytmusic-remaster/driver.mjs [path ...]
-//   node .claude/skills/run-ytmusic-remaster/driver.mjs /login /signup
+//   node .claude/skills/run-neumorplayer/driver.mjs [path ...]
+//   node .claude/skills/run-neumorplayer/driver.mjs /login /signup
 //
 // Run from the project root (the folder containing package.json).
-// Screenshots land in .claude/skills/run-ytmusic-remaster/screenshots/.
+// Screenshots land in .claude/skills/run-neumorplayer/screenshots/.
 
 import { chromium } from "playwright";
 import { spawn, execSync } from "node:child_process";
@@ -111,7 +111,7 @@ async function main() {
     const up = await waitForServer(BASE_URL, 30_000);
     if (!up) {
       console.error(
-        `Dev server never came up on ${BASE_URL} — check .claude/skills/run-ytmusic-remaster/dev-server.log`
+        `Dev server never came up on ${BASE_URL} — check .claude/skills/run-neumorplayer/dev-server.log`
       );
       process.exitCode = 1;
       freePort(PORT);
