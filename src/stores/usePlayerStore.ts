@@ -113,7 +113,7 @@ export const usePlayerStore = create<PlayerState>()(
       clearPendingSeek: () => set({ pendingSeek: null }),
     }),
     {
-      name: "ytmusic-player-settings",
+      name: "neumorplayer-player-settings",
       // 큐/재생목록 같은 휘발성 상태는 저장하지 않고, 볼륨/음소거처럼 "환경설정"만 유지합니다.
       partialize: (state) => ({ volume: state.volume, muted: state.muted }),
     },

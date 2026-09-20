@@ -1,4 +1,4 @@
--- ytmusic 초기 스키마
+-- neumorplayer 초기 스키마
 -- old-src의 IndexedDB object store(music/playlist)를 정규화된 관계형 테이블로 옮긴 버전입니다.
 -- 적용: Supabase 대시보드 SQL Editor에 붙여넣어 실행하세요.
 --

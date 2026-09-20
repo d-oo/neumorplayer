@@ -1,4 +1,4 @@
-# ytmusic (remaster) — 개발 노트
+# neumorplayer — 개발 노트
 
 `old-src`(4년 전 CRA + IndexedDB 버전)를 Vite + TypeScript + Supabase + Vercel 스택으로
 다시 만드는 프로젝트입니다. 지금 상태는 **기능은 비어 있고 배선만 된 스캐폴딩**입니다.
