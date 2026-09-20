@@ -48,7 +48,16 @@ npm run preview   # 프로덕션 빌드 미리보기
 
 `npm run dev`는 프론트엔드만 서빙합니다. `api/` 아래의 라우트는 Vercel Functions이라
 일반 `vite dev`로는 동작하지 않습니다 — `/api/youtube-search`, `/api/youtube-video`를
-로컬에서 테스트하려면 `vercel dev`(`npm i -g vercel` 후 `vercel dev`)를 사용하세요.
+로컬에서 테스트하려면 터미널을 하나 더 열어 `vercel dev`(`npm i -g vercel` 후 `vercel dev`,
+기본 3000번 포트)를 띄우세요. **브라우저로는 계속 `npm run dev`의 5173번 포트를 열어야
+합니다 — `vercel dev`가 띄우는 포트를 직접 열지 마세요.** `vite.config.ts`의
+`server.proxy`가 `/api`를 3000번으로 넘겨주므로 5173에서 API 호출까지 그대로 됩니다.
+`vercel dev`를 직접 열면 안 되는 이유: `vercel.json`의 SPA 카탈올 rewrite(아래 아키텍처
+문단 참고)가 `vercel dev`의 로컬 라우팅 단계에서 `/@vite/client`·`/src/main.tsx`처럼
+Vite 개발 서버가 그때그때 만들어주는 가상 경로까지 `index.html`로 가로채 버려 화면이
+아예 안 뜨는 문제가 있습니다(실제로 겪음). 이 rewrite는 프로덕션 배포에서만 필요하고
+`vercel dev`의 프론트엔드 서빙 경로 자체를 브라우저가 안 쓰면 문제 될 일이 없으므로,
+`vercel dev`는 항상 API 전용으로만 쓰세요.
 
 로컬 개발을 시작하려면 Supabase 프로젝트가 필요합니다(`docs/migrations/0001_init.sql`을
 해당 프로젝트에 적용). `.env.example`을 복사해 `.env.local`도 만들어야 합니다. 전체 절차는
@@ -68,6 +77,9 @@ Vite SPA는 실제 정적 파일이 `index.html` 하나뿐이고 `/login`·`/exp
 모든 경로를 `index.html`로 돌려보내는 rewrite가 있어야 합니다(Vercel은 실제 파일/함수가
 있으면 rewrite보다 그걸 먼저 매칭하므로 `/api/*` 서버리스 함수와 안 부딪힙니다). 이
 rewrite를 건드리거나 지우면 루트(`/`) 말고 다른 경로에서 새로고침할 때마다 404가 납니다.
+이 rewrite는 프로덕션(정적 배포) 전용으로만 문제없이 동작하도록 남겨뒀고, 로컬에서
+`vercel dev`를 쓸 때 이 rewrite와 충돌하지 않도록 하는 방법은 위 "명령어" 절의 안내를
+참고하세요(`vercel dev`는 API 전용으로만 쓰고 브라우저는 `npm run dev`의 5173 포트를 씀).
 
 **서버 상태와 클라이언트 상태를 엄격히 분리합니다:**
 

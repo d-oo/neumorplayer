@@ -1,15 +1,14 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { fetchLibraryTracks, tracksQueryKey } from "@/lib/tracks";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 import { formatDuration } from "@/lib/format-time";
 import { PlayIcon } from "@/features/player/icons";
-import type { Database } from "@/lib/database.types";
 
-type Track = Database["public"]["Tables"]["tracks"]["Row"];
 type SortKey = "recentAdd" | "title" | "artist" | "playCount";
-
-// TODO: useInfiniteQuery + supabase.from("tracks").select().range()로 채우세요.
-const LIBRARY_TRACKS: Track[] = [];
 
 // SORTS = [["recent","추가순"],["title","제목"],["artist","아티스트"],["plays","재생 횟수"]]
 // libDesc 기본값: recent/plays는 내림차순, title/artist는 오름차순 (docs/design/ 그대로).
@@ -35,11 +34,23 @@ const chipStyle = (on: boolean) => ({
 // 행 클릭 = 정보 페이지 이동, 재생은 별도 버튼(사용자가 명시적으로 요청한 흐름) —
 // 원본 시안은 행 클릭 자체가 재생이라 이 버튼은 시안엔 없는 추가 요소입니다.
 export default function SearchPage() {
+  useDocumentTitle("NeumorPlayer");
   const navigate = useNavigate();
   const playQueue = usePlayerStore((s) => s.playQueue);
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+
+  const {
+    data: tracks = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: tracksQueryKey(user?.id),
+    queryFn: fetchLibraryTracks,
+    enabled: !!user,
+  });
 
   const query = searchParams.get("q") ?? "";
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -51,13 +62,13 @@ export default function SearchPage() {
 
   const usedTags = useMemo(() => {
     const set = new Set<string>();
-    LIBRARY_TRACKS.forEach((t) => t.tags.forEach((tag) => set.add(tag)));
+    tracks.forEach((t) => t.tags.forEach((tag) => set.add(tag)));
     return Array.from(set);
-  }, []);
+  }, [tracks]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return LIBRARY_TRACKS.filter((t) => {
+    return tracks.filter((t) => {
       if (activeTag && !t.tags.includes(activeTag)) return false;
       if (!q) return true;
       return (
@@ -66,7 +77,7 @@ export default function SearchPage() {
         t.tags.some((tag) => tag.toLowerCase().includes(q))
       );
     });
-  }, [query, activeTag]);
+  }, [tracks, query, activeTag]);
 
   const sorted = useMemo(() => {
     const list = [...filtered];
@@ -76,7 +87,7 @@ export default function SearchPage() {
       list.sort((a, b) => a.artist[0].localeCompare(b.artist[0]));
     else if (sortKey === "playCount")
       list.sort((a, b) => a.play_count - b.play_count);
-    // recentAdd: 목업 배열이 이미 추가순이라고 가정하고 원본 순서를 그대로 씁니다.
+    // recentAdd: 서버에서 이미 created_at desc로 정렬해 받아오므로 원본 순서를 그대로 씁니다.
     if (sortDesc) list.reverse();
     return list;
   }, [filtered, sortKey, sortDesc]);
@@ -249,7 +260,7 @@ export default function SearchPage() {
         })}
       </div>
 
-      {sorted.length === 0 && (
+      {(sorted.length === 0 || isLoading || isError) && (
         <div
           className="mt-3.5 rounded-xl border border-white/70 px-5.5 py-5 text-[13px] text-[oklch(0.47_0.025_315)]"
           style={{
@@ -258,7 +269,11 @@ export default function SearchPage() {
               "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
           }}
         >
-          이 태그에 해당하는 곡이 없습니다.
+          {isLoading
+            ? "라이브러리를 불러오는 중..."
+            : isError
+              ? "라이브러리를 불러오지 못했습니다."
+              : "이 태그에 해당하는 곡이 없습니다."}
         </div>
       )}
     </div>

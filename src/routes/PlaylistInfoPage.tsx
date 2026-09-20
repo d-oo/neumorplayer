@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 import { formatDuration } from "@/lib/format-time";
 import { PlayIcon } from "@/features/player/icons";
 import type { Database } from "@/lib/database.types";
@@ -36,6 +37,8 @@ export default function PlaylistInfoPage() {
   const owner = "";
   const tracks: Track[] = [];
   const totalSeconds = tracks.reduce((sum, t) => sum + t.duration, 0);
+
+  useDocumentTitle(`재생목록 - ${title}`);
   const isThisPlaylistPlaying =
     playlistId !== undefined && playingPlaylistId === playlistId;
   const currentTrackId =

@@ -27,9 +27,14 @@
 
 ## 타입
 
-`src/lib/database.types.ts`는 현재 이 마이그레이션에 맞춰 손으로 작성되어 있습니다. 스키마를
-바꾸면 이 파일을 손으로 고치지 말고 `supabase gen types typescript --linked`로
-재생성하세요(파일 상단 코멘트 참고).
+`src/lib/database.types.ts`는 `supabase login` + `supabase link --project-ref <ref>`로
+프로젝트를 연결한 뒤 `supabase gen types typescript --linked`로 생성한 파일입니다. 스키마를
+바꾸면(`docs/migrations/`에 SQL 추가 후 대시보드에 적용) 이 파일을 손으로 고치지 말고 같은
+명령을 다시 실행해 덮어쓰세요. 손으로 고치면 안 되는 이유: 이 SDK(`@supabase/supabase-js`,
+내부적으로 `postgrest-js`)는 `Database` 타입이 `Relationships`/`Views`/`Functions`/
+`Enums`/`CompositeTypes` 등 특정 형태를 갖추고 있다고 가정하는데, 이 필드가 빠지면
+`supabase.from(...).insert(...)` 같은 호출이 타입 에러 없이 조용히 `never`로 무너집니다
+(실제로 겪은 문제입니다 — 처음 스캐폴딩 때 손으로 쓴 버전이 정확히 이렇게 깨졌습니다).
 
 ## 마이그레이션 운영 방식
 

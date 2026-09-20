@@ -84,6 +84,13 @@ body {
   color: var(--neu-ink);
 }
 
+/* Tailwind v3.4부터 preflight가 button에 cursor: pointer를 더 이상 넣어주지 않아서
+   (브라우저 기본값인 cursor: default가 그대로 남음) 버튼마다 개별로 cursor-pointer
+   클래스를 붙여야 했습니다 — 그래서 화면마다 들쭉날쭉했던 것을 여기서 한 번에 되돌립니다. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 /* 1b-A(재생목록 정보) 트랙 테이블에서 "지금 재생 중인 곡" 번호 칸에 쓰는
    막대 이퀄라이저 애니메이션 — docs/design/ 시안 그대로. */
 @keyframes neu-eq {

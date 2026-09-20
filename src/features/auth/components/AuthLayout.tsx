@@ -21,23 +21,16 @@ export default function AuthLayout({
       <section className="grid w-full max-w-203 grid-cols-[286px_minmax(0,1fr)] gap-11 rounded-[28px] border border-white/80 bg-neu-surface px-11.5 py-11 shadow-neu-card">
         <div className="flex flex-col justify-between gap-7">
           <div className="flex flex-col gap-5.5">
-            {/* 브랜드 로고 자리 — 실제 로고 에셋이 아직 없어서 시안 그대로 자리
-                표시용 박스만 둡니다. */}
-            <div
-              className="grid size-33 place-items-center rounded-[26px] border border-white/70 text-center"
+            {/* 브랜드 로고 — public/favicon.png(정사각형 원본)를 둥글게 잘라 씁니다. */}
+            <img
+              src="/favicon.png"
+              alt="neumorplayer"
+              className="size-33 rounded-full border border-white/70 object-cover"
               style={{
-                background:
-                  "repeating-linear-gradient(135deg, rgba(118,100,145,0.12) 0 6px, rgba(118,100,145,0.03) 6px 12px), oklch(0.908 0.014 315)",
                 boxShadow:
-                  "inset 4px 4px 9px rgba(150,136,175,0.42), inset -3px -3px 7px rgba(255,255,255,0.9)",
+                  "7px 7px 16px rgba(142,128,166,0.5), -5px -5px 13px rgba(255,255,255,0.9)",
               }}
-            >
-              <span className="font-neu-mono text-[10px] leading-[1.8] tracking-[0.14em] text-[oklch(0.52_0.02_315)]">
-                브랜드 로고
-                <br />
-                132 × 132
-              </span>
-            </div>
+            />
 
             <div className="flex flex-col gap-2.5">
               <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">

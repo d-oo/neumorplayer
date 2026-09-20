@@ -5,7 +5,11 @@ import YouTubeIframe, {
   type YouTubePlayer as YouTubePlayerInstance,
   type YouTubeProps,
 } from "react-youtube";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import { tracksQueryKey } from "@/lib/tracks";
 import { useVideoSlot } from "./useVideoSlot";
 
 const opts: YouTubeProps["opts"] = {
@@ -21,6 +25,8 @@ const opts: YouTubeProps["opts"] = {
 // 일부 브라우저가 숨겨진 iframe의 재생을 스로틀링할 수 있어 화면 밖 배치를 씁니다.
 export default function YouTubePlayer() {
   const { slotEl } = useVideoSlot();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [offscreenEl, setOffscreenEl] = useState<HTMLDivElement | null>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
 
@@ -59,6 +65,37 @@ export default function YouTubePlayer() {
     if (player) void player.seekTo(pendingSeek, true);
     clearPendingSeek();
   }, [pendingSeek, clearPendingSeek]);
+
+  // old-src(Home.js)가 재생 중인 곡이 바뀔 때마다 IndexedDB의 playCount/recentPlay를
+  // 갱신하던 것과 같은 지점 — 큐에서 재생 대상이 바뀔 때마다(재생목록 자동 다음곡
+  // 포함) 한 번씩 증가시킵니다. 최신 play_count를 다시 읽고 나서 +1 하므로 다른
+  // 탭에서 이미 늘어난 값을 덮어쓰지 않습니다(단, 두 값이 동시에 갱신되는 경쟁은
+  // 여전히 가능 — 개인용 앱 규모에서는 감수).
+  useEffect(() => {
+    if (!currentTrackId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("tracks")
+        .select("play_count")
+        .eq("id", currentTrackId)
+        .single();
+      if (cancelled || !data) return;
+      await supabase
+        .from("tracks")
+        .update({
+          play_count: data.play_count + 1,
+          recent_play: new Date().toISOString(),
+        })
+        .eq("id", currentTrackId);
+      if (cancelled) return;
+      queryClient.invalidateQueries({ queryKey: tracksQueryKey(user?.id) });
+      queryClient.invalidateQueries({ queryKey: ["track", currentTrackId] });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentTrackId, queryClient, user?.id]);
 
   useEffect(() => {
     if (!currentTrackId) return;

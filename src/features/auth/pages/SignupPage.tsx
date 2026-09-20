@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../components/AuthLayout";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../components/AuthForm";
 
 export default function SignupPage() {
+  useDocumentTitle("회원가입 - NeumorPlayer");
   const { signUpWithEmail } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

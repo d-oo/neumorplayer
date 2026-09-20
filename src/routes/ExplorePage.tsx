@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { formatDuration, parseIsoDuration } from "@/lib/format-time";
+import { fetchLibraryTracks, tracksQueryKey } from "@/lib/tracks";
+import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 interface ExploreResult {
   videoId: string;
@@ -78,9 +82,6 @@ async function fetchExploreResults(query: string): Promise<ExploreResult[]> {
   });
 }
 
-// TODO: 라이브러리에 실제로 존재하는 태그 목록(태그별 곡수 집계)으로 채우세요.
-const SUGGESTED_TAGS: { tag: string; count: number }[] = [];
-
 const fieldBoxStyle = {
   background: "oklch(0.915 0.014 315)",
   boxShadow:
@@ -138,9 +139,13 @@ function PillActionButton({
 // 색상·그림자·치수를 그대로 옮겼습니다.
 // 제목/아티스트를 입력하고 "검색" 버튼(또는 입력창에서 Enter)을 눌러야 실제로
 // /api/youtube-search + /api/youtube-video를 호출합니다(타이핑마다 자동 호출하지
-// 않음). "추가" 버튼은 아직 Supabase 연동 전이라 선택 상태만 초기화합니다 —
-// tracks 테이블 insert는 docs/todos.md에 남겨둔 후속 작업입니다.
+// 않음). "추가" 버튼은 선택한 영상을 tracks 테이블에 insert합니다 — video_id 기준
+// unique 제약(user_id, video_id)이 있어 이미 추가한 곡은 DB가 막아주고, 그 에러를
+// 사용자에게 그대로 보여줍니다.
 export default function ExplorePage() {
+  useDocumentTitle("NeumorPlayer");
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [titleQuery, setTitleQuery] = useState("");
   const [artistQuery, setArtistQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
@@ -169,7 +174,25 @@ export default function ExplorePage() {
     () => results.find((r) => r.videoId === selectedVideoId),
     [results, selectedVideoId],
   );
-  const allTags = [...SUGGESTED_TAGS.map((t) => t.tag), ...customTags];
+
+  const { data: libraryTracks = [] } = useQuery({
+    queryKey: tracksQueryKey(user?.id),
+    queryFn: fetchLibraryTracks,
+    enabled: !!user,
+  });
+
+  // 태그 제안 목록: 라이브러리에 이미 쓰인 태그를 곡수 내림차순으로 보여줍니다.
+  const suggestedTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    libraryTracks.forEach((t) =>
+      t.tags.forEach((tag) => counts.set(tag, (counts.get(tag) ?? 0) + 1)),
+    );
+    return Array.from(counts.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [libraryTracks]);
+
+  const allTags = [...suggestedTags.map((t) => t.tag), ...customTags];
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) => {
@@ -188,10 +211,37 @@ export default function ExplorePage() {
     setTagInput("");
   }
 
+  const addTrackMutation = useMutation({
+    mutationFn: async () => {
+      if (!selected || !user) throw new Error("추가할 곡을 선택해주세요.");
+      const { error } = await supabase.from("tracks").insert({
+        user_id: user.id,
+        title: selected.title,
+        artist: [selected.channelTitle],
+        video_id: selected.videoId,
+        tags: Array.from(selectedTags),
+        duration: selected.durationSec,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tracksQueryKey(user?.id) });
+      setSelectedVideoId(null);
+      setSelectedTags(new Set());
+    },
+  });
+
+  // 중복 추가는 tracks의 (user_id, video_id) unique 제약(Postgres 코드 23505)이
+  // 막아주므로, 에러 메시지만 사용자가 이해할 수 있는 문구로 바꿔줍니다.
+  const addErrorMessage = addTrackMutation.isError
+    ? (addTrackMutation.error as { code?: string } | null)?.code === "23505"
+      ? "이미 라이브러리에 있는 곡입니다."
+      : "추가에 실패했습니다. 다시 시도해주세요."
+    : null;
+
   function handleAdd() {
     if (!selected) return;
-    setSelectedVideoId(null);
-    setSelectedTags(new Set());
+    addTrackMutation.mutate();
   }
 
   return (
@@ -393,7 +443,7 @@ export default function ExplorePage() {
       <div className="mb-7 flex flex-wrap gap-2.25">
         {allTags.map((tag) => {
           const isOn = selectedTags.has(tag);
-          const count = SUGGESTED_TAGS.find((t) => t.tag === tag)?.count;
+          const count = suggestedTags.find((t) => t.tag === tag)?.count;
           return (
             <button
               key={tag}
@@ -422,8 +472,22 @@ export default function ExplorePage() {
         })}
       </div>
 
-      <div className="flex justify-end">
-        <PillActionButton label="추가" enabled={!!selected} onClick={handleAdd} />
+      <div className="flex items-center justify-end gap-3">
+        {addErrorMessage && (
+          <span className="text-[12.5px] font-semibold text-red-500">
+            {addErrorMessage}
+          </span>
+        )}
+        {!addErrorMessage && addTrackMutation.isSuccess && !selected && (
+          <span className="text-[12.5px] font-semibold text-[#6d1a9f]">
+            라이브러리에 추가했습니다.
+          </span>
+        )}
+        <PillActionButton
+          label={addTrackMutation.isPending ? "추가 중..." : "추가"}
+          enabled={!!selected && !addTrackMutation.isPending}
+          onClick={handleAdd}
+        />
       </div>
     </div>
   );

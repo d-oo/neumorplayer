@@ -36,7 +36,11 @@
    ```
    npm run dev
    ```
-   `/api` 함수는 `vercel dev`로 실행해야 로컬에서도 동작합니다 (`npm i -g vercel` 후 `vercel dev`).
+   `/api` 함수까지 테스트하려면 터미널을 하나 더 열어 `vercel dev`(`npm i -g vercel` 후
+   `vercel dev`, 기본 3000번 포트)를 같이 띄우세요. `vite.config.ts`의 `server.proxy`가
+   `/api` 요청을 3000번으로 넘겨주므로, 브라우저는 계속 `npm run dev`의 5173번 포트만
+   열면 됩니다 — `vercel dev`가 띄우는 주소를 직접 열면 `vercel.json`의 SPA rewrite가
+   Vite 전용 경로(`/@vite/client` 등)까지 가로채 화면이 안 뜹니다(CLAUDE.md 참고).
 
 ## Vercel 배포 시 환경변수
 
@@ -64,7 +68,16 @@ old-src/                 4년 전 원본 프로젝트 (참고용, 새 코드에�
 
 ## 다음 할 일 (기능 구현 순서 추천)
 
-1. `src/routes/SearchPage.tsx` — 트랙 목록/검색 (`useInfiniteQuery` + Supabase `.range()`)
-2. 트랙 추가 폼 (`/api/youtube-search`, `/api/youtube-video` 호출 + react-hook-form)
-3. `src/routes/PlaylistInfoPage.tsx` — 재생목록 상세 + dnd-kit 순서 변경
-4. 실제 플레이어(`react-youtube`)를 `usePlayerStore`와 연결
+1. ~~`src/routes/SearchPage.tsx` — 트랙 목록/검색~~ 완료: `src/lib/tracks.ts`의
+   `fetchLibraryTracks`로 Supabase `tracks`를 조회하고(전체 목록을 한 번에 받아 클라이언트에서
+   필터/정렬 — `useInfiniteQuery` + `.range()` 페이지네이션은 라이브러리가 커지면 추가할
+   후속 작업으로 미룸), `ExplorePage`/`SearchResultsView`도 같은 함수를 공유한다.
+2. ~~트랙 추가 폼~~ 완료: `ExplorePage`의 "추가" 버튼이 실제로 `tracks`에 insert한다
+   (`(user_id, video_id)` unique 제약으로 중복 추가는 DB가 막아준다). `MusicInfoPage`도
+   단건 조회 + 재생 + 삭제까지 구현했고, 제목/아티스트/태그 수정 폼은 `docs/todos.md`에
+   후속 작업으로 남겨뒀다.
+3. `src/routes/PlaylistInfoPage.tsx` — 재생목록 상세 + dnd-kit 순서 변경. 아직 목업 상태이고,
+   사이드바에 재생목록 목록/생성 UI 자체가 없어 이 라우트에 진입할 방법도 없다
+   (`docs/todos.md` 참고).
+4. 실제 플레이어(`react-youtube`)를 `usePlayerStore`와 연결 — `YouTubePlayer`/`PlayerPanel`/
+   `QueueCard`(`src/features/player/`)로 이미 구현되어 있다.

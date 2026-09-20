@@ -11,3 +11,4 @@ dist-ssr
 old-src
 .claude/skills/run-neumorplayer/screenshots/
 .vercel
+supabase/.temp

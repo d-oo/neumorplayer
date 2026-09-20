@@ -1,37 +1,65 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { fetchLibraryTracks, tracksQueryKey } from "@/lib/tracks";
 import { formatDuration } from "@/lib/format-time";
 import { PlayIcon } from "@/features/player/icons";
-import type { Database } from "@/lib/database.types";
-
-type Track = Database["public"]["Tables"]["tracks"]["Row"];
-
-// TODO: 실제 데이터로 채우세요 — 노래는 supabase tracks 검색, 태그는 라이브러리
-// 태그별 곡수 집계, 아티스트는 라이브러리 아티스트별 집계입니다.
-const LIBRARY_TRACKS: Track[] = [];
-const SUGGESTED_TAGS: { tag: string; count: number }[] = [];
-const TOP_ARTISTS: { name: string; monthly: string }[] = [];
 
 // docs/design/ 시안의 "검색 결과" 화면 — 헤더의 "라이브러리 내 검색"에 뭔가 입력하면
 // 지금 보고 있던 탭(라이브러리/탐색) 대신 이 화면이 뜹니다(HomeLayout에서 Outlet 대신
 // 이 컴포넌트를 조건부로 렌더링). "태그"/"아티스트" 섹션은 시안에도 클릭 기능이 없어서
-// 여기서도 장식(호버 테두리만)입니다. "노래" 행은 라이브러리 탭과 같은 규칙으로
-// 클릭=정보 페이지 이동, 재생은 별도 버튼입니다(원본은 행 클릭=재생이지만, 이건
-// "라이브러리 내 검색 결과"이므로 라이브러리 탭과 같은 규칙을 따릅니다).
+// 여기서도 장식(호버 테두리만)이고, 검색어와 무관하게 라이브러리 전체 기준 집계입니다.
+// "아티스트" 카드는 시안엔 "이번 달 재생 횟수"지만 스키마에 월별 집계가 없어서
+// 대신 전체 기간 재생 횟수 합계를 보여줍니다. "노래" 행은 라이브러리 탭과 같은
+// 규칙으로 클릭=정보 페이지 이동, 재생은 별도 버튼입니다(원본은 행 클릭=재생이지만,
+// 이건 "라이브러리 내 검색 결과"이므로 라이브러리 탭과 같은 규칙을 따릅니다).
 export default function SearchResultsView({ query }: { query: string }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const playQueue = usePlayerStore((s) => s.playQueue);
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const currentTrackId =
     currentIndex >= 0 ? queue[currentIndex]?.id : undefined;
 
+  const { data: tracks = [] } = useQuery({
+    queryKey: tracksQueryKey(user?.id),
+    queryFn: fetchLibraryTracks,
+    enabled: !!user,
+  });
+
+  const suggestedTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    tracks.forEach((t) =>
+      t.tags.forEach((tag) => counts.set(tag, (counts.get(tag) ?? 0) + 1)),
+    );
+    return Array.from(counts.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+  }, [tracks]);
+
+  const topArtists = useMemo(() => {
+    const totals = new Map<string, number>();
+    tracks.forEach((t) =>
+      t.artist.forEach((a) => totals.set(a, (totals.get(a) ?? 0) + t.play_count)),
+    );
+    return Array.from(totals.entries())
+      .map(([name, totalPlays]) => ({ name, totalPlays }))
+      .sort((a, b) => b.totalPlays - a.totalPlays)
+      .slice(0, 4);
+  }, [tracks]);
+
   const q = query.trim().toLowerCase();
-  const results = LIBRARY_TRACKS.filter(
-    (t) =>
-      t.title.toLowerCase().includes(q) ||
-      t.artist.some((a) => a.toLowerCase().includes(q)),
-  ).slice(0, 4);
+  const results = tracks
+    .filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.artist.some((a) => a.toLowerCase().includes(q)),
+    )
+    .slice(0, 4);
 
   return (
     <div>
@@ -118,7 +146,7 @@ export default function SearchResultsView({ query }: { query: string }) {
         태그
       </div>
       <div className="mb-7 flex flex-wrap gap-2.25">
-        {SUGGESTED_TAGS.map((tg) => (
+        {suggestedTags.map((tg) => (
           <div
             key={tg.tag}
             className="flex cursor-pointer items-baseline gap-2 rounded-full border border-white/80 px-3.75 py-2.25 transition-colors hover:border-neu-accent-light"
@@ -142,7 +170,7 @@ export default function SearchResultsView({ query }: { query: string }) {
         아티스트
       </div>
       <div className="grid grid-cols-4 gap-3.5">
-        {TOP_ARTISTS.map((a) => (
+        {topArtists.map((a) => (
           <div
             key={a.name}
             className="cursor-pointer rounded-[14px] border border-white/80 p-4 transition-colors hover:border-neu-accent-light"
@@ -165,7 +193,7 @@ export default function SearchResultsView({ query }: { query: string }) {
               {a.name}
             </p>
             <p className="mt-1 text-xs text-[oklch(0.46_0.025_315)]">
-              {a.monthly}
+              {a.totalPlays.toLocaleString()}회 재생
             </p>
           </div>
         ))}

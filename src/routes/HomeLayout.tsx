@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { NavLink, Outlet, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import PlayerPanel from "@/features/player/PlayerPanel";
@@ -58,11 +58,16 @@ export default function HomeLayout() {
 
   // 입력창 값은 로컬 상태로만 들고 있다가, 엔터를 누르거나 검색 아이콘을 클릭했을 때만
   // ?q=를 커밋합니다(타이핑 즉시 검색 결과 화면으로 넘어가지 않도록). 뒤로가기 등으로
-  // query가 바뀌면(예: 다른 탭으로 이동) 입력창도 따라갑니다.
+  // query가 바뀌면(예: 다른 탭으로 이동) 입력창도 따라갑니다 — useEffect 대신 React
+  // 공식 문서가 권장하는 "prop 변경 시 상태 조정" 패턴(렌더 중 직접 비교 후 setState)을
+  // 씁니다. useEffect로 하면 커밋된 값을 화면에 그리고 나서 한 프레임 뒤에 다시 리렌더가
+  // 발생합니다.
   const [inputValue, setInputValue] = useState(query);
-  useEffect(() => {
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  if (query !== syncedQuery) {
+    setSyncedQuery(query);
     setInputValue(query);
-  }, [query]);
+  }
 
   function commitQuery(value: string) {
     setSearchParams(
@@ -101,10 +106,11 @@ export default function HomeLayout() {
               style={{ borderBottom: "1px solid rgba(142,128,166,0.28)" }}
             >
               <div className="flex flex-none items-center gap-2.25">
-                <div
-                  className="h-5.5 w-5.5 rounded-[7px]"
+                <img
+                  src="/favicon.png"
+                  alt=""
+                  className="h-5.5 w-5.5 rounded-full object-cover"
                   style={{
-                    background: "color-mix(in oklab, #b344ff 82%, white)",
                     boxShadow:
                       "5px 5px 11px rgba(142,128,166,0.55), -4px -4px 9px rgba(255,255,255,0.95)",
                   }}
