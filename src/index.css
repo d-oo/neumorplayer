@@ -51,6 +51,71 @@
     -5px -5px 12px rgba(255, 255, 255, 0.95);
   --neu-shadow-google-active: inset 5px 5px 11px rgba(146, 132, 170, 0.6),
     inset -4px -4px 9px rgba(255, 255, 255, 0.9);
+
+  /* docs/design/수정사항.zip(01) — 세그먼트 탭(HeaderNavTab/LibraryPage 정렬/QueueCard
+     토글)의 선택된 상태 raised 그림자(-raised)와 누르는 동안의 함몰 그림자(-active). */
+  --neu-shadow-tab-raised: 2px 2px 5px rgba(150, 136, 175, 0.34),
+    -2px -2px 4px rgba(255, 255, 255, 0.7);
+  --neu-shadow-tab-active: inset 4px 4px 9px rgba(150, 136, 175, 0.5),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.95);
+
+  /* 알약 모양 주 CTA(탐색의 "추가" 버튼, 재생목록 정보/트랙 상세의 "재생" 버튼)가
+     공유하는 활성/hover/비활성 배경·그림자. 원래 탐색 전용이라 "explore-cta"라고
+     이름 붙였었는데, docs/design/수정본2.zip에서 재생목록 정보/트랙 상세도 정확히
+     같은 값을 쓰는 게 확인돼 범용 이름(cta-pill)으로 바꿨습니다. */
+  --neu-cta-pill-grad: linear-gradient(
+    155deg,
+    oklch(0.94 0.038 312),
+    oklch(0.885 0.055 312)
+  );
+  --neu-cta-pill-grad-hover: linear-gradient(
+    155deg,
+    oklch(0.955 0.048 312),
+    oklch(0.9 0.066 312)
+  );
+  --neu-shadow-cta-pill: 7px 7px 16px rgba(138, 110, 172, 0.55),
+    -5px -5px 13px rgba(255, 255, 255, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --neu-shadow-cta-pill-hover: 9px 9px 20px rgba(138, 110, 172, 0.6),
+    -6px -6px 15px rgba(255, 255, 255, 0.98), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --neu-shadow-cta-pill-disabled: inset 3px 3px 7px rgba(150, 136, 175, 0.3),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+
+  /* docs/design/수정사항.zip(02, 03) — "태그 추가" 버튼과 헤더 프로필 드롭다운
+     트리거가 공유하는 hover 그라디언트·기본(idle) 그림자. "태그 추가" 전용 hover
+     그림자는 별도(-tag-add-hover)입니다(프로필 트리거는 hover 시 그림자가 안 바뀜). */
+  --neu-hover-tint-grad: linear-gradient(
+    155deg,
+    oklch(0.945 0.03 312),
+    oklch(0.905 0.042 312)
+  );
+  --neu-shadow-tint-pill: 4px 4px 10px rgba(142, 128, 166, 0.38),
+    -3px -3px 8px rgba(255, 255, 255, 0.9);
+  --neu-shadow-tag-add-hover: 6px 6px 14px rgba(138, 110, 172, 0.48),
+    -4px -4px 11px rgba(255, 255, 255, 0.96);
+
+  /* docs/design/수정사항.zip(03) — 헤더 프로필 드롭다운. */
+  --neu-shadow-profile-open: inset 4px 4px 9px rgba(142, 128, 166, 0.42),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.9);
+  --neu-shadow-dropdown: 12px 12px 26px rgba(142, 128, 166, 0.5),
+    -6px -6px 14px rgba(255, 255, 255, 0.9);
+  --neu-accent-tint: color-mix(in oklab, #b344ff 14%, transparent);
+
+  /* "지금 재생 중" 행(src/shared/styles/current-track-row-style.ts)이 쓰는 라벤더
+     라운드-업 하이라이트. 프로필 드롭다운의 "설정"/"로그아웃" hover도 같은 값을
+     재사용합니다(둘 다 "이 항목이 지금 강조돼 있다"는 같은 뉴모피즘 표현이라). */
+  --neu-highlight: oklch(0.945 0.035 313);
+  --neu-shadow-highlight: 2px 2px 6px rgba(150, 136, 175, 0.38),
+    -2px -2px 5px rgba(255, 255, 255, 0.8);
+
+  /* docs/design/수정본2.zip — 재생목록 정보/트랙 상세의 "셔플·수정·삭제" 등 보조
+     44px 원형 버튼이 공유하는 raised 그림자. PlaylistInfoPage.tsx의 로컬
+     pillSecondaryStyle 상수였던 것을 토큰으로 승격했습니다(인라인 style로 두면
+     같이 붙는 active:shadow-neu-pill-active가 죽는 문제가 있었습니다). */
+  --neu-shadow-pill-secondary: 7px 7px 16px rgba(150, 136, 175, 0.45),
+    -5px -5px 12px rgba(255, 255, 255, 0.95);
+  /* 트랙 상세 화면의 태그 알약 전용 함몰 그림자. */
+  --neu-shadow-tag-chip: inset 3px 3px 7px rgba(150, 136, 175, 0.35),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.85);
 }
 
 @theme {
@@ -75,6 +140,19 @@
   --shadow-neu-cta-active: var(--neu-shadow-cta-active);
   --shadow-neu-google: var(--neu-shadow-google);
   --shadow-neu-google-active: var(--neu-shadow-google-active);
+  --shadow-neu-tab-raised: var(--neu-shadow-tab-raised);
+  --shadow-neu-tab-active: var(--neu-shadow-tab-active);
+  --shadow-neu-cta-pill: var(--neu-shadow-cta-pill);
+  --shadow-neu-cta-pill-hover: var(--neu-shadow-cta-pill-hover);
+  --shadow-neu-cta-pill-disabled: var(--neu-shadow-cta-pill-disabled);
+  --shadow-neu-tint-pill: var(--neu-shadow-tint-pill);
+  --shadow-neu-tag-add-hover: var(--neu-shadow-tag-add-hover);
+  --shadow-neu-dropdown: var(--neu-shadow-dropdown);
+  --color-neu-accent-tint: var(--neu-accent-tint);
+  --color-neu-highlight: var(--neu-highlight);
+  --shadow-neu-highlight: var(--neu-shadow-highlight);
+  --shadow-neu-pill-secondary: var(--neu-shadow-pill-secondary);
+  --shadow-neu-tag-chip: var(--neu-shadow-tag-chip);
 }
 
 /* box-sizing 리셋, 폼 요소의 font-family 상속 등은 Tailwind의 preflight(위 @import에

@@ -8,7 +8,8 @@ import { formatDuration } from "@/shared/lib/format-time";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
-import RowPlayButton from "@/shared/components/RowPlayButton";
+import IconCircleButton from "@/shared/components/IconCircleButton";
+import { PlayIcon } from "@/shared/components/icons";
 
 // docs/design/ 시안의 "검색 결과" 화면 — 헤더의 "라이브러리 내 검색"에 뭔가 입력하면
 // 지금 보고 있던 탭(라이브러리/탐색) 대신 이 화면이 뜹니다(HomeLayout에서 Outlet 대신
@@ -47,7 +48,9 @@ export default function SearchResultsView({ query }: { query: string }) {
   const topArtists = useMemo(() => {
     const totals = new Map<string, number>();
     tracks.forEach((t) =>
-      t.artist.forEach((a) => totals.set(a, (totals.get(a) ?? 0) + t.play_count)),
+      t.artist.forEach((a) =>
+        totals.set(a, (totals.get(a) ?? 0) + t.play_count),
+      ),
     );
     return Array.from(totals.entries())
       .map(([name, totalPlays]) => ({ name, totalPlays }))
@@ -113,14 +116,17 @@ export default function SearchResultsView({ query }: { query: string }) {
                 <span className="font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
                   {formatDuration(track.duration)}
                 </span>
-                <RowPlayButton
+                <IconCircleButton
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     playQueue([track], 0);
                   }}
-                  label={`${track.title} 재생`}
-                  className="flex-none"
-                />
+                  aria-label={`${track.title} 재생`}
+                  className="flex-none text-neu-hi shadow-neu-raised-sm"
+                >
+                  <PlayIcon className="ml-0.5" />
+                </IconCircleButton>
               </div>
             );
           })}

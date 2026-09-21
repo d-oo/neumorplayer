@@ -111,8 +111,9 @@ rewrite를 건드리거나 지우면 루트(`/`) 말고 다른 경로에서 새�
 진입점입니다(라우트 코드 자체는 여기 두지 않음). 각 라우트가 렌더링하는 페이지는 해당
 feature의 `pages/` 아래에 있습니다 — `explore` → `ExplorePage.tsx`, `library` →
 `LibraryPage.tsx`/`MusicInfoPage.tsx`, `playlist` → `PlaylistInfoPage.tsx`, `dashboard` →
-`HomeLayout.tsx`/`NotFoundPage.tsx`. `docs/todos.md`에 아직 안 끝난 부분(예:
-`MusicInfoPage`의 수정 폼)이 남아 있으니 페이지를 고치기 전에 먼저 확인하세요.
+`HomeLayout.tsx`. 404는 어떤 feature 도메인도 대표하지 않아 `shared/pages/NotFoundPage.tsx`에
+있습니다. `docs/todos.md`에 아직 안 끝난 부분(예: `MusicInfoPage`의 수정 폼)이 남아
+있으니 페이지를 고치기 전에 먼저 확인하세요.
 
 **Feature 폴더 컨벤션**: `src/` 하위는 `features/`, `shared/`, `router/` 세 갈래로
 정리합니다 — 각 feature는 필요한 만큼만 `api/`/`components/`/`lib/`/`hooks/`/`pages/`를
@@ -143,13 +144,21 @@ preflight가 처리하므로 `index.css`에 따로 두지 않습니다. 컴포�
 Pretendard를 jsDelivr CDN에서 불러옵니다(`index.html`).
 
 **로그인/회원가입 화면**(`src/features/auth/pages/LoginPage.tsx`, `SignupPage.tsx`,
-공유 조각은 `src/features/auth/components/`의 `AuthLayout.tsx`/`AuthForm.tsx`): 시안과
-의도적으로 다른 점 — "로그인 상태 유지" 체크박스와 "비밀번호 찾기" 링크는 만들지 않았고,
-회원가입 화면은 시안의 이름 필드 대신 기존 "비밀번호 확인" 필드를 유지하며, Google
-버튼이 없는 것도 시안 그대로 의도한 것입니다. **Supabase 프로젝트의 "가입 확인 이메일"
-옵션이 꺼져 있다는 전제로, 회원가입 성공 시 바로 세션이 생긴다고 가정하고 짜여
-있습니다**(별도의 "이메일 확인" 안내 화면 없음) — 이 옵션이 켜지면 이 가정이 깨지니
-회원가입 플로우를 다시 확인하세요.
+공유 조각은 `src/features/auth/components/`의 `AuthLayout.tsx`/`AuthForm.tsx`): 카드는
+로그인/회원가입 모두 같은 722px 폭 그리드(240px 브랜드 패널 + 폼 패널, `docs/design/
+수정본2.zip` 기준)이고, 브랜드 패널엔 로고 아래 "NEUMORPLAYER" 워드마크(Space Grotesk
+폰트, `index.html`에서 로드)와 화면별 `title`/`subtitle`, 맨 아래 YouTube의 공식
+"Developed with YouTube" 배지 이미지(`public/developed-with-youtube.png`)가 있습니다.
+`AuthLayout`은 예전엔 폼 패널 위에 작은 라벨을 보여주는 `heading` prop도 받았는데,
+그 라벨 역할을 이제 브랜드 패널의 `title`이 대신해서 prop 자체를 없앴습니다 — 인증
+화면을 더 추가할 때 `heading`을 다시 들여오지 마세요. 시안과 의도적으로 다른 점 —
+"로그인 상태 유지" 체크박스와 "비밀번호 찾기" 링크는 만들지 않았습니다(디자인 초안에
+실수로 들어갔던 항목이라 최신 시안에도 이미 빠져 있음). Google 로그인은 `LoginPage`에만
+있고 `SignupPage`엔 없습니다 — OAuth는 별도 회원가입 절차 없이 바로 로그인되기
+때문입니다. **Supabase 프로젝트의 "가입 확인 이메일" 옵션이 꺼져 있다는
+전제로, 회원가입 성공 시 바로 세션이 생긴다고 가정하고 짜여 있습니다**(별도의 "이메일
+확인" 안내 화면 없음) — 이 옵션이 켜지면 이 가정이 깨지니 회원가입 플로우를 다시
+확인하세요.
 
 **환경변수**: `VITE_` 접두사가 붙은 변수는 빌드 시 클라이언트 번들에 그대로 박히고
 (Supabase URL/publishable key는 이래도 안전한데, 실제 접근 제어는 RLS가 하기 때문;

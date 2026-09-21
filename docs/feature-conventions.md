@@ -11,7 +11,7 @@
 
 - `auth` — 로그인/회원가입
 - `player` — 미니 플레이어 + 유튜브 iframe + 재생 상태
-- `dashboard` — 사이드바+헤더 셸과 404
+- `dashboard` — 사이드바+헤더 셸
 - `explore` — YouTube 검색으로 곡 추가
 - `library` — 트랙 도메인
 - `playlist` — 재생목록 도메인
@@ -31,7 +31,7 @@ API를 쓰는 소비자일 뿐), `features/library/lib/tracks.ts`나
 `features/playlist/lib/playlists.ts`도 다른 feature가 import해서 쓰지만 각각
 library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
 
-`shared/`는 세 갈래입니다:
+`shared/`는 네 갈래입니다:
 
 - **`shared/lib/`** — 어떤 feature도 도메인으로 소유하지 않는 진짜 인프라/범용 유틸
   (`database.types.ts`, `format-time.ts`, `queryClient.ts`, `supabase.ts`,
@@ -39,8 +39,8 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
   소유하는 feature의 `lib/`에 둡니다(`usePlayerStore.ts`는 `features/player/lib/`) —
   별도 `stores/`는 없습니다.
 - **`shared/components/`** — 어떤 feature의 도메인도 대표하지 않는 순수 UI 프리미티브
-  (`icons.tsx`, `TrackThumbnail.tsx`, `ThumbBox.tsx`, `RowPlayButton.tsx`,
-  `PillButton.tsx`, `InfoBox.tsx`). `auth`엔 `AuthForm.tsx` 전용의 별도
+  (`icons.tsx`, `TrackThumbnail.tsx`, `ThumbBox.tsx`, `IconCircleButton.tsx`,
+  `InfoBox.tsx`). `auth`엔 `AuthForm.tsx` 전용의 별도
   `features/auth/components/icons.tsx`가 있으니 혼동하지 마세요. 반대로
   `PlaylistCoverGrid.tsx`는 "재생목록 커버"라는 playlist 도메인 개념을 대표하므로
   `features/player/components/`에 그대로 둡니다 — UI가 재사용 가능하다고 전부
@@ -51,6 +51,10 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
   종류, 자식 구조, 동작)까지 동일하면 `shared/components/`의 컴포넌트로, 마크업은
   다르고 계산된 값만 동일하면 `shared/styles/`의 함수/상수로 — 억지로 하나로 합치면
   "버튼도 되고 링크도 되는" 애매한 API가 됩니다.
+- **`shared/pages/`** — 어떤 feature 도메인도 대표하지 않는 라우트(`NotFoundPage.tsx`,
+  404). 다른 세 갈래와 같은 기준(도메인 대표 여부)을 페이지에도 그대로 적용한 것뿐이라
+  갈래를 하나 더 둡니다 — 페이지를 한 곳에 모으지 않는다는 원칙은 여전히 "도메인이
+  있는 페이지"에 대한 이야기입니다.
 
 새 lib/컴포넌트/스타일을 어디 둘지 고민될 땐 "이걸 누가 소유하는 도메인인가"를 먼저
 묻고, 다른 feature가 몇 곳에서 import하는지는 근거로 삼지 마세요.

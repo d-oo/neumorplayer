@@ -238,6 +238,28 @@ export function CheckIcon({ className }: IconProps) {
   );
 }
 
+// 재생목록 정보/트랙 상세의 "수정" 버튼(아직 플레이스홀더 — docs/todos.md 참고).
+export function PencilIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M12.4 2.6l3 3-8.5 8.5-3.6.9.9-3.6 8.2-8.8Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function TrashIcon({ className }: IconProps) {
   return (
     <svg
@@ -250,6 +272,100 @@ export function TrashIcon({ className }: IconProps) {
     >
       <path
         d="M1 3.4h11M4.6 3.4V1.6a1 1 0 0 1 1-1h1.8a1 1 0 0 1 1 1v1.8M2.4 3.4l.6 9a1 1 0 0 0 1 .9h5a1 1 0 0 0 1-.9l.6-9"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// LibraryPage의 정렬 옵션 버튼이 오름차순/내림차순을 나타내는 데 쓰는 삼각형
+// 화살표 — desc가 true면 180도 돌려 아래쪽을 가리키게 합니다.
+export function SortArrowIcon({
+  desc,
+  className,
+}: IconProps & { desc: boolean }) {
+  return (
+    <svg
+      width="8"
+      height="6"
+      viewBox="0 0 8 6"
+      aria-hidden
+      className={className}
+      style={{ transform: desc ? "rotate(180deg)" : "rotate(0deg)" }}
+    >
+      <polygon points="4,0 8,6 0,6" fill="currentColor" />
+    </svg>
+  );
+}
+
+// 헤더 프로필 드롭다운 트리거의 캐럿 — open이면 180도 돌려 위를 가리키게 합니다.
+export function CaretIcon({
+  open,
+  className,
+}: IconProps & { open: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="7"
+      viewBox="0 0 10 7"
+      fill="none"
+      className={className}
+      style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+      aria-hidden
+    >
+      <path
+        d="M1 1.4L5 5.2 9 1.4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function SettingsIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="9" cy="9" r="2.6" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M9 1.4v2.2M9 14.4v2.2M1.4 9h2.2M14.4 9h2.2M3.6 3.6l1.6 1.6M12.8 12.8l1.6 1.6M14.4 3.6l-1.6 1.6M5.2 12.8l-1.6 1.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function LogoutIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M7 2.4H3.4v13.2H7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.4 5.6L13.8 9l-3.4 3.4M13.8 9H7"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"

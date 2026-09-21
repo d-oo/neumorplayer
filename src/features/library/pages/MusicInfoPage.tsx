@@ -9,8 +9,9 @@ import { tracksQueryKey, type Track } from "../lib/tracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { formatDuration } from "@/shared/lib/format-time";
 import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButton";
-import { PlayIcon } from "@/shared/components/icons";
-import PillButton from "@/shared/components/PillButton";
+import IconCircleButton from "@/shared/components/IconCircleButton";
+import TrackThumbnail from "@/shared/components/TrackThumbnail";
+import { PauseIcon, PencilIcon, PlayIcon, TrashIcon } from "@/shared/components/icons";
 
 async function fetchTrack(id: string): Promise<Track> {
   const { data, error } = await supabase
@@ -22,13 +23,29 @@ async function fetchTrack(id: string): Promise<Track> {
   return data;
 }
 
-// old-src/src/components/MusicInfo.js 를 대체할 자리.
-// TODO: 제목/아티스트/태그 수정 폼(react-hook-form + zod 추천)은 아직 없고,
-// 조회 + 재생 + 삭제까지만 구현했습니다.
+// 재생목록 정보(PlaylistInfoPage)의 "셔플·수정·삭제"와 같은 보조 44px 원형 버튼
+// 클래스 — 색상만 각자 다르게 얹습니다.
+const secondaryButtonClass =
+  "bg-neu-surface border border-white/85 shadow-neu-pill-secondary active:shadow-neu-pill-active";
+
+const statBoxStyle = {
+  background: "oklch(0.935 0.013 315)",
+  boxShadow:
+    "inset 4px 4px 9px rgba(150,136,175,0.42), inset -3px -3px 7px rgba(255,255,255,0.93)",
+};
+
+// old-src/src/components/MusicInfo.js 를 대체합니다. docs/design/수정본2.zip
+// (1b-B 트랙 상세)의 레이아웃을 그대로 옮겼습니다.
+// TODO: 제목/아티스트/태그 수정 폼(react-hook-form + zod 추천)은 아직 없고, "수정"
+// 버튼은 자리만 있습니다(docs/todos.md 참고).
 //
-// 아래 div는 HomeLayout에 항상 마운트되어 있는 YouTubePlayer가 포탈링해 들어오는
-// 자리입니다(이 페이지를 벗어나면 다시 화면 밖 오프스크린 컨테이너로 돌아가 배경
-// 재생을 유지합니다) — useVideoSlot 자체를 지우지 마세요.
+// 비디오 영역은 이 트랙이 실제로 재생 중(또는 일시정지 상태로 로드됨)일 때만
+// HomeLayout에 항상 마운트되어 있는 YouTubePlayer가 포탈링해 들어오고(이 페이지를
+// 벗어나거나 다른 곡이 재생되면 다시 화면 밖 오프스크린 컨테이너로 돌아가 배경
+// 재생을 유지합니다 — useVideoSlot 자체를 지우지 마세요), 그 외에는 TrackThumbnail로
+// 대체합니다(다른 곡이 재생 중일 때 이 페이지에 그 영상이 잘못 나타나거나, 빈 검은
+// 사각형만 보이는 걸 막기 위함). 시안의 재생 버튼 오버레이는 실제 iframe이 있을 땐
+// iframe 자체가 이미 클릭 가능한 컨트롤을 가져서 넣지 않았습니다.
 export default function MusicInfoPage() {
   const { musicId } = useParams<{ musicId: string }>();
   const navigate = useNavigate();
@@ -37,11 +54,10 @@ export default function MusicInfoPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const playQueue = usePlayerStore((s) => s.playQueue);
-
-  useEffect(() => {
-    setSlotEl(containerRef.current);
-    return () => setSlotEl(null);
-  }, [setSlotEl]);
+  const currentIndex = usePlayerStore((s) => s.currentIndex);
+  const queue = usePlayerStore((s) => s.queue);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
 
   const {
     data: track,
@@ -55,10 +71,26 @@ export default function MusicInfoPage() {
 
   useDocumentTitle(track ? track.title : "NeumorPlayer");
 
+  // 이 트랙이 지금 큐에서 재생 중인(또는 일시정지된) 바로 그 트랙일 때만 이
+  // 자리에 실제 유튜브 iframe을 붙입니다 — 그렇지 않으면(다른 곡이 재생 중이거나
+  // 아무것도 재생 중이 아니면) YouTubePlayer는 화면 밖 오프스크린 컨테이너에
+  // 남아있고, 여기는 아래에서 트랙 썸네일을 대신 보여줍니다.
+  const isThisTrackPlaying =
+    !!track && currentIndex >= 0 && queue[currentIndex]?.id === track.id;
+
+  useEffect(() => {
+    if (!isThisTrackPlaying) return;
+    setSlotEl(containerRef.current);
+    return () => setSlotEl(null);
+  }, [isThisTrackPlaying, setSlotEl]);
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!musicId) return;
-      const { error } = await supabase.from("tracks").delete().eq("id", musicId);
+      const { error } = await supabase
+        .from("tracks")
+        .delete()
+        .eq("id", musicId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -67,46 +99,124 @@ export default function MusicInfoPage() {
     },
   });
 
+  function handlePlayClick() {
+    if (!track) return;
+    if (isThisTrackPlaying) setIsPlaying(!isPlaying);
+    else playQueue([track], 0);
+  }
+
+  if (isLoading) {
+    return <p className="text-sm text-neu-muted">불러오는 중...</p>;
+  }
+  if (isError || !track) {
+    return <p className="text-sm text-neu-muted">곡 정보를 불러오지 못했습니다.</p>;
+  }
+
   return (
     <div>
-      <h2>음악 정보</h2>
-      {isLoading && <p>불러오는 중...</p>}
-      {isError && <p>곡 정보를 불러오지 못했습니다.</p>}
-      {track && (
-        <div className="mt-2">
-          <p className="text-lg font-semibold text-neu-ink">{track.title}</p>
-          <p className="text-sm text-neu-muted">{track.artist.join(", ")}</p>
-          <p className="mt-1 text-xs text-neu-muted">
-            {track.tags.map((tag) => `#${tag}`).join("  ")}
-            {track.tags.length > 0 && "  ·  "}
-            {formatDuration(track.duration)} · {track.play_count.toLocaleString()}회 재생
-          </p>
-          <div className="mt-3 flex gap-2.5">
-            <PillButton
-              onClick={() => playQueue([track], 0)}
-              icon={<PlayIcon className="ml-0.5" />}
+      <p className="text-[11.5px] font-bold tracking-[0.08em] text-neu-hi">
+        트랙
+      </p>
+      <h1 className="mt-2.5 mb-3 text-[40px] leading-[1.05] font-extrabold tracking-[-0.045em] text-neu-ink">
+        {track.title}
+      </h1>
+      <p className="text-[13px] text-neu-muted">{track.artist.join(", ")}</p>
+
+      {track.tags.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {track.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-white/70 bg-neu-accent-tint px-3.25 py-1.75 text-xs font-semibold text-neu-hi shadow-neu-tag-chip"
             >
-              재생
-            </PillButton>
-            <AddToPlaylistButton track={track} variant="pill" />
-            <button
-              type="button"
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-              className="rounded-full border border-white/85 px-4 py-2 text-sm font-semibold text-neu-muted hover:text-neu-ink"
-            >
-              {deleteMutation.isPending ? "삭제 중..." : "삭제"}
-            </button>
-          </div>
-          {deleteMutation.isError && (
-            <p className="mt-2 text-xs text-red-500">삭제에 실패했습니다.</p>
-          )}
+              #{tag}
+            </span>
+          ))}
         </div>
       )}
-      <div
-        ref={containerRef}
-        className="mt-4 aspect-video w-full max-w-xl overflow-hidden rounded-xl bg-black"
-      />
+
+      <div className="my-6.5 h-px bg-[rgba(142,128,166,0.28)]" />
+
+      <div className="flex items-start gap-6.5">
+        <div
+          className="h-51.75 w-92 flex-none overflow-hidden rounded-[14px] border border-white/80"
+          style={{
+            boxShadow:
+              "9px 9px 20px rgba(142,128,166,0.45), -7px -7px 16px rgba(255,255,255,0.92)",
+          }}
+        >
+          {isThisTrackPlaying ? (
+            <div ref={containerRef} className="h-full w-full bg-black" />
+          ) : (
+            <TrackThumbnail
+              videoId={track.video_id}
+              quality="high"
+              className="h-full w-full"
+            />
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-4">
+          <div className="flex gap-2.5 self-stretch">
+            <div className="min-w-0 flex-1 rounded-[11px] px-3.25 py-2.25" style={statBoxStyle}>
+              <p className="text-[9.5px] font-bold tracking-[0.08em] text-neu-muted">
+                재생 횟수
+              </p>
+              <p className="mt-0.75 font-neu-mono text-sm font-medium text-neu-ink">
+                {track.play_count.toLocaleString()}
+              </p>
+            </div>
+            <div className="min-w-0 flex-1 rounded-[11px] px-3.25 py-2.25" style={statBoxStyle}>
+              <p className="text-[9.5px] font-bold tracking-[0.08em] text-neu-muted">
+                재생 시간
+              </p>
+              <p className="mt-0.75 font-neu-mono text-sm font-medium text-neu-ink">
+                {formatDuration(track.duration)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <IconCircleButton
+              size="xl"
+              tooltip={isThisTrackPlaying && isPlaying ? "일시정지" : "재생"}
+              onClick={handlePlayClick}
+              aria-label={
+                isThisTrackPlaying && isPlaying ? "일시정지" : "재생"
+              }
+              className="[background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active"
+            >
+              {isThisTrackPlaying && isPlaying ? (
+                <PauseIcon />
+              ) : (
+                <PlayIcon className="ml-0.5" />
+              )}
+            </IconCircleButton>
+            <AddToPlaylistButton track={track} size="xl" />
+            <IconCircleButton
+              size="xl"
+              tooltip="수정"
+              aria-label="수정"
+              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+            >
+              <PencilIcon />
+            </IconCircleButton>
+            <IconCircleButton
+              size="xl"
+              tooltip="삭제"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              aria-label="삭제"
+              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
+            >
+              <TrashIcon />
+            </IconCircleButton>
+          </div>
+          {deleteMutation.isError && (
+            <p className="text-xs text-red-500">삭제에 실패했습니다.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

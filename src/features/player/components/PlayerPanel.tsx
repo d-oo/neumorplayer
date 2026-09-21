@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { formatDuration } from "@/shared/lib/format-time";
 import AddToPlaylistButton from "./AddToPlaylistButton";
+import IconCircleButton from "@/shared/components/IconCircleButton";
 import {
   NextIcon,
   PauseIcon,
@@ -162,7 +163,7 @@ export default function PlayerPanel() {
   }
 
   const toggleButtonClass =
-    "grid h-9.5 w-9.5 place-items-center rounded-full bg-neu-surface shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken disabled:opacity-40";
+    "shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken";
 
   return (
     <section className="flex flex-col gap-3.75 rounded-3xl border border-white/80 bg-neu-surface p-4.5 shadow-neu-raised">
@@ -225,26 +226,26 @@ export default function PlayerPanel() {
         {/* 컨트롤 + 볼륨 노브 */}
         <div className="flex min-w-0 flex-1 flex-col items-center gap-3.5">
           <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
+            <IconCircleButton
+              size="lg"
               onClick={playPrev}
               disabled={!currentTrack}
               aria-label="이전 곡"
               className={`${toggleButtonClass} text-[oklch(0.34_0.025_315)]`}
             >
               <PrevIcon />
-            </button>
-            <button
-              type="button"
+            </IconCircleButton>
+            <IconCircleButton
+              size="lg"
               onClick={playNext}
               disabled={!currentTrack}
               aria-label="다음 곡"
               className={`${toggleButtonClass} text-[oklch(0.34_0.025_315)]`}
             >
               <NextIcon />
-            </button>
-            <button
-              type="button"
+            </IconCircleButton>
+            <IconCircleButton
+              size="lg"
               onClick={toggleShuffle}
               aria-pressed={shuffle}
               aria-label="셔플"
@@ -253,9 +254,9 @@ export default function PlayerPanel() {
               }`}
             >
               <ShuffleIcon />
-            </button>
-            <button
-              type="button"
+            </IconCircleButton>
+            <IconCircleButton
+              size="lg"
               onClick={toggleLoopQueue}
               aria-pressed={loopQueue}
               aria-label="반복"
@@ -264,7 +265,7 @@ export default function PlayerPanel() {
               }`}
             >
               <RepeatIcon />
-            </button>
+            </IconCircleButton>
           </div>
 
           <div className="flex flex-col items-center gap-px">
@@ -315,16 +316,16 @@ export default function PlayerPanel() {
           </div>
         </div>
         {currentTrack ? (
-          <AddToPlaylistButton track={currentTrack} variant="icon" />
+          <AddToPlaylistButton track={currentTrack} size="lg" />
         ) : (
-          <button
-            type="button"
+          <IconCircleButton
+            size="lg"
             disabled
             aria-label="재생목록에 추가"
-            className="grid h-9.5 w-9.5 flex-none place-items-center rounded-full bg-neu-surface text-[oklch(0.52_0.02_315)] opacity-40 shadow-neu-raised-sm"
+            className="flex-none text-[oklch(0.52_0.02_315)] shadow-neu-raised-sm"
           >
             <QueueIcon />
-          </button>
+          </IconCircleButton>
         )}
       </div>
 

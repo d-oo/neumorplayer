@@ -12,7 +12,8 @@ import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import InfoBox from "@/shared/components/InfoBox";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
-import RowPlayButton from "@/shared/components/RowPlayButton";
+import IconCircleButton from "@/shared/components/IconCircleButton";
+import { PlayIcon, SortArrowIcon } from "@/shared/components/icons";
 
 type SortKey = "recentAdd" | "title" | "artist" | "playCount";
 
@@ -150,23 +151,13 @@ export default function LibraryPage() {
                 key={key}
                 type="button"
                 onClick={() => handleSortClick(key, defaultDesc)}
-                className="flex items-center gap-1.5 whitespace-nowrap rounded-[9px] px-3.25 py-1.75 text-[12.5px] font-bold hover:text-[oklch(0.24_0.025_315)]"
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-[9px] px-3.25 py-1.75 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
+                  isActive ? "text-neu-hi shadow-neu-tab-raised" : "text-neu-muted"
+                }`}
                 style={segmentTabStyle(isActive)}
               >
                 {label}
-                {isActive && (
-                  <svg
-                    width="8"
-                    height="6"
-                    viewBox="0 0 8 6"
-                    aria-hidden
-                    style={{
-                      transform: sortDesc ? "rotate(180deg)" : "rotate(0deg)",
-                    }}
-                  >
-                    <polygon points="4,0 8,6 0,6" fill="currentColor" />
-                  </svg>
-                )}
+                {isActive && <SortArrowIcon desc={sortDesc} />}
               </button>
             );
           })}
@@ -232,14 +223,17 @@ export default function LibraryPage() {
               <span className="font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
                 {formatDuration(track.duration)}
               </span>
-              <RowPlayButton
+              <IconCircleButton
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   playQueue([track], 0);
                 }}
-                label={`${track.title} 재생`}
-                className="justify-self-end"
-              />
+                aria-label={`${track.title} 재생`}
+                className="justify-self-end text-neu-hi shadow-neu-raised-sm"
+              >
+                <PlayIcon className="ml-0.5" />
+              </IconCircleButton>
             </div>
           );
         })}

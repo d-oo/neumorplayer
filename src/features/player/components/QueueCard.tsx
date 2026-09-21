@@ -16,6 +16,7 @@ import { PlusIcon } from "@/shared/components/icons";
 import PlaylistCoverGrid from "./PlaylistCoverGrid";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
+import IconCircleButton from "@/shared/components/IconCircleButton";
 
 // 시안(docs/design/)의 "다음 트랙/재생목록" 카드. "재생목록" 탭은 지금 재생 중인
 // 재생목록의 트랙 목록이 아니라 — 원본 코드(PLAYLISTS.map)를 보면 — 내 재생목록
@@ -73,7 +74,11 @@ export default function QueueCard() {
         <button
           type="button"
           onClick={() => setQueueView("next")}
-          className="flex-1 whitespace-nowrap rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold hover:text-[oklch(0.24_0.025_315)]"
+          className={`flex-1 whitespace-nowrap rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
+            queueView === "next"
+              ? "text-neu-hi shadow-neu-tab-raised"
+              : "text-neu-muted"
+          }`}
           style={segmentTabStyle(queueView === "next")}
         >
           재생 트랙
@@ -81,7 +86,11 @@ export default function QueueCard() {
         <button
           type="button"
           onClick={() => setQueueView("playlist")}
-          className="flex-1 whitespace-nowrap rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold hover:text-[oklch(0.24_0.025_315)]"
+          className={`flex-1 whitespace-nowrap rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
+            queueView === "playlist"
+              ? "text-neu-hi shadow-neu-tab-raised"
+              : "text-neu-muted"
+          }`}
           style={segmentTabStyle(queueView === "playlist")}
         >
           재생목록
@@ -141,17 +150,17 @@ export default function QueueCard() {
                   className="min-w-0 flex-1 bg-transparent text-[12.5px] font-medium text-[oklch(0.25_0.025_315)] outline-none placeholder:text-[oklch(0.63_0.018_315)]"
                 />
               </div>
-              <button
-                type="button"
+              <IconCircleButton
+                size="md"
                 onClick={handleCreatePlaylist}
                 disabled={
                   !newPlaylistTitle.trim() || createPlaylistMutation.isPending
                 }
                 aria-label="재생목록 추가"
-                className="grid h-7.5 w-7.5 flex-none place-items-center rounded-full bg-neu-surface text-neu-hi shadow-neu-raised-sm disabled:opacity-40"
+                className="flex-none text-neu-hi shadow-neu-raised-sm"
               >
                 <PlusIcon />
-              </button>
+              </IconCircleButton>
             </div>
             {createErrorMessage && (
               <p className="mb-1.5 px-1 text-[11px] font-semibold text-red-500">

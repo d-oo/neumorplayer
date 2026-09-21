@@ -48,7 +48,6 @@ export default function SignupPage() {
 
   return (
     <AuthLayout
-      heading="이메일로 회원가입"
       title="계정 만들기"
       subtitle={
         <>

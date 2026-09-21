@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, Outlet, useSearchParams } from "react-router-dom";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import ProfileDropdown from "@/features/auth/components/ProfileDropdown";
 import PlayerPanel from "@/features/player/components/PlayerPanel";
 import QueueCard from "@/features/player/components/QueueCard";
 import YouTubePlayer from "@/features/player/components/YouTubePlayer";
@@ -10,7 +10,7 @@ import SearchResultsView from "@/features/library/components/SearchResultsView";
 import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 
-// docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 활성/비활성 색상·그림자는
+// docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 활성/비활성 배경은
 // segmentTabStyle 공유(LibraryPage 정렬 탭, QueueCard 토글과 동일한 값).
 function HeaderNavTab({
   to,
@@ -25,7 +25,11 @@ function HeaderNavTab({
     <NavLink
       to={to}
       end={end}
-      className="whitespace-nowrap rounded-[9px] px-3.5 py-1.75 text-[13px] font-bold hover:text-[oklch(0.24_0.025_315)]"
+      className={({ isActive }) =>
+        `whitespace-nowrap rounded-[9px] px-3.5 py-1.75 text-[13px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
+          isActive ? "text-neu-hi shadow-neu-tab-raised" : "text-neu-muted"
+        }`
+      }
       style={({ isActive }) => segmentTabStyle(isActive)}
     >
       {children}
@@ -45,7 +49,6 @@ function HeaderNavTab({
 // 시안의 isSearch 상태처럼 지금 보고 있던 라우트(Outlet) 대신 SearchResultsView를
 // 보여주고, 지우면 원래 라우트로 돌아갑니다.
 export default function HomeLayout() {
-  const { user, signOut } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
 
@@ -153,35 +156,7 @@ export default function HomeLayout() {
                 </button>
               </div>
 
-              <div
-                className="flex flex-none items-center gap-2 rounded-full border border-white/80 py-1.25 pl-1.5 pr-3.25"
-                style={{
-                  background: "oklch(0.915 0.014 315)",
-                  boxShadow:
-                    "inset 4px 4px 8px rgba(142,128,166,0.36), inset -3px -3px 7px rgba(255,255,255,0.85)",
-                }}
-              >
-                <div
-                  className="h-6 w-6 rounded-full border border-white/85"
-                  style={{
-                    background: "color-mix(in oklab, #b344ff 14%, transparent)",
-                    boxShadow:
-                      "inset 3px 3px 6px rgba(150,136,175,0.45), inset -2px -2px 5px rgba(255,255,255,0.9)",
-                  }}
-                />
-                <span className="text-[12.5px] font-semibold text-neu-ink">
-                  {user?.email}
-                </span>
-              </div>
-
-              {/* 시안에는 없는, 이 앱에 실제로 필요해서 추가한 로그아웃 버튼입니다. */}
-              <button
-                type="button"
-                onClick={() => void signOut()}
-                className="flex-none text-xs text-neu-muted hover:text-neu-ink"
-              >
-                로그아웃
-              </button>
+              <ProfileDropdown />
             </header>
 
             {/* 시안대로 본문은 px-6.5/py-6(24px 26px) 안에 max-w-195(780px) 중앙

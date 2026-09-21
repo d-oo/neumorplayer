@@ -36,28 +36,18 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      heading="로그인"
-      title={
-        <>
-          다시 만나서
-          <br />
-          반가워요
-        </>
-      }
+      title="로그인"
       subtitle={
         <>
-          재생목록과 들은 기록이 모든 기기에서
+          좋아하는 음악과 재생목록을
           <br />
-          그대로 이어집니다.
+          저장해보세요.
         </>
       }
       footer={
         <>
           계정이 없으신가요?{" "}
-          <Link
-            className="font-bold text-neu-hi hover:underline"
-            to="/signup"
-          >
+          <Link className="font-bold text-neu-hi hover:underline" to="/signup">
             회원가입
           </Link>
         </>

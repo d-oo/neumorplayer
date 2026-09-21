@@ -7,7 +7,7 @@ import LibraryPage from "@/features/library/pages/LibraryPage";
 import ExplorePage from "@/features/explore/pages/ExplorePage";
 import MusicInfoPage from "@/features/library/pages/MusicInfoPage";
 import PlaylistInfoPage from "@/features/playlist/pages/PlaylistInfoPage";
-import NotFoundPage from "@/features/dashboard/pages/NotFoundPage";
+import NotFoundPage from "@/shared/pages/NotFoundPage";
 import RequireAuth from "./RequireAuth";
 import GuestOnly from "./GuestOnly";
 
