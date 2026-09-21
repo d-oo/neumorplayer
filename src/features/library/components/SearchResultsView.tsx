@@ -1,11 +1,14 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { usePlayerStore } from "@/stores/usePlayerStore";
+import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { fetchLibraryTracks, tracksQueryKey } from "@/lib/tracks";
-import { formatDuration } from "@/lib/format-time";
-import { PlayIcon } from "@/features/player/icons";
+import { fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
+import { formatDuration } from "@/shared/lib/format-time";
+import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
+import TrackThumbnail from "@/shared/components/TrackThumbnail";
+import ThumbBox from "@/shared/components/ThumbBox";
+import RowPlayButton from "@/shared/components/RowPlayButton";
 
 // docs/design/ 시안의 "검색 결과" 화면 — 헤더의 "라이브러리 내 검색"에 뭔가 입력하면
 // 지금 보고 있던 탭(라이브러리/탐색) 대신 이 화면이 뜹니다(HomeLayout에서 Outlet 대신
@@ -73,7 +76,7 @@ export default function SearchResultsView({ query }: { query: string }) {
       </div>
 
       <div className="mb-7.5">
-        <div className="mb-3 text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+        <div className="mb-3 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
           노래
         </div>
         <div className="flex flex-col gap-0.5">
@@ -84,24 +87,14 @@ export default function SearchResultsView({ query }: { query: string }) {
                 key={track.id}
                 onClick={() => navigate(`/music/${track.id}`)}
                 className="flex cursor-pointer items-center gap-3.25 rounded-[11px] px-3 py-2.25 hover:bg-[rgba(120,100,145,0.09)]"
-                style={{
-                  background: isCurrentTrack
-                    ? "oklch(0.945 0.035 313)"
-                    : "transparent",
-                  boxShadow: isCurrentTrack
-                    ? "2px 2px 6px rgba(150,136,175,0.38), -2px -2px 5px rgba(255,255,255,0.8)"
-                    : "none",
-                }}
+                style={currentTrackRowStyle(isCurrentTrack)}
               >
-                <div
-                  className="h-8.75 w-15.5 flex-none rounded-md border border-white/70"
-                  style={{
-                    background:
-                      "repeating-linear-gradient(135deg, rgba(118,100,145,0.16) 0 5px, rgba(118,100,145,0.05) 5px 10px), color-mix(in oklab, #b344ff 14%, transparent)",
-                    boxShadow:
-                      "3px 3px 8px rgba(150,136,175,0.42), -2px -2px 6px rgba(255,255,255,0.92)",
-                  }}
-                />
+                <ThumbBox size="rowLg">
+                  <TrackThumbnail
+                    videoId={track.video_id}
+                    className="h-full w-full"
+                  />
+                </ThumbBox>
                 <div className="min-w-0 flex-1">
                   <p
                     className="truncate text-sm font-semibold"
@@ -120,17 +113,14 @@ export default function SearchResultsView({ query }: { query: string }) {
                 <span className="font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
                   {formatDuration(track.duration)}
                 </span>
-                <button
-                  type="button"
+                <RowPlayButton
                   onClick={(e) => {
                     e.stopPropagation();
                     playQueue([track], 0);
                   }}
-                  aria-label={`${track.title} 재생`}
-                  className="grid h-7 w-7 flex-none place-items-center rounded-full bg-neu-surface text-neu-hi shadow-neu-raised-sm"
-                >
-                  <PlayIcon className="ml-0.5" />
-                </button>
+                  label={`${track.title} 재생`}
+                  className="flex-none"
+                />
               </div>
             );
           })}
@@ -142,7 +132,7 @@ export default function SearchResultsView({ query }: { query: string }) {
         </div>
       </div>
 
-      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
         태그
       </div>
       <div className="mb-7 flex flex-wrap gap-2.25">
@@ -166,7 +156,7 @@ export default function SearchResultsView({ query }: { query: string }) {
         ))}
       </div>
 
-      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
         아티스트
       </div>
       <div className="grid grid-cols-4 gap-3.5">

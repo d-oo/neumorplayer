@@ -6,11 +6,11 @@ import YouTubeIframe, {
   type YouTubeProps,
 } from "react-youtube";
 import { useQueryClient } from "@tanstack/react-query";
-import { usePlayerStore } from "@/stores/usePlayerStore";
+import { usePlayerStore } from "../lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
-import { tracksQueryKey } from "@/lib/tracks";
-import { useVideoSlot } from "./useVideoSlot";
+import { supabase } from "@/shared/lib/supabase";
+import { tracksQueryKey } from "@/features/library/lib/tracks";
+import { useVideoSlot } from "../hooks/useVideoSlot";
 
 const opts: YouTubeProps["opts"] = {
   width: "100%",

@@ -1,14 +1,16 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useVideoSlot } from "@/features/player/useVideoSlot";
-import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useVideoSlot } from "@/features/player/hooks/useVideoSlot";
+import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
-import { tracksQueryKey, type Track } from "@/lib/tracks";
-import { useDocumentTitle } from "@/lib/useDocumentTitle";
-import { formatDuration } from "@/lib/format-time";
-import { PlayIcon } from "@/features/player/icons";
+import { supabase } from "@/shared/lib/supabase";
+import { tracksQueryKey, type Track } from "../lib/tracks";
+import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
+import { formatDuration } from "@/shared/lib/format-time";
+import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButton";
+import { PlayIcon } from "@/shared/components/icons";
+import PillButton from "@/shared/components/PillButton";
 
 async function fetchTrack(id: string): Promise<Track> {
   const { data, error } = await supabase
@@ -80,14 +82,13 @@ export default function MusicInfoPage() {
             {formatDuration(track.duration)} · {track.play_count.toLocaleString()}회 재생
           </p>
           <div className="mt-3 flex gap-2.5">
-            <button
-              type="button"
+            <PillButton
               onClick={() => playQueue([track], 0)}
-              className="flex items-center gap-2 rounded-full bg-neu-surface px-4 py-2 text-sm font-bold text-neu-hi shadow-neu-raised-sm"
+              icon={<PlayIcon className="ml-0.5" />}
             >
-              <PlayIcon className="ml-0.5" />
               재생
-            </button>
+            </PillButton>
+            <AddToPlaylistButton track={track} variant="pill" />
             <button
               type="button"
               onClick={() => deleteMutation.mutate()}

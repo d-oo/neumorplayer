@@ -27,7 +27,7 @@
 
 ## 타입
 
-`src/lib/database.types.ts`는 `supabase login` + `supabase link --project-ref <ref>`로
+`src/shared/lib/database.types.ts`는 `supabase login` + `supabase link --project-ref <ref>`로
 프로젝트를 연결한 뒤 `supabase gen types typescript --linked`로 생성한 파일입니다. 스키마를
 바꾸면(`docs/migrations/`에 SQL 추가 후 대시보드에 적용) 이 파일을 손으로 고치지 말고 같은
 명령을 다시 실행해 덮어쓰세요. 손으로 고치면 안 되는 이유: 이 SDK(`@supabase/supabase-js`,

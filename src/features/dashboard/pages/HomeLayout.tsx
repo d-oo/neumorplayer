@@ -1,15 +1,17 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, Outlet, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import PlayerPanel from "@/features/player/PlayerPanel";
-import QueueCard from "@/features/player/QueueCard";
-import YouTubePlayer from "@/features/player/YouTubePlayer";
+import PlayerPanel from "@/features/player/components/PlayerPanel";
+import QueueCard from "@/features/player/components/QueueCard";
+import YouTubePlayer from "@/features/player/components/YouTubePlayer";
 import { VideoSlotProvider } from "@/features/player/VideoSlotProvider";
-import { SearchGlyphIcon } from "@/features/player/icons";
-import SearchResultsView from "./SearchResultsView";
+import { SearchGlyphIcon } from "@/shared/components/icons";
+import SearchResultsView from "@/features/library/components/SearchResultsView";
+import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
+import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 
-// docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 활성/비활성 색상·그림자까지
-// 그대로 옮겼습니다.
+// docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 활성/비활성 색상·그림자는
+// segmentTabStyle 공유(LibraryPage 정렬 탭, QueueCard 토글과 동일한 값).
 function HeaderNavTab({
   to,
   end,
@@ -24,15 +26,7 @@ function HeaderNavTab({
       to={to}
       end={end}
       className="whitespace-nowrap rounded-[9px] px-3.5 py-1.75 text-[13px] font-bold hover:text-[oklch(0.24_0.025_315)]"
-      style={({ isActive }) => ({
-        color: isActive ? "#6d1a9f" : "oklch(0.47 0.025 315)",
-        background: isActive
-          ? "color-mix(in oklab, #b344ff 14%, transparent)"
-          : "transparent",
-        boxShadow: isActive
-          ? "2px 2px 5px rgba(150,136,175,0.34), -2px -2px 4px rgba(255,255,255,0.7)"
-          : "none",
-      })}
+      style={({ isActive }) => segmentTabStyle(isActive)}
     >
       {children}
     </NavLink>
@@ -50,7 +44,6 @@ function HeaderNavTab({
 // 헤더의 "라이브러리 내 검색" 입력은 시안대로 여기(헤더)에 있습니다. ?q=가 있으면
 // 시안의 isSearch 상태처럼 지금 보고 있던 라우트(Outlet) 대신 SearchResultsView를
 // 보여주고, 지우면 원래 라우트로 돌아갑니다.
-// Playlists 목록 사이드바는 기능 구현 단계에서 채워 넣으세요.
 export default function HomeLayout() {
   const { user, signOut } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -92,9 +85,9 @@ export default function HomeLayout() {
               쌓습니다(각자 독립된 shadow-neu-raised 카드, 12px gap). */}
           <aside className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
             <PlayerPanel />
+            {/* "재생목록" 탭에 내 재생목록 목록 + 새 재생목록 만들기가 있습니다. */}
             <QueueCard />
             <YouTubePlayer />
-            {/* TODO: Playlists 목록 */}
           </aside>
 
           {/* 헤더와 본문을 하나의 카드로 묶습니다 — 각자 shadow-neu-raised를 따로 두면
@@ -122,11 +115,7 @@ export default function HomeLayout() {
 
               <nav
                 className="ml-1.5 flex flex-none gap-0.75 rounded-xl border border-white/70 p-1"
-                style={{
-                  background: "oklch(0.908 0.014 315)",
-                  boxShadow:
-                    "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
-                }}
+                style={sunkenPanelStyle}
               >
                 <HeaderNavTab to="/" end>
                   라이브러리

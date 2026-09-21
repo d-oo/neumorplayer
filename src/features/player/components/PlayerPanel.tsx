@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { usePlayerStore } from "@/stores/usePlayerStore";
-import { formatDuration } from "@/lib/format-time";
+import { usePlayerStore } from "../lib/usePlayerStore";
+import { formatDuration } from "@/shared/lib/format-time";
+import AddToPlaylistButton from "./AddToPlaylistButton";
 import {
   NextIcon,
   PauseIcon,
@@ -9,7 +10,7 @@ import {
   QueueIcon,
   RepeatIcon,
   ShuffleIcon,
-} from "./icons";
+} from "@/shared/components/icons";
 
 // 디스크를 한 바퀴(360°) 돌리면 30초를 스크럽하는 정도의 감도입니다(시안 support.js의
 // 실제 물리 스크럽과는 다르지만, 인터랙션의 의도는 같습니다).
@@ -59,9 +60,6 @@ function VolumeTicks({ volume }: { volume: number }) {
 // 담당하고 여긴 usePlayerStore를 보고 그리는 컨트롤 UI만 담당합니다.
 export default function PlayerPanel() {
   const [discDragDeg, setDiscDragDeg] = useState<number | null>(null);
-  // TODO: 실제 "재생목록에 추가" 로직(현재 트랙을 어느 재생목록에 넣을지)이 아직
-  // 없어서 로컬 상태로만 토글합니다. 시안의 queued 상태와 같은 자리입니다.
-  const [queued, setQueued] = useState(false);
 
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
@@ -316,20 +314,18 @@ export default function PlayerPanel() {
             {currentTrack?.artist.join(", ") ?? "-"}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setQueued((v) => !v)}
-          title={queued ? "재생목록에 추가됨" : "재생목록에 추가"}
-          aria-label={queued ? "재생목록에 추가됨" : "재생목록에 추가"}
-          aria-pressed={queued}
-          className={`grid h-9.5 w-9.5 flex-none place-items-center rounded-full bg-neu-surface hover:text-neu-hi ${
-            queued
-              ? "text-[#7b1fb0] shadow-neu-sunken"
-              : "text-[oklch(0.52_0.02_315)] shadow-neu-raised-sm"
-          }`}
-        >
-          <QueueIcon />
-        </button>
+        {currentTrack ? (
+          <AddToPlaylistButton track={currentTrack} variant="icon" />
+        ) : (
+          <button
+            type="button"
+            disabled
+            aria-label="재생목록에 추가"
+            className="grid h-9.5 w-9.5 flex-none place-items-center rounded-full bg-neu-surface text-[oklch(0.52_0.02_315)] opacity-40 shadow-neu-raised-sm"
+          >
+            <QueueIcon />
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2.5">

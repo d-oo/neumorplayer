@@ -1,5 +1,5 @@
-import { supabase } from "./supabase";
-import type { Database } from "./database.types";
+import { supabase } from "@/shared/lib/supabase";
+import type { Database } from "@/shared/lib/database.types";
 
 export type Track = Database["public"]["Tables"]["tracks"]["Row"];
 

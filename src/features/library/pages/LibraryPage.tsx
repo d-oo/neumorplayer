@@ -1,12 +1,18 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { usePlayerStore } from "@/stores/usePlayerStore";
+import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { fetchLibraryTracks, tracksQueryKey } from "@/lib/tracks";
-import { useDocumentTitle } from "@/lib/useDocumentTitle";
-import { formatDuration } from "@/lib/format-time";
-import { PlayIcon } from "@/features/player/icons";
+import { fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
+import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
+import { formatDuration } from "@/shared/lib/format-time";
+import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
+import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
+import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
+import InfoBox from "@/shared/components/InfoBox";
+import TrackThumbnail from "@/shared/components/TrackThumbnail";
+import ThumbBox from "@/shared/components/ThumbBox";
+import RowPlayButton from "@/shared/components/RowPlayButton";
 
 type SortKey = "recentAdd" | "title" | "artist" | "playCount";
 
@@ -33,7 +39,7 @@ const chipStyle = (on: boolean) => ({
 // ?q= 쿼리 파라미터로 그 값을 공유받아 필터링만 합니다.
 // 행 클릭 = 정보 페이지 이동, 재생은 별도 버튼(사용자가 명시적으로 요청한 흐름) —
 // 원본 시안은 행 클릭 자체가 재생이라 이 버튼은 시안엔 없는 추가 요소입니다.
-export default function SearchPage() {
+export default function LibraryPage() {
   useDocumentTitle("NeumorPlayer");
   const navigate = useNavigate();
   const playQueue = usePlayerStore((s) => s.playQueue);
@@ -87,8 +93,10 @@ export default function SearchPage() {
       list.sort((a, b) => a.artist[0].localeCompare(b.artist[0]));
     else if (sortKey === "playCount")
       list.sort((a, b) => a.play_count - b.play_count);
-    // recentAdd: 서버에서 이미 created_at desc로 정렬해 받아오므로 원본 순서를 그대로 씁니다.
-    if (sortDesc) list.reverse();
+    // recentAdd: 서버에서 이미 created_at desc(최신순)로 정렬해 받아오므로, 다른
+    // 키들과 달리 원본 순서 자체가 내림차순 기준선입니다 — sortDesc=false(오름차순
+    // 선택)일 때만 뒤집어야 합니다.
+    if (sortKey === "recentAdd" ? !sortDesc : sortDesc) list.reverse();
     return list;
   }, [filtered, sortKey, sortDesc]);
 
@@ -133,11 +141,7 @@ export default function SearchPage() {
 
         <div
           className="flex flex-none gap-0.75 rounded-xl border border-white/70 p-1"
-          style={{
-            background: "oklch(0.908 0.014 315)",
-            boxShadow:
-              "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
-          }}
+          style={sunkenPanelStyle}
         >
           {SORT_OPTIONS.map(({ key, label, defaultDesc }) => {
             const isActive = sortKey === key;
@@ -147,15 +151,7 @@ export default function SearchPage() {
                 type="button"
                 onClick={() => handleSortClick(key, defaultDesc)}
                 className="flex items-center gap-1.5 whitespace-nowrap rounded-[9px] px-3.25 py-1.75 text-[12.5px] font-bold hover:text-[oklch(0.24_0.025_315)]"
-                style={{
-                  color: isActive ? "#6d1a9f" : "oklch(0.47 0.025 315)",
-                  background: isActive
-                    ? "color-mix(in oklab, #b344ff 14%, transparent)"
-                    : "transparent",
-                  boxShadow: isActive
-                    ? "2px 2px 5px rgba(150,136,175,0.34), -2px -2px 4px rgba(255,255,255,0.7)"
-                    : "none",
-                }}
+                style={segmentTabStyle(isActive)}
               >
                 {label}
                 {isActive && (
@@ -178,13 +174,13 @@ export default function SearchPage() {
       </div>
 
       <div
-        className="grid gap-4 px-3.5 pb-2.5 text-[11px] font-bold tracking-wider text-[oklch(0.47_0.025_315)]"
+        className="grid gap-4 px-3.5 pb-2.5 text-[11px] font-bold tracking-wider text-neu-muted"
         style={{
           gridTemplateColumns: "minmax(0,1fr) 190px 74px 46px 28px",
           borderBottom: "1px solid rgba(142,128,166,0.28)",
         }}
       >
-        <div>제목</div>
+        <div className="pl-18">제목</div>
         <div>태그</div>
         <div>재생 횟수</div>
         <div>시간</div>
@@ -201,24 +197,16 @@ export default function SearchPage() {
               className="grid cursor-pointer items-center gap-4 rounded-[11px] px-3.5 py-2.25 hover:bg-[rgba(120,100,145,0.09)]"
               style={{
                 gridTemplateColumns: "minmax(0,1fr) 190px 74px 46px 28px",
-                background: isCurrentTrack
-                  ? "oklch(0.945 0.035 313)"
-                  : "transparent",
-                boxShadow: isCurrentTrack
-                  ? "2px 2px 6px rgba(150,136,175,0.38), -2px -2px 5px rgba(255,255,255,0.8)"
-                  : "none",
+                ...currentTrackRowStyle(isCurrentTrack),
               }}
             >
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div
-                  className="h-8.5 w-15 flex-none rounded-md border border-white/70"
-                  style={{
-                    background:
-                      "repeating-linear-gradient(135deg, rgba(118,100,145,0.16) 0 5px, rgba(118,100,145,0.05) 5px 10px), color-mix(in oklab, #b344ff 14%, transparent)",
-                    boxShadow:
-                      "3px 3px 8px rgba(150,136,175,0.42), -2px -2px 6px rgba(255,255,255,0.92)",
-                  }}
-                />
+              <div className="flex items-center gap-3">
+                <ThumbBox size="row">
+                  <TrackThumbnail
+                    videoId={track.video_id}
+                    className="h-full w-full"
+                  />
+                </ThumbBox>
                 <div className="min-w-0">
                   <p
                     className="truncate text-sm font-semibold"
@@ -235,46 +223,36 @@ export default function SearchPage() {
                   </p>
                 </div>
               </div>
-              <div className="truncate text-xs text-[oklch(0.47_0.025_315)]">
+              <div className="truncate text-xs text-neu-muted">
                 {track.tags.map((tag) => `#${tag}`).join("  ")}
               </div>
-              <div className="font-neu-mono text-[12.5px] text-[oklch(0.47_0.025_315)]">
+              <div className="font-neu-mono text-[12.5px] text-neu-muted">
                 {track.play_count.toLocaleString()}
               </div>
               <span className="font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
                 {formatDuration(track.duration)}
               </span>
-              <button
-                type="button"
+              <RowPlayButton
                 onClick={(e) => {
                   e.stopPropagation();
                   playQueue([track], 0);
                 }}
-                aria-label={`${track.title} 재생`}
-                className="grid h-7 w-7 place-items-center justify-self-end rounded-full bg-neu-surface text-neu-hi shadow-neu-raised-sm"
-              >
-                <PlayIcon className="ml-0.5" />
-              </button>
+                label={`${track.title} 재생`}
+                className="justify-self-end"
+              />
             </div>
           );
         })}
       </div>
 
       {(sorted.length === 0 || isLoading || isError) && (
-        <div
-          className="mt-3.5 rounded-xl border border-white/70 px-5.5 py-5 text-[13px] text-[oklch(0.47_0.025_315)]"
-          style={{
-            background: "oklch(0.915 0.014 315)",
-            boxShadow:
-              "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
-          }}
-        >
+        <InfoBox className="mt-3.5">
           {isLoading
             ? "라이브러리를 불러오는 중..."
             : isError
               ? "라이브러리를 불러오지 못했습니다."
               : "이 태그에 해당하는 곡이 없습니다."}
-        </div>
+        </InfoBox>
       )}
     </div>
   );

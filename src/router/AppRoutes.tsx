@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import SignupPage from "@/features/auth/pages/SignupPage";
-import HomeLayout from "@/routes/HomeLayout";
-import SearchPage from "@/routes/SearchPage";
-import ExplorePage from "@/routes/ExplorePage";
-import MusicInfoPage from "@/routes/MusicInfoPage";
-import PlaylistInfoPage from "@/routes/PlaylistInfoPage";
-import NotFoundPage from "@/routes/NotFoundPage";
+import HomeLayout from "@/features/dashboard/pages/HomeLayout";
+import LibraryPage from "@/features/library/pages/LibraryPage";
+import ExplorePage from "@/features/explore/pages/ExplorePage";
+import MusicInfoPage from "@/features/library/pages/MusicInfoPage";
+import PlaylistInfoPage from "@/features/playlist/pages/PlaylistInfoPage";
+import NotFoundPage from "@/features/dashboard/pages/NotFoundPage";
 import RequireAuth from "./RequireAuth";
 import GuestOnly from "./GuestOnly";
 
@@ -54,7 +54,7 @@ export default function AppRoutes() {
           </RequireAuth>
         }
       >
-        <Route index element={<SearchPage />} />
+        <Route index element={<LibraryPage />} />
         <Route path="explore" element={<ExplorePage />} />
         <Route path="music/:musicId" element={<MusicInfoPage />} />
         <Route path="playlist/:playlistId" element={<PlaylistInfoPage />} />

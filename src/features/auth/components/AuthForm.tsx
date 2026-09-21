@@ -102,7 +102,7 @@ export function AgreeCheckbox({
       className="flex cursor-pointer items-start gap-2.25 py-0.5 select-none"
     >
       <div
-        className="mt-px grid size-5 flex-none place-items-center rounded-[6px]"
+        className="mt-px grid size-5 flex-none place-items-center rounded-md"
         style={{
           background: checked
             ? "linear-gradient(145deg, #8127b8, #5c1287)"
@@ -158,15 +158,15 @@ export function Divider({ children }: { children: ReactNode }) {
   };
   return (
     <div className="flex items-center gap-3">
-      <div className="h-0.5 flex-1 rounded-[2px]" style={lineStyle} />
+      <div className="h-0.5 flex-1 rounded-xs" style={lineStyle} />
       <div className="font-neu-mono text-[10px] tracking-[0.16em] text-[oklch(0.55_0.02_315)]">
         {children}
       </div>
-      <div className="h-0.5 flex-1 rounded-[2px]" style={lineStyle} />
+      <div className="h-0.5 flex-1 rounded-xs" style={lineStyle} />
     </div>
   );
 }
 
 export function FormError({ children }: { children: ReactNode }) {
-  return <p className="text-[12.5px] text-[#dc2626]">{children}</p>;
+  return <p className="text-[12.5px] text-red-600">{children}</p>;
 }

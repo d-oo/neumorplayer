@@ -176,3 +176,109 @@ export function SearchGlyphIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function PlusIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 14 14"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M7 0.8v12.4M0.8 7h12.4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function XIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 14 14"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M1 1l12 12M13 1L1 13"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function CheckIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="12"
+      height="10"
+      viewBox="0 0 14 11"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M1 5.5l4 4L13 1"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TrashIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="13"
+      height="14"
+      viewBox="0 0 13 14"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M1 3.4h11M4.6 3.4V1.6a1 1 0 0 1 1-1h1.8a1 1 0 0 1 1 1v1.8M2.4 3.4l.6 9a1 1 0 0 0 1 .9h5a1 1 0 0 0 1-.9l.6-9"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function DragHandleIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="8"
+      height="14"
+      viewBox="0 0 8 14"
+      className={className}
+      aria-hidden
+    >
+      {[0, 1, 2].map((row) =>
+        [0, 1].map((col) => (
+          <circle
+            key={`${row}-${col}`}
+            cx={col * 6 + 1}
+            cy={row * 6 + 1}
+            r="1.3"
+            fill="currentColor"
+          />
+        )),
+      )}
+    </svg>
+  );
+}

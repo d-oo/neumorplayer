@@ -31,5 +31,5 @@
 - "탐색"과 "라이브러리"는 old-src에서는 한 화면(`SearchMusic.js`) 안의 검색 대 추가 흐름에
   가까웠지만, 새 디자인(`docs/design/`)에서는 명확히 분리된 두 개의 탭입니다. 새 라우트
   구조를 정할 때 이 탭 분리를 반영해야 합니다.
-- 단일 곡 재생과 재생목록 재생이 공존하므로, 플레이어 상태(`src/stores/usePlayerStore.ts`)가
+- 단일 곡 재생과 재생목록 재생이 공존하므로, 플레이어 상태(`src/features/player/lib/usePlayerStore.ts`)가
   "지금 재생목록 재생 중인지 vs 단일 곡 재생 중인지"를 구분할 수 있어야 합니다.

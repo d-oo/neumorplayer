@@ -1,4 +1,4 @@
-import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 
 export default function NotFoundPage() {
   useDocumentTitle("NeumorPlayer");

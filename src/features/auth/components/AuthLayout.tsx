@@ -33,7 +33,7 @@ export default function AuthLayout({
             />
 
             <div className="flex flex-col gap-2.5">
-              <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">
+              <h1 className="text-3xl leading-[1.1] font-extrabold tracking-[-0.04em]">
                 {title}
               </h1>
               <p className="text-[13px] leading-[1.7] text-neu-muted">

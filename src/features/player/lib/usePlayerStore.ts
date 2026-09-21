@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Database } from "@/lib/database.types";
+import type { Database } from "@/shared/lib/database.types";
 
 type Track = Database["public"]["Tables"]["tracks"]["Row"];
 

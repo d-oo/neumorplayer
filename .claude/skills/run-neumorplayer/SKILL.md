@@ -30,7 +30,7 @@ cp .env.example .env.local
 
 Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. For a
 pure UI check (screenshotting `/login`, `/signup`, layout work) these
-just need to be **non-empty strings** — `src/lib/supabase.ts` throws at
+just need to be **non-empty strings** — `src/shared/lib/supabase.ts` throws at
 module load if either is empty, which blanks the *entire* app (every
 route, not just Supabase-dependent ones) because `AuthProvider` is
 mounted at the root in `src/main.tsx`. Real Supabase values are only
@@ -108,7 +108,7 @@ are the actual verification surface.
   `node driver.mjs login`, not `node driver.mjs /login`.
 - **`.env.local` with empty values blanks the whole app, not just
   Supabase-dependent pages.** `AuthProvider` (mounted in `src/main.tsx`,
-  above the router) imports `src/lib/supabase.ts` unconditionally, and
+  above the router) imports `src/shared/lib/supabase.ts` unconditionally, and
   that file throws if `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY`
   are missing. A placeholder value is enough to boot; it doesn't need
   to be a real project unless you're actually testing login.

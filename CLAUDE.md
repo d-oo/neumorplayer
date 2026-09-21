@@ -16,6 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 관련 문서
 
 - `docs/product-flow.md` — 제품 흐름(탐색→라이브러리→재생목록→재생)과 접근 권한 정책
+- `docs/feature-conventions.md` — `src/features/`·`shared/` 폴더 컨벤션과 소유권 판단 기준
 - `docs/note.md` — 로컬 개발 환경(Supabase 프로젝트, `.env.local`) 셋업 절차
 - `docs/db-schema.md` — DB 테이블/인덱스/RLS 설계와 마이그레이션 운영 방식
 - `docs/todos.md` — 아직 진행 전인 예정 작업 목록
@@ -52,17 +53,13 @@ npm run preview   # 프로덕션 빌드 미리보기
 기본 3000번 포트)를 띄우세요. **브라우저로는 계속 `npm run dev`의 5173번 포트를 열어야
 합니다 — `vercel dev`가 띄우는 포트를 직접 열지 마세요.** `vite.config.ts`의
 `server.proxy`가 `/api`를 3000번으로 넘겨주므로 5173에서 API 호출까지 그대로 됩니다.
-`vercel dev`를 직접 열면 안 되는 이유: `vercel.json`의 SPA 카탈올 rewrite(아래 아키텍처
-문단 참고)가 `vercel dev`의 로컬 라우팅 단계에서 `/@vite/client`·`/src/main.tsx`처럼
-Vite 개발 서버가 그때그때 만들어주는 가상 경로까지 `index.html`로 가로채 버려 화면이
-아예 안 뜨는 문제가 있습니다(실제로 겪음). 이 rewrite는 프로덕션 배포에서만 필요하고
-`vercel dev`의 프론트엔드 서빙 경로 자체를 브라우저가 안 쓰면 문제 될 일이 없으므로,
-`vercel dev`는 항상 API 전용으로만 쓰세요.
+`vercel dev` 포트를 직접 열면 `vercel.json`의 SPA rewrite(아키텍처 문단 참고)가 Vite
+개발 서버의 가상 asset 경로(`/@vite/client` 등)까지 가로채 화면이 아예 안 뜹니다(실제로
+겪음) — `vercel dev`는 항상 API 전용으로만 쓰세요.
 
-로컬 개발을 시작하려면 Supabase 프로젝트가 필요합니다(`docs/migrations/0001_init.sql`을
-해당 프로젝트에 적용). `.env.example`을 복사해 `.env.local`도 만들어야 합니다. 전체 절차는
-`docs/note.md`를 참고하세요. (`README.md`는 old-src의 사용자용 README를 그대로 복사해온
-것으로, 지금 스택의 개발 문서가 아닙니다.)
+로컬 환경 셋업(Supabase 프로젝트, `.env.local`)은 `docs/note.md`를 참고하세요.
+(`README.md`는 old-src의 사용자용 README를 그대로 복사해온 것으로, 지금 스택의 개발
+문서가 아닙니다.)
 
 ## 아키텍처
 
@@ -77,20 +74,19 @@ Vite SPA는 실제 정적 파일이 `index.html` 하나뿐이고 `/login`·`/exp
 모든 경로를 `index.html`로 돌려보내는 rewrite가 있어야 합니다(Vercel은 실제 파일/함수가
 있으면 rewrite보다 그걸 먼저 매칭하므로 `/api/*` 서버리스 함수와 안 부딪힙니다). 이
 rewrite를 건드리거나 지우면 루트(`/`) 말고 다른 경로에서 새로고침할 때마다 404가 납니다.
-이 rewrite는 프로덕션(정적 배포) 전용으로만 문제없이 동작하도록 남겨뒀고, 로컬에서
-`vercel dev`를 쓸 때 이 rewrite와 충돌하지 않도록 하는 방법은 위 "명령어" 절의 안내를
-참고하세요(`vercel dev`는 API 전용으로만 쓰고 브라우저는 `npm run dev`의 5173 포트를 씀).
+이 rewrite는 프로덕션(정적 배포) 전용이고, 로컬 `vercel dev`와 충돌하지 않게 쓰는 법은
+위 "명령어" 절을 참고하세요.
 
 **서버 상태와 클라이언트 상태를 엄격히 분리합니다:**
 
-- _서버 상태_(트랙, 재생목록)는 Supabase Postgres가 소유하며, `src/lib/supabase.ts`의
-  클라이언트를 통해 TanStack Query(`src/lib/queryClient.ts`)로 가져옵니다. 접근 제어는
+- _서버 상태_(트랙, 재생목록)는 Supabase Postgres가 소유하며, `src/shared/lib/supabase.ts`의
+  클라이언트를 통해 TanStack Query(`src/shared/lib/queryClient.ts`)로 가져옵니다. 접근 제어는
   전부 Postgres **Row Level Security**가 담당하며, `docs/migrations/0001_init.sql`에
   정의되어 있습니다 — 모든 테이블의 정책이 `auth.uid() = user_id`로 행을 제한합니다
   (`playlist_tracks`는 소유 playlist의 `user_id`를 확인하는 `EXISTS` 절). 새 테이블이나
   쿼리를 추가할 때 대응하는 RLS 정책이 없으면 에러 없이 그냥 0건이 반환되니 주의하세요.
 - _클라이언트 전용 상태_(현재 재생 큐/인덱스, 재생 중인 재생목록 id, 반복/셔플, 볼륨,
-  음소거, `isPlaying`)는 `src/stores/usePlayerStore.ts`(Zustand)에 있습니다. 새로고침 후에도
+  음소거, `isPlaying`)는 `src/features/player/lib/usePlayerStore.ts`(Zustand)에 있습니다. 새로고침 후에도
   유지되는 건 `volume`/`muted`뿐이고(zustand `persist` + `partialize`), 큐와 재생 위치는
   의도적으로 유지하지 않습니다.
 
@@ -101,40 +97,33 @@ rewrite를 건드리거나 지우면 루트(`/`) 말고 다른 경로에서 새�
 한 번만 마운트되는 provider라 `pages/`·`components/` 어디에도 안 맞아서 feature 루트에
 그대로 둡니다 — 인증 코드를 건드릴 때 이 구조를 유지하세요. `/login`, `/signup`은 실제
 라우트로 존재하는 공개 페이지입니다 — 공개 라우트가 앞으로 더 늘어날 수 있으니
-(`docs/todos.md` 참고) `src/routes/*`에 새 공개 라우트를 추가할 땐
-`src/router/AppRoutes.tsx`에서 `RequireAuth` 밖에 둬야 합니다. `src/router/RequireAuth.tsx`는
+(`docs/todos.md` 참고) 새 공개 라우트를 추가할 땐 그 페이지를 해당 feature의 `pages/`
+아래에 두고, `src/router/AppRoutes.tsx`에서 `RequireAuth` 밖에 둬야 합니다.
+`src/router/RequireAuth.tsx`는
 로그아웃 상태면 `<Navigate to="/login" />`으로 리다이렉트하고, 반대로
 `src/router/GuestOnly.tsx`는 로그인된 사용자가 `/login`·`/signup`에 들어오면 `/`로
 돌려보냅니다 — 새 인증 관련 라우트를 추가할 때 이 두 가드 중 맞는 쪽으로 감싸세요.
 
 **라우팅**(`src/router/AppRoutes.tsx`): `/login`·`/signup`은 `GuestOnly`로 감싼 독립
-라우트이고, `/`(및 그 하위 전부)는 `RequireAuth`로 감싼 `HomeLayout`(사이드바 +
-`<Outlet/>`) 아래에 중첩됩니다 — 이는 old-src의 `Home.js` 셸에 대응합니다. `src/App.tsx`는
-이 라우트 트리를 `<BrowserRouter>`로 감싸 마운트하기만 하는 얇은 진입점입니다(라우트 코드
-자체는 여기 두지 않음). `src/routes/` 아래의 페이지 컴포넌트는 현재 뼈대 상태이고, 각각
-old-src의 어떤 컴포넌트를 대체하는지와 구현 방향을 코멘트로 달아뒀습니다(예:
-`SearchPage.tsx`는 old-src의 수동 IndexedDB 커서 페이지네이션을 `useInfiniteQuery` +
-Supabase `.range()`로 대체해야 함). 페이지를 처음부터 구현하기 전에 그 코멘트를 먼저
-확인하세요.
+라우트이고, `/`(및 그 하위 전부)는 `RequireAuth`로 감싼 `HomeLayout`(`features/dashboard/pages/HomeLayout.tsx`
+— 사이드바 + `<Outlet/>`) 아래에 중첩됩니다 — 이는 old-src의 `Home.js` 셸에 대응합니다.
+`src/App.tsx`는 이 라우트 트리를 `<BrowserRouter>`로 감싸 마운트하기만 하는 얇은
+진입점입니다(라우트 코드 자체는 여기 두지 않음). 각 라우트가 렌더링하는 페이지는 해당
+feature의 `pages/` 아래에 있습니다 — `explore` → `ExplorePage.tsx`, `library` →
+`LibraryPage.tsx`/`MusicInfoPage.tsx`, `playlist` → `PlaylistInfoPage.tsx`, `dashboard` →
+`HomeLayout.tsx`/`NotFoundPage.tsx`. `docs/todos.md`에 아직 안 끝난 부분(예:
+`MusicInfoPage`의 수정 폼)이 남아 있으니 페이지를 고치기 전에 먼저 확인하세요.
 
 **Feature 폴더 컨벤션**: `src/` 하위는 `features/`, `shared/`, `router/` 세 갈래로
-정리합니다. `router/`에는 라우팅 전용 코드만 두고(`AppRoutes.tsx`의 라우트 트리,
-`RequireAuth`/`GuestOnly` 같은 가드 — `App.tsx`는 그 위에서 `BrowserRouter`로 감싸기만
-합니다), 페이지 컴포넌트는 한 곳에 모으지 않고 각 feature의 `pages/` 하위에 둡니다.
-feature 안에는 필요한 만큼만 `api/`/`components/`/`lib/`/`hooks/`/`pages/`를 만들고, 그
-feature가 실제로 쓰지 않는 디렉터리는 만들지 않습니다 — `features/auth/`가 적용 예시입니다
-(`pages/`에 `LoginPage.tsx`/`SignupPage.tsx`, `components/`에 `AuthLayout.tsx`/
-`AuthForm.tsx`/`GoogleIcon.tsx`/`icons.tsx`, `hooks/`에 `useAuth.ts`/`auth-context.ts`;
-`api/`나 `lib/`는 auth엔 필요 없어서 안 만들었고, `AuthProvider.tsx`는 위에서 설명한
-이유로 feature 루트에 그대로 둠). 여러 feature가 공유하는 코드(`src/lib/`, `src/stores/`)는
-`shared/`로 묶습니다. **feature 안의 `api/`는 아래에서 설명하는 최상위 `api/`(Vercel
-Functions)와 별개**입니다 — feature의 `api/`는 그 feature가 `/api/...` 엔드포인트를
-호출하는 클라이언트 쪽 fetch 래퍼/쿼리 훅만 모아두는 용도이고, 최상위 `api/` 자체는
-Vercel이 프로젝트 루트를 보고 배포하는 파일 기반 컨벤션이라 feature 폴더 밑으로 옮기면
-배포가 깨지므로 이동 대상이 아닙니다(하위 디렉터리로 나누는 것 자체는 가능 — 아래
-YouTube API 항목 참고). 나머지 코드(`player`, `src/routes/`의 페이지들)를 이 컨벤션으로
-옮기는 작업은 `docs/todos.md`에 정리되어 있습니다 — 한 번에 다 옮기지 않고 단계적으로
-진행합니다.
+정리합니다 — 각 feature는 필요한 만큼만 `api/`/`components/`/`lib/`/`hooks/`/`pages/`를
+두고, 페이지는 한 곳에 모으지 않고 각 feature의 `pages/`에 둡니다. **`shared/`로 보내는
+기준은 "여러 feature가 쓰는지"가 아니라 "그 도메인을 대표하는 feature가 있는지"입니다**
+(예: 로그아웃 버튼이 여러 화면에서 `useAuth().signOut`을 불러도 `signOut`은 여전히 auth
+소유이지 `shared/`로 안 감) — `shared/lib`(인프라/범용 유틸), `shared/components`(도메인
+없는 UI 프리미티브), `shared/styles`(마크업은 다르고 계산된 style 값만 같은 경우) 세 갈래로
+나뉩니다. 현재 feature 목록, 각 feature 예시, `shared/` 세 갈래에 뭐가 있는지, feature
+안의 `api/`가 최상위 `api/`(Vercel Functions)와 왜 다른지는 `docs/feature-conventions.md`
+에 정리되어 있습니다 — 새 파일을 어디 둘지 고민되면 먼저 확인하세요.
 
 **스타일링**: Tailwind CSS v4를 `@tailwindcss/vite` 플러그인으로 씁니다 — v4는 CSS-first라
 `tailwind.config.js`/`postcss.config.js`가 없습니다. `src/index.css` 맨 위 `@import
@@ -146,45 +135,33 @@ YouTube API 항목 참고). 나머지 코드(`player`, `src/routes/`의 페이�
 `@theme`에서 참조만 추가하세요. box-sizing 리셋, 폼 요소 font-family 상속 등은 Tailwind
 preflight가 처리하므로 `index.css`에 따로 두지 않습니다. 컴포넌트는 전부 Tailwind 유틸리티
 클래스로 작성하고 CSS Modules는 이 프로젝트에서 더 이상 쓰지 않습니다(있던 것도 삭제함 —
-새 컴포넌트도 항상 Tailwind로). 정확한 픽셀 값(라운드 10px/16px, 패딩 11px 등)이 Tailwind
-기본 스케일과 안 맞는 곳은 임의값 문법(`rounded-[10px]`처럼)을 그대로 씁니다 — 어색해
-보여도 의도한 것이니 기본 스케일 값으로 반올림하지 마세요. 폰트는 Pretendard를 jsDelivr
-CDN에서 불러옵니다(`index.html`).
+새 컴포넌트도 항상 Tailwind로). **임의값 문법(`rounded-[6px]`처럼)은 표준 표기로 대응이
+안 될 때만 씁니다** — 예를 들어 `rounded-[6px]`는 `rounded-md`와 정확히 같은 값이니
+`rounded-md`로 쓰세요. 정확한 픽셀 값(라운드 10px/16px, 패딩 11px 등)이 Tailwind 기본
+스케일과 안 맞는 곳(표준 표기로 쓸 수 없는 불가피한 경우)만 임의값 문법을 그대로
+씁니다 — 어색해 보여도 의도한 것이니 기본 스케일 값으로 반올림하지 마세요. 폰트는
+Pretendard를 jsDelivr CDN에서 불러옵니다(`index.html`).
 
-**로그인/회원가입 화면**(`src/features/auth/pages/LoginPage.tsx`, `SignupPage.tsx`): 다른
-화면과 같은 라이트 뉴모피즘 톤(`docs/design/데스크탑 로그인 및 회원가입 화면.zip` 시안
-그대로, `--neu-*` 토큰)이고, 브랜드 패널(로고 자리·헤드라인·`Youtube Music Player`
-워드마크) + 폼 패널로 나뉜 2단 카드 구조입니다. `src/features/auth/components/`의
-`AuthLayout.tsx`가 이 카드 껍데기(`title`/`subtitle`은 왼쪽 브랜드 패널, `heading`은
-오른쪽 폼 위 소제목)를, 같은 디렉터리의 `AuthForm.tsx`가 `Field`/`PasswordField`(눈
-아이콘으로 표시/숨김 토글)/`AgreeCheckbox`/`PrimaryButton`/`GoogleButton`/`Divider`/
-`FormError` 같은 공유 폼 조각들을 내보냅니다 — 인증 관련 화면을 더 추가할 땐 이 두 파일과
-`icons.tsx`(이메일/자물쇠/눈/체크 아이콘, 같은 디렉터리)를 재사용하세요. 시안과
-의도적으로 다른 점: "로그인 상태 유지" 체크박스와 "비밀번호 찾기" 링크는 만들지 않았고,
+**로그인/회원가입 화면**(`src/features/auth/pages/LoginPage.tsx`, `SignupPage.tsx`,
+공유 조각은 `src/features/auth/components/`의 `AuthLayout.tsx`/`AuthForm.tsx`): 시안과
+의도적으로 다른 점 — "로그인 상태 유지" 체크박스와 "비밀번호 찾기" 링크는 만들지 않았고,
 회원가입 화면은 시안의 이름 필드 대신 기존 "비밀번호 확인" 필드를 유지하며, Google
-버튼이 없는 것은 시안 그대로 의도한 것입니다. Supabase 프로젝트의 "가입 확인 이메일" 옵션이
-꺼져 있다는 전제로, 회원가입 성공 시 바로 세션이 생긴다고 가정하고 짜여 있습니다(별도의
-"이메일 확인" 안내 화면 없음).
+버튼이 없는 것도 시안 그대로 의도한 것입니다. **Supabase 프로젝트의 "가입 확인 이메일"
+옵션이 꺼져 있다는 전제로, 회원가입 성공 시 바로 세션이 생긴다고 가정하고 짜여
+있습니다**(별도의 "이메일 확인" 안내 화면 없음) — 이 옵션이 켜지면 이 가정이 깨지니
+회원가입 플로우를 다시 확인하세요.
 
-**YouTube Data API 키는 절대 클라이언트 코드에 닿으면 안 됩니다.** `api/_youtube.ts`가
-`process.env.YOUTUBE_API_KEY` 읽기를 한 곳에 모아두고 있고, `api/youtube-search.ts`와
-`api/youtube-video.ts`만이 이를 호출합니다(둘 다 Vercel Functions로 배포됨). YouTube Data
-API를 새로 써야 하면 `api/` 아래에 새 파일을 추가하고 프론트에서는 `fetch("/api/...")`로
-호출하세요 — `src/`에서 `googleapis.com`을 직접 호출하지 마세요. `api/` 아래를 하위
-디렉터리로 나누는 것 자체는 가능합니다(Vercel은 파일 경로를 그대로 라우트 경로로 매핑하므로
-`api/youtube/search.ts` → `/api/youtube/search`처럼 임의 depth의 중첩을 지원) — 나눌
-때는 프론트의 `fetch("/api/...")` 호출 경로도 함께 바꾸고, `api/_youtube.ts`처럼 `_`로
-시작하는 파일/폴더는 Vercel이 라우트로 배포하지 않는 비공개 헬퍼 컨벤션이니 재배치 후에도
-그대로 유지하세요. 환경변수 규칙은 이 저장소
-전체에서 하나입니다: `VITE_` 접두사가 붙은 변수는 빌드 시 클라이언트 번들에 그대로
-박히고(Supabase URL/publishable key는 이래도 안전한데, 실제 접근 제어는 RLS가 하기 때문;
-secret key는 RLS를 우회하므로 여기 해당하지 않음),
-접두사가 없는 변수는 서버 전용으로 `api/`에서만 읽을 수 있습니다.
+**환경변수**: `VITE_` 접두사가 붙은 변수는 빌드 시 클라이언트 번들에 그대로 박히고
+(Supabase URL/publishable key는 이래도 안전한데, 실제 접근 제어는 RLS가 하기 때문;
+secret key는 RLS를 우회하므로 여기 해당하지 않음), 접두사가 없는 변수는 서버 전용으로
+`api/`에서만 읽을 수 있습니다. `api/` 아래는 하위 디렉터리로 자유롭게 나눌 수 있고
+(Vercel이 파일 경로를 그대로 라우트 경로로 매핑), `_`로 시작하는 파일/폴더(예:
+`api/_youtube.ts`)는 Vercel이 라우트로 배포하지 않는 비공개 헬퍼 컨벤션입니다.
 
 **DB 스키마**: 테이블 구조, 인덱스 설계, RLS 정책, 마이그레이션 운영 방식은
 `docs/db-schema.md`에 정리되어 있습니다 — 스키마나 쿼리 관련 작업 전에 먼저 확인하세요.
 꼭 기억할 두 가지만 요약하면: 새 테이블/쿼리를 추가할 때 대응하는 RLS 정책이 없으면 에러
-없이 그냥 0건이 반환되고, `src/lib/database.types.ts`는 스키마가 바뀌면 손으로 고치지 말고
+없이 그냥 0건이 반환되고, `src/shared/lib/database.types.ts`는 스키마가 바뀌면 손으로 고치지 말고
 `supabase gen types typescript --linked`로 재생성해야 합니다.
 
 **TypeScript 프로젝트 구조**: 루트 `tsconfig.json`이 세 개의 설정을 참조합니다 —

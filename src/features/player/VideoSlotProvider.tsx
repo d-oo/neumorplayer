@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import {
   VideoSlotContext,
   type VideoSlotContextValue,
-} from "./video-slot-context";
+} from "./hooks/video-slot-context";
 
 export function VideoSlotProvider({ children }: { children: ReactNode }) {
   const [slotEl, setSlotEl] = useState<HTMLDivElement | null>(null);

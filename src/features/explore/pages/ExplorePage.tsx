@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
-import { formatDuration, parseIsoDuration } from "@/lib/format-time";
-import { fetchLibraryTracks, tracksQueryKey } from "@/lib/tracks";
-import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { supabase } from "@/shared/lib/supabase";
+import { formatDuration, parseIsoDuration } from "@/shared/lib/format-time";
+import { fetchLibraryTracks, tracksQueryKey } from "@/features/library/lib/tracks";
+import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
+import InfoBox from "@/shared/components/InfoBox";
 
 interface ExploreResult {
   videoId: string;
@@ -31,6 +32,15 @@ interface YoutubeVideoItem {
   id: string;
   contentDetails?: { duration: string };
   statistics?: { viewCount: string };
+}
+
+// old-src/src/components/AddMusic.js의 아티스트 콤마 분리 규칙을 그대로 옮겼습니다:
+// 콤마로 나눠 각 조각을 trim하고 내부 중복 공백을 하나로 줄인 뒤, 중복된 이름은
+// Set으로 걸러냅니다(예: "IU, Suga,  Suga " → ["IU", "Suga"]).
+function parseArtists(value: string): string[] {
+  return [
+    ...new Set(value.split(",").map((s) => s.trim().replace(/ +(?= )/g, ""))),
+  ];
 }
 
 // YouTube Data API는 제목/채널명을 HTML 엔티티로 이스케이프해서 돌려줍니다
@@ -139,9 +149,15 @@ function PillActionButton({
 // 색상·그림자·치수를 그대로 옮겼습니다.
 // 제목/아티스트를 입력하고 "검색" 버튼(또는 입력창에서 Enter)을 눌러야 실제로
 // /api/youtube-search + /api/youtube-video를 호출합니다(타이핑마다 자동 호출하지
-// 않음). "추가" 버튼은 선택한 영상을 tracks 테이블에 insert합니다 — video_id 기준
-// unique 제약(user_id, video_id)이 있어 이미 추가한 곡은 DB가 막아주고, 그 에러를
-// 사용자에게 그대로 보여줍니다.
+// 않음). "추가" 버튼은 선택한 영상의 video_id에 titleQuery/artistQuery(입력창에
+// 남아있는 값)를 title/artist로 붙여 tracks 테이블에 insert합니다 — 유튜브 영상
+// 제목/업로드 채널명이 아니라 사용자가 직접 입력한 값을 그대로 저장하므로, 업로드
+// 채널명이 실제 아티스트와 다른 경우에도 사용자 의도대로 저장됩니다. 아티스트는
+// old-src처럼 콤마로 여러 명 입력할 수 있고(parseArtists), 콤마로 구분된 조각 중
+// 하나라도 비어 있으면(trailing comma 등) "추가" 버튼이 비활성화됩니다. 제목이
+// 비어 있어도 마찬가지입니다. video_id 기준 unique
+// 제약(user_id, video_id)이 있어 이미 추가한 곡은 DB가 막아주고, 그 에러를 사용자에게
+// 그대로 보여줍니다.
 export default function ExplorePage() {
   useDocumentTitle("NeumorPlayer");
   const { user } = useAuth();
@@ -157,6 +173,7 @@ export default function ExplorePage() {
   const hasSearched = submittedQuery !== "";
 
   function handleSearch() {
+    addTrackMutation.reset();
     setSubmittedQuery(`${titleQuery} ${artistQuery}`.trim());
   }
 
@@ -195,6 +212,7 @@ export default function ExplorePage() {
   const allTags = [...suggestedTags.map((t) => t.tag), ...customTags];
 
   function toggleTag(tag: string) {
+    addTrackMutation.reset();
     setSelectedTags((prev) => {
       const next = new Set(prev);
       if (next.has(tag)) next.delete(tag);
@@ -206,6 +224,7 @@ export default function ExplorePage() {
   function handleAddTagInput() {
     const tag = tagInput.trim().replace(/^#+/, "");
     if (!tag) return;
+    addTrackMutation.reset();
     if (!allTags.includes(tag)) setCustomTags((prev) => [...prev, tag]);
     setSelectedTags((prev) => new Set(prev).add(tag));
     setTagInput("");
@@ -216,8 +235,8 @@ export default function ExplorePage() {
       if (!selected || !user) throw new Error("추가할 곡을 선택해주세요.");
       const { error } = await supabase.from("tracks").insert({
         user_id: user.id,
-        title: selected.title,
-        artist: [selected.channelTitle],
+        title: titleQuery.trim(),
+        artist: parseArtists(artistQuery),
         video_id: selected.videoId,
         tags: Array.from(selectedTags),
         duration: selected.durationSec,
@@ -239,6 +258,12 @@ export default function ExplorePage() {
       : "추가에 실패했습니다. 다시 시도해주세요."
     : null;
 
+  // old-src와 같은 규칙: 콤마로 구분된 조각 중 하나라도(trailing comma, 빈 조각 등)
+  // 비어 있으면 무효로 취급합니다.
+  const isArtistInputValid =
+    artistQuery.trim() !== "" &&
+    artistQuery.split(",").every((s) => s.trim() !== "");
+
   function handleAdd() {
     if (!selected) return;
     addTrackMutation.mutate();
@@ -255,7 +280,7 @@ export default function ExplorePage() {
 
       <div className="mb-7 grid grid-cols-2 gap-3.5">
         <div>
-          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
             제목
           </div>
           <div
@@ -274,7 +299,7 @@ export default function ExplorePage() {
           </div>
         </div>
         <div>
-          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
             아티스트
           </div>
           <div
@@ -303,7 +328,7 @@ export default function ExplorePage() {
       </div>
 
       <div className="mb-3 flex items-baseline gap-2.25">
-        <div className="text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+        <div className="text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
           검색 결과
         </div>
         <div className="text-xs text-[oklch(0.55_0.02_315)]">
@@ -319,7 +344,10 @@ export default function ExplorePage() {
               <button
                 key={r.videoId}
                 type="button"
-                onClick={() => setSelectedVideoId(r.videoId)}
+                onClick={() => {
+                  addTrackMutation.reset();
+                  setSelectedVideoId(r.videoId);
+                }}
                 className="rounded-[14px] border p-2.5 text-left"
                 style={{
                   background: isSelected
@@ -370,7 +398,7 @@ export default function ExplorePage() {
                     >
                       {r.title}
                     </p>
-                    <p className="mt-0.75 truncate text-xs text-[oklch(0.47_0.025_315)]">
+                    <p className="mt-0.75 truncate text-xs text-neu-muted">
                       {r.channelTitle}
                     </p>
                     <p className="mt-0.5 truncate text-[11.5px] text-[oklch(0.55_0.02_315)]">
@@ -383,14 +411,7 @@ export default function ExplorePage() {
           })}
         </div>
       ) : (
-        <div
-          className="mb-7 rounded-xl border border-white/70 px-5.5 py-5 text-[13px] text-[oklch(0.47_0.025_315)]"
-          style={{
-            background: "oklch(0.915 0.014 315)",
-            boxShadow:
-              "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
-          }}
-        >
+        <InfoBox className="mb-7">
           {isFetching
             ? "검색 중..."
             : isError
@@ -398,10 +419,10 @@ export default function ExplorePage() {
               : hasSearched
                 ? "일치하는 곡이 없습니다."
                 : "아티스트나 제목을 입력하고 검색을 눌러주세요."}
-        </div>
+        </InfoBox>
       )}
 
-      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-[oklch(0.47_0.025_315)]">
+      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
         태그
       </div>
       <div className="mb-3 flex items-center gap-2.25">
@@ -479,13 +500,18 @@ export default function ExplorePage() {
           </span>
         )}
         {!addErrorMessage && addTrackMutation.isSuccess && !selected && (
-          <span className="text-[12.5px] font-semibold text-[#6d1a9f]">
+          <span className="text-[12.5px] font-semibold text-neu-hi">
             라이브러리에 추가했습니다.
           </span>
         )}
         <PillActionButton
           label={addTrackMutation.isPending ? "추가 중..." : "추가"}
-          enabled={!!selected && !addTrackMutation.isPending}
+          enabled={
+            !!selected &&
+            titleQuery.trim() !== "" &&
+            isArtistInputValid &&
+            !addTrackMutation.isPending
+          }
           onClick={handleAdd}
         />
       </div>
