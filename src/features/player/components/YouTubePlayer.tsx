@@ -43,12 +43,22 @@ export default function YouTubePlayer() {
 
   const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
   const currentTrackId = currentTrack?.id;
+  const prevTrackIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const player = playerRef.current;
+    const trackChanged = prevTrackIdRef.current !== currentTrackId;
+    prevTrackIdRef.current = currentTrackId;
     if (!player) return;
-    if (isPlaying) void player.playVideo();
-    else void player.pauseVideo();
+    if (isPlaying) {
+      void player.playVideo();
+    } else if (!trackChanged) {
+      // 트랙이 바뀌는 시점의 isPlaying:false는 "아직 실제 재생 전"이라는 뜻이지
+      // "일시정지하라"는 뜻이 아닙니다(usePlayerStore.playQueue/jumpTo 참고) — 여기서
+      // pauseVideo를 부르면 막 자동재생을 시작한 영상을 바로 멈춰버립니다. 같은
+      // 트랙에서 사용자가 실제로 일시정지를 눌렀을 때만(trackChanged가 false) 멈춥니다.
+      void player.pauseVideo();
+    }
   }, [isPlaying, currentTrackId]);
 
   useEffect(() => {

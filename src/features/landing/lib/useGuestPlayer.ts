@@ -23,12 +23,16 @@ export function useGuestPlayer() {
   const [repeat, setRepeat] = useState(false);
 
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
+  const prevVideoIdRef = useRef<string | null>(null);
 
+  // isPlaying을 여기서 true로 미리 만들지 않습니다 — 영상 로드에 잠깐 걸리는 시간
+  // 동안 CD가 먼저 돌아버리는 걸 막기 위해서입니다(usePlayerStore.playQueue와 같은
+  // 이유). 실제 true 전환은 onPlayerStateChange의 PLAYING 이벤트가 맡습니다.
   function playTrack(t: GuestTrack) {
     setTrack(t);
     setCurrentTime(0);
     setDuration(0);
-    setIsPlaying(true);
+    setIsPlaying(false);
   }
 
   function seek(time: number) {
@@ -47,9 +51,17 @@ export function useGuestPlayer() {
 
   useEffect(() => {
     const player = playerRef.current;
+    const videoId = track?.videoId ?? null;
+    const trackChanged = prevVideoIdRef.current !== videoId;
+    prevVideoIdRef.current = videoId;
     if (!player || !track) return;
-    if (isPlaying) void player.playVideo();
-    else void player.pauseVideo();
+    if (isPlaying) {
+      void player.playVideo();
+    } else if (!trackChanged) {
+      // YouTubePlayer.tsx와 같은 이유 — 트랙이 막 바뀐 시점의 isPlaying:false는
+      // "일시정지"가 아니라 "아직 재생 전"이라는 뜻이라 pauseVideo를 부르면 안 됩니다.
+      void player.pauseVideo();
+    }
   }, [isPlaying, track]);
 
   useEffect(() => {

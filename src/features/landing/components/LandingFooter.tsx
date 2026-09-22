@@ -1,10 +1,11 @@
-// 1236px 폭(부모가 배치). "Developed with YouTube" 배지는 AuthLayout.tsx가 쓰는
-// 것과 같은 public/developed-with-youtube.png 파일을 그대로 재사용합니다.
+// 1236px 폭(부모가 배치). "Developed with YouTube" 배지는 LandingHero(큰 타이포그래피
+// 위)에도 있지만, YouTube API Branding Guidelines가 배지를 요구하는 자리라 여기서도
+// 그대로 유지합니다(AuthLayout.tsx가 쓰는 것과 같은 public/developed-with-youtube.png).
 export default function LandingFooter() {
   return (
     <div className="flex items-center justify-between gap-6 border-t border-white/75 pt-6.5 pr-0.5 pb-8.5 pl-0.5">
       <div className="font-neu-mono text-[11px] tracking-widest text-[oklch(0.52_0.02_315)]">
-        © 2026 NEUMORPLAYER · POWERED BY YOUTUBE
+        © 2026 NEUMORPLAYER
       </div>
       <img
         src="/developed-with-youtube.png"

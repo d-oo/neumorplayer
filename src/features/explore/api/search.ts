@@ -25,6 +25,7 @@ interface YoutubeVideoItem {
   id: string;
   contentDetails?: { duration: string };
   statistics?: { viewCount: string };
+  status?: { madeForKids?: boolean };
 }
 
 // old-src/src/components/AddMusic.js의 아티스트 콤마 분리 규칙을 그대로 옮겼습니다:
@@ -69,20 +70,29 @@ export async function fetchExploreResults(
     (videoData.items ?? []).map((item) => [item.id, item]),
   );
 
-  return items.map((item) => {
-    const detail = detailById.get(item.id.videoId);
-    return {
-      videoId: item.id.videoId,
-      title: decodeHtmlEntities(item.snippet.title),
-      channelTitle: decodeHtmlEntities(item.snippet.channelTitle),
-      thumbnailUrl:
-        item.snippet.thumbnails.medium?.url ??
-        item.snippet.thumbnails.default?.url ??
-        "",
-      durationSec: detail?.contentDetails
-        ? parseIsoDuration(detail.contentDetails.duration)
-        : 0,
-      viewCount: detail?.statistics ? Number(detail.statistics.viewCount) : 0,
-    };
-  });
+  // YouTube API Developer Policies E.4.i: Made For Kids로 지정된 영상은 결과에서
+  // 제외합니다(라이브러리 추가·게스트 재생 등 이 함수를 거치는 모든 경로가 같이 커버됨).
+  // detail을 못 찾은 경우(삭제된 영상 등)는 기존 동작대로 통과시킵니다.
+  return items
+    .filter(
+      (item) => detailById.get(item.id.videoId)?.status?.madeForKids !== true,
+    )
+    .map((item) => {
+      const detail = detailById.get(item.id.videoId);
+      return {
+        videoId: item.id.videoId,
+        title: decodeHtmlEntities(item.snippet.title),
+        channelTitle: decodeHtmlEntities(item.snippet.channelTitle),
+        thumbnailUrl:
+          item.snippet.thumbnails.medium?.url ??
+          item.snippet.thumbnails.default?.url ??
+          "",
+        durationSec: detail?.contentDetails
+          ? parseIsoDuration(detail.contentDetails.duration)
+          : 0,
+        viewCount: detail?.statistics
+          ? Number(detail.statistics.viewCount)
+          : 0,
+      };
+    });
 }

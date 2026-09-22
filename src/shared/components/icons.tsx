@@ -375,6 +375,47 @@ export function LogoutIcon({ className }: IconProps) {
   );
 }
 
+export function SunIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="9" cy="9" r="3.4" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M9 1.4v2M9 14.6v2M1.4 9h2M14.6 9h2M3.6 3.6l1.4 1.4M13 13l1.4 1.4M14.4 3.6L13 5M5 13l-1.4 1.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function MoonIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M15.4 10.8A6.6 6.6 0 1 1 7.2 2.6a5.2 5.2 0 0 0 8.2 8.2Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function DragHandleIcon({ className }: IconProps) {
   return (
     <svg

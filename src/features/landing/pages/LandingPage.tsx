@@ -5,6 +5,7 @@ import LandingHero from "../components/LandingHero";
 import LandingProductArea from "../components/LandingProductArea";
 import LandingFeatureCards from "../components/LandingFeatureCards";
 import LandingFooter from "../components/LandingFooter";
+import PrivacyBanner from "../components/PrivacyBanner";
 
 // docs/design/랜딩 페이지.zip의 단일 스크린 랜딩 페이지. 비로그인 사용자가 "/"로 오면
 // src/router/HomeAccessGate.tsx가 이 페이지를 직접 렌더링합니다(HomeLayout을 거치지
@@ -19,7 +20,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className="mx-auto flex w-320 flex-col gap-19.5 px-5.5 pt-5.5 font-neu text-neu-ink"
+      className="mx-auto flex w-7xl flex-col gap-19.5 px-5.5 pt-5.5 font-neu text-neu-ink"
       style={{ background: "oklch(0.925 0.014 315)" }}
     >
       <LandingHeader />
@@ -27,6 +28,7 @@ export default function LandingPage() {
       <LandingProductArea guestPlayer={guestPlayer} search={search} />
       <LandingFeatureCards />
       <LandingFooter />
+      <PrivacyBanner />
     </div>
   );
 }

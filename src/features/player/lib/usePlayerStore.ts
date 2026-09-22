@@ -54,13 +54,20 @@ export const usePlayerStore = create<PlayerState>()(
       duration: 0,
       pendingSeek: null,
 
+      // isPlaying을 여기서 미리 true로 만들지 않습니다 — 유튜브 영상은 로드에
+      // 잠깐(약 1초) 시간이 걸리는데, 미리 true로 두면 아직 실제로는 재생되지
+      // 않는데도 CD가 돌고 재생 버튼이 일시정지 아이콘으로 바뀌어 버립니다
+      // (old-src도 onPlayerStateChange의 실제 PLAYING 이벤트가 왔을 때만
+      // isPlaying을 true로 바꿨습니다 — YT.js 참고). 실제 true 전환은
+      // YouTubePlayer.tsx의 onStateChange가 담당하고, 그때까지 영상 자체는
+      // opts.playerVars.autoplay로 알아서 재생을 시작합니다.
       playQueue: (tracks, startIndex, playlistId) =>
         set({
           queue: tracks,
           currentIndex: startIndex,
           playingPlaylistId: playlistId ?? null,
           videoOn: true,
-          isPlaying: true,
+          isPlaying: false,
           loopTrack: false,
           currentTime: 0,
           duration: 0,
@@ -89,13 +96,15 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       // 지금 재생 중인 큐는 그대로 두고, 그 안의 다른 곡으로 바로 건너뜁니다
-      // ("다음 트랙" 목록에서 특정 곡을 클릭했을 때).
+      // ("다음 트랙" 목록에서 특정 곡을 클릭했을 때). isPlaying을 false로 두는 이유는
+      // playQueue와 같습니다 — 실제 재생 시작은 YouTubePlayer.tsx의 onStateChange가
+      // 알려줄 때까지 기다립니다.
       jumpTo: (index) => {
         const { queue } = get();
         if (index < 0 || index >= queue.length) return;
         set({
           currentIndex: index,
-          isPlaying: true,
+          isPlaying: false,
           currentTime: 0,
           duration: 0,
         });

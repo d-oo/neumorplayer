@@ -1,27 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { CaretIcon, LogoutIcon, SettingsIcon } from "@/shared/components/icons";
+import { useOutsideClick } from "@/shared/lib/useOutsideClick";
+import SettingsModal from "./SettingsModal";
 
 // docs/design/수정사항.zip(03) — 헤더 우측 상단의 프로필 아바타를 드롭다운 버튼으로
 // 바꾼 것. 로그아웃 버튼은 화면(HomeLayout)이 다르더라도 여전히 auth가 소유하는
 // 기능이라(docs/feature-conventions.md) 이 컴포넌트도 auth에 둡니다.
-// AddToPlaylistButton.tsx의 outside-click 패턴을 그대로 재사용합니다.
-//
-// "설정" 항목은 아직 이동할 라우트/화면이 없어 시각적으로만 넣었습니다(onClick 없음,
-// docs/todos.md 참고).
 export default function ProfileDropdown() {
   const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown(e: MouseEvent) {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
-    }
-    window.addEventListener("mousedown", onPointerDown);
-    return () => window.removeEventListener("mousedown", onPointerDown);
-  }, [open]);
+  useOutsideClick(containerRef, () => setOpen(false), open);
 
   return (
     <div className="relative" ref={containerRef}>
@@ -59,6 +51,10 @@ export default function ProfileDropdown() {
           <div className="mx-1.5 mb-1.5 h-px bg-[rgba(142,128,166,0.26)]" />
           <button
             type="button"
+            onClick={() => {
+              setOpen(false);
+              setSettingsOpen(true);
+            }}
             className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-[oklch(0.32_0.025_315)] transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
           >
             <SettingsIcon className="flex-none" />
@@ -74,6 +70,8 @@ export default function ProfileDropdown() {
           </button>
         </div>
       )}
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

@@ -121,13 +121,18 @@ export function AgreeCheckbox({
   );
 }
 
+// docs/design/수정본2.zip(Auth Screens.dc.html)부터 이 버튼은 앱 전역 pill CTA와
+// 같은 --neu-cta-pill-grad/text-neu-hi/--neu-shadow-cta-pill을 씁니다 — 9/19 원본
+// 시안의 진보라 배경+흰 글자(--neu-cta-grad)는 이 zip으로 대체된 값이니 되돌리지
+// 마세요. active 그림자만 그 zip에 --neu-shadow-pill-active와 미묘히 다른 값으로
+// 박혀 있어 전용 토큰(--neu-shadow-auth-cta-active)을 씁니다.
 export function PrimaryButton({
   children,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className="grid h-12.5 place-items-center rounded-[14px] [background:var(--neu-cta-grad)] text-[14.5px] font-extrabold tracking-[-0.01em] text-white shadow-neu-cta transition-[background,box-shadow] duration-150 enabled:hover:[background:var(--neu-cta-grad-hover)] enabled:active:shadow-neu-cta-active disabled:cursor-default disabled:opacity-60"
+      className="grid h-12.5 place-items-center rounded-[14px] [background:var(--neu-cta-pill-grad)] text-[14.5px] font-bold tracking-[-0.01em] text-neu-hi shadow-neu-cta-pill transition-[background,box-shadow] duration-150 enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:active:shadow-neu-auth-cta-active disabled:cursor-default disabled:opacity-60"
       {...props}
     >
       {children}

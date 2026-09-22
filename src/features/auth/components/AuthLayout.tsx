@@ -23,11 +23,15 @@ export default function AuthLayout({
       <section className="grid w-full max-w-180.5 grid-cols-[240px_minmax(0,1fr)] gap-10 rounded-[28px] border border-white/80 bg-neu-surface px-11.5 py-11 shadow-neu-card">
         <div className="flex flex-col justify-between gap-7">
           <div className="flex flex-col gap-5.5">
-            {/* 브랜드 로고 — public/favicon.png(정사각형 원본)를 둥글게 잘라 씁니다. */}
+            {/* 브랜드 로고 — public/favicon.png(정사각형 원본)를 씁니다. docs/design/
+                수정본2.zip(Auth Screens.dc.html)의 "브랜드 로고 132×132" 플레이스홀더가
+                모서리만 둥근 사각형(border-radius: 26px)이라 원형(rounded-full)으로
+                자르지 마세요 — 26px는 Tailwind 기본 radius 스케일에 없는 값이라
+                임의값 문법을 그대로 씁니다. */}
             <img
               src="/favicon.png"
               alt="neumorplayer"
-              className="size-33 rounded-full border border-white/70 object-cover"
+              className="size-33 rounded-[26px] border border-white/70 object-cover"
               style={{
                 boxShadow:
                   "7px 7px 16px rgba(142,128,166,0.5), -5px -5px 13px rgba(255,255,255,0.9)",

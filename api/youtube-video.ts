@@ -15,10 +15,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const apiKey = getApiKeyOrThrow();
     const url = new URL(`${YOUTUBE_API_BASE}/videos`);
-    url.searchParams.set("part", "snippet,contentDetails,statistics");
+    url.searchParams.set("part", "snippet,contentDetails,statistics,status");
     url.searchParams.set(
       "fields",
-      "items(id,snippet(thumbnails,title,channelTitle),contentDetails/duration,statistics/viewCount)"
+      "items(id,snippet(thumbnails,title,channelTitle),contentDetails/duration,statistics/viewCount,status/madeForKids)"
     );
     url.searchParams.set("id", id);
     url.searchParams.set("key", apiKey);

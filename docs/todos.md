@@ -6,23 +6,11 @@
       아티스트·태그(또는 재생목록 제목)를 고치는 폼(react-hook-form + zod 추천)은 아직
       없다. docs/design/수정본2.zip 반영으로 두 화면 모두에 "수정" 원형 버튼이 생겼지만
       `onClick`이 비어있는 자리 표시자다 — 실제 폼을 만들면 여기에 연결한다.
-- [ ] **비로그인 사용자에게 단순 검색+재생 허용(설계 확정, YouTube API 정책 위반 대응
-      포함)**: 현재는 `/login`, `/signup`을 제외한 모든 라우트가 `RequireAuth`로 보호되어
-      있다(`src/router/AppRoutes.tsx`). 게스트에게는 제목/아티스트 분리 없이 검색어 하나로만
-      찾는 단순화된 탐색을 열어주고, 결과를 바로 CD 플레이어(미니 플레이어 포함, 아래
-      항목 참고)로 재생만 할 수 있게 한다 — 재생목록/라이브러리 등록 같은 계정 종속 기능은
-      계속 막는다. YouTube API Developer Policies F.3("재생 버튼을 누르는 것 외의 행동을
-      재생의 전제조건으로 요구하면 안 됨")을 엄격히 읽으면 지금처럼 재생 자체를 로그인
-      뒤로 완전히 숨기는 것도 걸릴 소지가 있었는데(확신도 낮은 해석이었음), 이 게스트
-      플로우로 해소된다. 대신 두 가지를 같이 챙겨야 한다: (1) 개인정보 처리방침 동의는
-      지금 `SignupPage`에만 있는데, III.A는 "사용자가 기능에 접근하기 전에" 동의를 요구
-      하므로 게스트에게도 **첫 진입 시 배너**로 고지한다(모달/체크박스 강제 대신 배너로
-      가볍게, 아래 개인정보 처리방침 항목과 함께 설계). (2) 게스트 재생도 결국 탐색을
-      거치므로, 아래 "Made For Kids 필터링" 항목을 탐색 검색 결과 단계에서 구현하면 게스트
-      재생 경로도 같이 커버된다(별도 체크 불필요).
-- [ ] **프로필 드롭다운의 "설정" 메뉴**(`src/features/auth/components/ProfileDropdown.tsx`):
-      아직 이동할 라우트/화면이 없어 시각적 표시(아이콘+hover)만 있고 `onClick`은 없다.
-      실제 설정 화면을 만들면 이 항목에 라우트를 연결한다.
+- [ ] **다크모드 실제 구현**: `SettingsModal`(`src/features/auth/components/SettingsModal.tsx`)에
+      라이트/다크 선택 UI는 있지만 로컬 `useState`로 선택 표시만 바꿀 뿐 실제 테마 적용도,
+      새로고침 후 유지도 안 한다. `index.css`의 색상 토큰(`:root`)을 다크 값으로 바꿔치기할
+      방법(예: `data-theme` 속성 + CSS 변수 재정의)과 선택값을 어디에 저장할지(zustand
+      persist 등)를 정해서 연결해야 한다.
 - [ ] **배경 재생을 항상 보이는 미니 플레이어로 교체(YouTube API 정책 위반 대응)**:
       `YouTubePlayer.tsx`가 `music/:musicId`를 벗어나면 실제 iframe을 화면 밖(1px×1px,
       `left:-9999px`) 컨테이너로 옮겨 재생을 계속 이어간다. 이는 YouTube API Developer
@@ -75,7 +63,11 @@
       설명해야 하며, (3) YouTube 자체 ToS(https://www.youtube.com/t/terms) 링크를
       표시하고 자체 이용약관에 "이 앱을 쓰면 YouTube ToS에도 동의하는 것"이라고 명시할
       것을 요구한다. `/privacy`, `/terms` 같은 공개 라우트(GuestOnly/RequireAuth 밖)를
-      새로 만들고 체크박스에서 실제로 링크되게 고친다.
+      새로 만들고 체크박스에서 실제로 링크되게 고친다. 개인정보 처리방침 쪽 본문은
+      랜딩 페이지 배너("자세히 보기")가 띄우는
+      [PrivacyPolicyModal.tsx](src/features/landing/components/PrivacyPolicyModal.tsx)에
+      이미 작성해뒀으니, 라우트를 만들 땐 이 본문을 옮기고 모달은 그 라우트로 링크만
+      하도록 바꾼다(이용약관 본문은 아직 없음 — 같이 작성 필요).
 - [ ] **재생을 직접 트리거하는 썸네일이 최소 크기(120×70px) 미달(YouTube API 정책 위반
       대응)**: Required Minimum Functionality는 "재생을 시작시키는 YouTube 썸네일은
       최소 120×70px이어야 한다"고 요구하는데, [ThumbBox.tsx](src/shared/components/ThumbBox.tsx#L7-L11)의
@@ -86,27 +78,3 @@
       별도 작은 아이콘 버튼으로 분리해야 한다(`LibraryPage.tsx`의 같은 크기 `row`
       썸네일은 클릭 시 재생이 아니라 상세 페이지로 이동만 하므로 이 규칙 대상이 아님 —
       그대로 둬도 됨).
-- [ ] **회원 탈퇴(계정+데이터 삭제) 기능 추가(YouTube API 정책 위반 대응)**: 지금
-      `ProfileDropdown.tsx`엔 로그아웃만 있고 탈퇴 기능이 전혀 없다. YouTube API
-      Developer Policies E.4.g는 "사용자가 자신과 관련된 저장 데이터의 삭제를 요청할
-      방법을 제공해야 하고, 요청 시 7일 이내에 삭제해야 한다"고 요구한다. Supabase
-      `auth.admin.deleteUser()`(service role key, 서버 전용)로 계정을 지우면
-      `auth.users`를 참조하는 `tracks`/`playlists`가 `on delete cascade`로 같이
-      정리되므로(0001_init.sql), 탈퇴 버튼 → 확인 모달 → 서버리스 함수 호출 흐름 정도로
-      구현하면 된다.
-- [ ] **"Made For Kids" 영상을 탐색 검색 결과 단계에서 필터링(설계 확정, YouTube API
-      정책 위반 대응)**: YouTube API Developer Policies E.4.i는 임베드하는 모든 영상의
-      Made For Kids(MFK) 여부를 확인하고, MFK로 지정된 영상은 추적(재생 기록 등)을 꺼야
-      한다고 요구한다. 지금 `api/youtube-video.ts`는 `part=snippet,contentDetails,
-    statistics`만 요청해서 MFK 여부(`status.madeForKids`)를 아예 안 본다 — 여기에
-      `status`를 추가해서 값을 받아오고, `search.ts`의 `fetchExploreResults()`에서
-      `status.madeForKids === true`인 항목을 최종 결과 배열에서 걸러낸다. "라이브러리
-      추가 시점"이나 "게스트 재생 시점"마다 따로 체크하는 대신 탐색 결과 조립 단계 한
-      곳에서 걸러내면, 로그인 사용자의 라이브러리 추가든 비로그인 게스트의 즉시 재생이든
-      전부 같은 검색 결과 목록에서 시작하므로 한 번에 커버된다(위 게스트 재생 항목 참고).
-      `/api/youtube-search`가 `maxResults=5`로 먼저 뽑은 뒤 걸러지는 구조라, 필터링으로
-      화면에 보이는 결과 수가 5건보다 줄어들 수 있다는 점은 감안한다. 단, 이 필터는
-      "앞으로 새로 탐색되는" 영상만 막으므로, 이미 라이브러리에 저장된 트랙이 나중에
-      MFK로 재지정되는 경우까지 잡으려면 위 "YouTube API 데이터 30일 갱신 배치 작업"에서도
-      `status` part를 같이 조회해 걸러내는 로직이 안전망으로 계속 필요하다 — 두 작업을
-      같이 설계할 것.

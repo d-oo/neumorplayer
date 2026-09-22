@@ -12,6 +12,7 @@ import {
 import type { Track } from "@/features/library/lib/tracks";
 import { CheckIcon, QueueIcon } from "@/shared/components/icons";
 import IconCircleButton from "@/shared/components/IconCircleButton";
+import Modal from "@/shared/components/Modal";
 
 // old-src/src/components/MusicInfo.js의 "playlist_add" 흐름을 이어받습니다.
 // PlayerPanel(현재 재생 곡)과 MusicInfoPage(곡 상세)가 정확히 같은 동작을 필요로 해서
@@ -107,92 +108,82 @@ export default function AddToPlaylistButton({
         </span>
       )}
 
-      {open && (
-        <div
-          className="fixed inset-0 z-30 grid place-items-center bg-[rgba(40,22,58,0.32)]"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="flex w-93 flex-col gap-4 rounded-[20px] border border-white/85 bg-neu-surface px-5.5 pt-5.5 pb-5"
-            style={{
-              boxShadow:
-                "18px 18px 40px rgba(60,40,84,0.45), -8px -8px 18px rgba(255,255,255,0.7)",
-            }}
-          >
-            <div>
-              <p className="text-base font-extrabold tracking-[-0.02em]">
-                재생목록에 추가
-              </p>
-              <p className="mt-1.25 text-[12.5px] text-neu-muted">
-                {track.title} · {track.artist.join(", ")}
-              </p>
-            </div>
-
-            <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
-              {playlists.length === 0 ? (
-                <p className="px-1 py-2 text-xs text-neu-muted">
-                  재생목록이 없습니다. 사이드바에서 먼저 만들어주세요.
-                </p>
-              ) : (
-                playlists.map((playlist) => {
-                  const isMember = memberSet.has(playlist.id);
-                  const isChecked = isMember || selectedIds.has(playlist.id);
-                  return (
-                    <button
-                      key={playlist.id}
-                      type="button"
-                      disabled={isMember}
-                      onClick={() => toggle(playlist.id)}
-                      className="flex items-center gap-2.75 rounded-[11px] px-3 py-2.5 text-left select-none hover:bg-neu-accent-tint disabled:cursor-default"
-                    >
-                      <span
-                        className="grid h-5 w-5 flex-none place-items-center rounded-md"
-                        style={{
-                          background: isChecked
-                            ? "linear-gradient(145deg, #8127b8, #5c1287)"
-                            : "oklch(0.908 0.014 315)",
-                          boxShadow: isChecked
-                            ? "3px 3px 7px rgba(124,94,164,0.45), -2px -2px 6px rgba(255,255,255,0.9)"
-                            : "inset 3px 3px 6px rgba(150,136,175,0.5), inset -2px -2px 5px rgba(255,255,255,0.9)",
-                        }}
-                      >
-                        {isChecked && <CheckIcon className="text-white" />}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-neu-ink">
-                        {playlist.title}
-                      </span>
-                      <span className="flex-none font-neu-mono text-[11.5px] text-neu-muted">
-                        {playlist.trackCount}곡
-                      </span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="h-px bg-[rgba(142,128,166,0.28)]" />
-
-            <div className="flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full border border-white/85 px-4.5 py-2.25 text-[13px] font-semibold text-[oklch(0.4_0.025_315)] shadow-neu-pill-secondary hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-pill-active"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={commit}
-                disabled={addMutation.isPending}
-                className="rounded-full px-5 py-2.25 text-[13px] font-bold text-neu-hi [background:var(--neu-cta-pill-grad)] shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:cursor-default disabled:opacity-60"
-              >
-                추가
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        className="w-93 px-5.5 pt-5.5 pb-5"
+      >
+        <div>
+          <p className="text-base font-extrabold tracking-[-0.02em]">
+            재생목록에 추가
+          </p>
+          <p className="mt-1.25 text-[12.5px] text-neu-muted">
+            {track.title} · {track.artist.join(", ")}
+          </p>
         </div>
-      )}
+
+        <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
+          {playlists.length === 0 ? (
+            <p className="px-1 py-2 text-xs text-neu-muted">
+              재생목록이 없습니다. 사이드바에서 먼저 만들어주세요.
+            </p>
+          ) : (
+            playlists.map((playlist) => {
+              const isMember = memberSet.has(playlist.id);
+              const isChecked = isMember || selectedIds.has(playlist.id);
+              return (
+                <button
+                  key={playlist.id}
+                  type="button"
+                  disabled={isMember}
+                  onClick={() => toggle(playlist.id)}
+                  className="flex items-center gap-2.75 rounded-[11px] px-3 py-2.5 text-left select-none hover:bg-neu-accent-tint disabled:cursor-default"
+                >
+                  <span
+                    className="grid h-5 w-5 flex-none place-items-center rounded-md"
+                    style={{
+                      background: isChecked
+                        ? "linear-gradient(145deg, #8127b8, #5c1287)"
+                        : "oklch(0.908 0.014 315)",
+                      boxShadow: isChecked
+                        ? "3px 3px 7px rgba(124,94,164,0.45), -2px -2px 6px rgba(255,255,255,0.9)"
+                        : "inset 3px 3px 6px rgba(150,136,175,0.5), inset -2px -2px 5px rgba(255,255,255,0.9)",
+                    }}
+                  >
+                    {isChecked && <CheckIcon className="text-white" />}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-neu-ink">
+                    {playlist.title}
+                  </span>
+                  <span className="flex-none font-neu-mono text-[11.5px] text-neu-muted">
+                    {playlist.trackCount}곡
+                  </span>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        <div className="h-px bg-[rgba(142,128,166,0.28)]" />
+
+        <div className="flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="rounded-full border border-white/85 px-4.5 py-2.25 text-[13px] font-semibold text-[oklch(0.4_0.025_315)] shadow-neu-pill-secondary hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-pill-active"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={commit}
+            disabled={addMutation.isPending}
+            className="rounded-full px-5 py-2.25 text-[13px] font-bold text-neu-hi [background:var(--neu-cta-pill-grad)] shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:cursor-default disabled:opacity-60"
+          >
+            추가
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }
