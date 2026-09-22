@@ -74,6 +74,8 @@ export default function LoginPage() {
           required
           minLength={6}
         />
+        {/* 시안 초안엔 "로그인 상태 유지" 체크박스와 "비밀번호 찾기" 링크가 있었지만
+            실수로 들어간 항목이라 최신 시안에서 이미 빠졌습니다 — 다시 넣지 마세요. */}
         {error ? <FormError>{error}</FormError> : null}
         <PrimaryButton type="submit" disabled={submitting}>
           {submitting ? "로그인 중..." : "로그인"}
@@ -81,6 +83,8 @@ export default function LoginPage() {
 
         <Divider>또는</Divider>
 
+        {/* Google 로그인은 여기에만 있음 — OAuth는 별도 회원가입 절차 없이 바로
+            로그인되므로 SignupPage엔 두지 않았습니다. */}
         <GoogleButton onClick={() => void signInWithGoogle()}>
           <GoogleIcon />
           Google로 계속하기

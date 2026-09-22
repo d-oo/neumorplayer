@@ -4,6 +4,9 @@ import type { ReactNode } from "react";
 // docs/design/의 "데스크탑 로그인 및 회원가입 화면" 시안을 옮긴 뒤, docs/design/
 // 수정본2.zip(Auth Screens.dc.html, 3a/3b)의 카드 치수·워드마크·배지 이미지로
 // 갱신했습니다 — 값을 바꾸기 전에 그 zip을 먼저 확인하세요.
+// 예전엔 폼 패널 위에 작은 라벨을 보여주는 heading prop도 받았지만, 그 역할을 지금은
+// 브랜드 패널의 title이 대신하고 있습니다 — 인증 화면을 더 추가할 때 heading을
+// 다시 들여오지 마세요.
 export default function AuthLayout({
   title,
   subtitle,

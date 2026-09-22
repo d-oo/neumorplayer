@@ -14,6 +14,7 @@ import {
 } from "@/features/playlist/lib/playlists";
 import { PlusIcon } from "@/shared/components/icons";
 import PlaylistCoverGrid from "./PlaylistCoverGrid";
+import MarqueeText from "./MarqueeText";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
@@ -187,9 +188,10 @@ export default function QueueCard() {
                         />
                       </ThumbBox>
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold leading-4.5 text-neu-ink">
-                          {pl.title}
-                        </p>
+                        <MarqueeText
+                          text={pl.title}
+                          className="text-[13px] font-semibold leading-4.5 text-neu-ink"
+                        />
                         <p className="mt-0.5 truncate text-[11.5px] leading-3.75 text-neu-muted">
                           {pl.trackCount}곡
                         </p>

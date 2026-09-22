@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 // "검색"/"추가"가 공유하는 알약 모양 CTA 버튼 — docs/design/ 시안의 "추가" 버튼
 // 스타일 그대로입니다. 활성 상태일 때만 라벤더 그라디언트 + 보라색 글자로 강조되고,
 // 비활성 상태는 눌린 듯한 sunken 그림자로 가라앉습니다. shared/components/PillButton은
@@ -11,12 +13,18 @@
 // 죽은 코드가 됩니다(실제로 이 버튼의 active:shadow-neu-pill-active가 그런
 // 상태였습니다). 이 배경/그림자 값은 재생목록 정보·트랙 상세의 "재생" 버튼과도
 // 동일해서(docs/design/수정본2.zip) 토큰 이름이 --neu-cta-pill-*(범용)입니다.
+//
+// icon은 docs/design/랜딩 페이지.zip의 탐색 카드 "재생" 버튼(재생 삼각형+텍스트)처럼
+// 라벨 앞에 아이콘이 필요한 자리를 위한 선택 prop입니다 — 기존 "검색"/"추가"처럼
+// 텍스트만 있는 호출부는 그대로 동작합니다.
 export default function ActionButton({
   label,
+  icon,
   enabled,
   onClick,
 }: {
   label: string;
+  icon?: ReactNode;
   enabled: boolean;
   onClick: () => void;
 }) {
@@ -25,8 +33,9 @@ export default function ActionButton({
       type="button"
       onClick={onClick}
       disabled={!enabled}
-      className="rounded-full px-6 py-2.75 text-sm font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 [background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:[background:oklch(0.928_0.013_315)] disabled:text-[oklch(0.58_0.02_315)] disabled:shadow-neu-cta-pill-disabled disabled:cursor-default"
+      className="flex items-center gap-2.25 rounded-full px-6 py-2.75 text-sm font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 [background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:[background:oklch(0.928_0.013_315)] disabled:text-[oklch(0.58_0.02_315)] disabled:shadow-neu-cta-pill-disabled disabled:cursor-default"
     >
+      {icon}
       {label}
     </button>
   );

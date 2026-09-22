@@ -12,6 +12,7 @@ import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButto
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import { PauseIcon, PencilIcon, PlayIcon, TrashIcon } from "@/shared/components/icons";
+import MarqueeText from "@/features/player/components/MarqueeText";
 
 async function fetchTrack(id: string): Promise<Track> {
   const { data, error } = await supabase
@@ -118,7 +119,7 @@ export default function MusicInfoPage() {
         트랙
       </p>
       <h1 className="mt-2.5 mb-3 text-[40px] leading-[1.05] font-extrabold tracking-[-0.045em] text-neu-ink">
-        {track.title}
+        <MarqueeText text={track.title} />
       </h1>
       <p className="text-[13px] text-neu-muted">{track.artist.join(", ")}</p>
 

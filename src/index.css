@@ -116,6 +116,16 @@
   /* 트랙 상세 화면의 태그 알약 전용 함몰 그림자. */
   --neu-shadow-tag-chip: inset 3px 3px 7px rgba(150, 136, 175, 0.35),
     inset -2px -2px 6px rgba(255, 255, 255, 0.85);
+
+  /* docs/design/랜딩 페이지.zip — 랜딩 헤더의 "시작하기" 버튼 전용 그림자(idle/active).
+     배경은 기존 --neu-cta-pill-grad와 값이 같아 재사용하지만, 그림자 오프셋/블러/알파는
+     --neu-shadow-cta-pill과 미묘히 달라 섞지 않고 새 이름으로 둡니다. active 의사
+     클래스가 필요해서(인라인 style로는 :active를 표현할 수 없음) 한 곳에서만 쓰여도
+     토큰으로 등록합니다(다중 그림자 임의값 클래스는 콤마 때문에 무시될 수 있어서). */
+  --neu-shadow-header-cta: 6px 6px 14px rgba(138, 110, 172, 0.5),
+    -4px -4px 11px rgba(255, 255, 255, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --neu-shadow-header-cta-active: inset 4px 4px 10px rgba(150, 120, 182, 0.5),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.9);
 }
 
 @theme {
@@ -153,6 +163,8 @@
   --shadow-neu-highlight: var(--neu-shadow-highlight);
   --shadow-neu-pill-secondary: var(--neu-shadow-pill-secondary);
   --shadow-neu-tag-chip: var(--neu-shadow-tag-chip);
+  --shadow-neu-header-cta: var(--neu-shadow-header-cta);
+  --shadow-neu-header-cta-active: var(--neu-shadow-header-cta-active);
 }
 
 /* box-sizing 리셋, 폼 요소의 font-family 상속 등은 Tailwind의 preflight(위 @import에
@@ -177,5 +189,17 @@ button:not(:disabled) {
   }
   100% {
     height: 100%;
+  }
+}
+
+/* MarqueeText.tsx(features/player) 전용 — 폭을 넘치는 제목을 좌우로 끊기지 않게
+   흘려보냅니다. 콘텐츠를 두 번 이어붙인 뒤 정확히 절반(-50%)만큼 옮기면 두 번째
+   사본이 첫 번째가 시작한 자리에 그대로 겹쳐 루프가 끊기지 않습니다. */
+@keyframes neu-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }

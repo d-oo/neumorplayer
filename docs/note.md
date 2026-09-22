@@ -24,6 +24,9 @@
    - SQL Editor에서 [`docs/migrations/0001_init.sql`](migrations/0001_init.sql) 실행
    - Authentication → Providers에서 Google OAuth 활성화 (Google Cloud Console에서 OAuth 클라이언트 ID 발급 필요)
    - Authentication → Providers에서 Email 활성화 (기본 활성화되어 있음)
+   - Authentication → Providers → Email의 "Confirm email" 옵션을 꺼두세요 — 회원가입
+     화면(`SignupPage.tsx`)이 가입 성공 시 바로 세션이 생긴다고 가정하고 짜여 있어서,
+     이 옵션이 켜져 있으면 그 가정이 깨집니다.
 
 3. `.env.example`을 복사해 `.env.local` 생성 후 값 채우기
 

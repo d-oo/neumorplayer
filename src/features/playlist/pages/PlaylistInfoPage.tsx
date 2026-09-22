@@ -41,6 +41,7 @@ import {
   XIcon,
 } from "@/shared/components/icons";
 import PlaylistCoverGrid from "@/features/player/components/PlaylistCoverGrid";
+import MarqueeText from "@/features/player/components/MarqueeText";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
@@ -134,21 +135,21 @@ function SortableTrackRow({
             <TrackThumbnail videoId={track.video_id} className="h-full w-full" />
           </ThumbBox>
           <div className="min-w-0">
-            <p
-              className="truncate text-sm font-semibold"
+            <MarqueeText
+              text={track.title}
+              className="text-sm font-semibold"
               style={{ color: isCurrentTrack ? "#6d1a9f" : "oklch(0.3 0.025 315)" }}
-            >
-              {track.title}
-            </p>
+            />
             <p className="mt-0.75 truncate text-[12.5px] text-[oklch(0.46_0.025_315)]">
               {track.artist.join(", ")}
             </p>
           </div>
         </div>
       </div>
-      <div className="truncate text-xs text-neu-muted">
-        {track.tags.map((tag) => `#${tag}`).join("  ")}
-      </div>
+      <MarqueeText
+        text={track.tags.map((tag) => `#${tag}`).join("  ")}
+        className="text-xs text-neu-muted"
+      />
       <div className="text-right font-neu-mono text-[12.5px] text-neu-muted">
         {track.play_count.toLocaleString()}
       </div>
@@ -294,7 +295,7 @@ export default function PlaylistInfoPage() {
             재생목록
           </p>
           <h1 className="mt-2.5 mb-3 text-[44px] font-extrabold leading-[1.04] tracking-[-0.045em] text-neu-ink">
-            {playlist.title}
+            <MarqueeText text={playlist.title} />
           </h1>
           <p className="text-[13px] text-neu-muted">
             {tracks.length}곡 · {Math.floor(totalSeconds / 60)}분{" "}
