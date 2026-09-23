@@ -5,8 +5,9 @@
 
 ## 핵심 흐름
 
-1. **탐색(Explore)**: 사용자가 YouTube Data API로 곡을 검색합니다(`api/youtube-search.ts`,
-   `api/youtube-video.ts` 프록시 경유). 검색 결과에서 태그를 지정해 추가하면 `tracks`
+1. **탐색(Explore)**: 사용자가 YouTube Data API로 곡을 검색합니다(`api/youtube-search.ts`
+   프록시 경유 — 이 함수 하나가 검색과 영상 상세 조회를 함께 처리합니다). 검색 결과에서
+   태그를 지정해 추가하면 `tracks`
    테이블에 저장됩니다 — 이 시점부터 "라이브러리"의 일부가 됩니다.
 2. **라이브러리(Library)**: 탐색을 통해 추가된 곡들이 모이는 곳입니다. 라이브러리 내
    검색창으로 제목/아티스트/태그 기준으로 필터링할 수 있습니다(Supabase

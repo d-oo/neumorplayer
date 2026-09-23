@@ -6,11 +6,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import InfoBox from "@/shared/components/InfoBox";
-import { fieldBoxStyle } from "@/features/explore/lib/field-box-style";
+import { fieldBoxStyle } from "@/shared/styles/field-box-style";
 import { useExploreSearch } from "@/features/explore/lib/useExploreSearch";
 import { useTagSelection } from "@/features/explore/lib/useTagSelection";
 import { useAddTrackMutation } from "@/features/explore/lib/useAddTrackMutation";
-import ActionButton from "@/features/explore/components/ActionButton";
+import ActionButton from "@/shared/components/ActionButton";
 import ResultCard from "@/features/explore/components/ResultCard";
 import TagPicker from "@/features/explore/components/TagPicker";
 
@@ -19,8 +19,7 @@ import TagPicker from "@/features/explore/components/TagPicker";
 // 정리된 흐름대로 별도 라우트("탐색")로 분리했습니다. docs/design/ 시안(탐색 화면)의
 // 색상·그림자·치수를 그대로 옮겼습니다.
 // 제목/아티스트를 입력하고 "검색" 버튼(또는 입력창에서 Enter)을 눌러야 실제로
-// /api/youtube-search + /api/youtube-video를 호출합니다(타이핑마다 자동 호출하지
-// 않음). 아티스트는 old-src처럼 콤마로 여러 명 입력할 수 있고, 콤마로 구분된 조각 중
+// /api/youtube-search를 호출합니다(타이핑마다 자동 호출하지 않음). 아티스트는 old-src처럼 콤마로 여러 명 입력할 수 있고, 콤마로 구분된 조각 중
 // 하나라도 비어 있으면(trailing comma 등) "추가" 버튼이 비활성화됩니다. 제목이
 // 비어 있어도 마찬가지입니다.
 export default function ExplorePage() {
@@ -105,7 +104,7 @@ export default function ExplorePage() {
       <h1 className="mb-1.75 text-[26px] font-extrabold tracking-[-0.035em] text-neu-ink">
         탐색
       </h1>
-      <p className="mb-6.5 text-[13px] text-[oklch(0.46_0.025_315)]">
+      <p className="mb-6.5 text-[13px] text-neu-muted">
         아티스트와 제목으로 찾아 라이브러리에 추가합니다.
       </p>
 

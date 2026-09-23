@@ -1,4 +1,4 @@
-import { fieldBoxStyle } from "@/features/explore/lib/field-box-style";
+import { fieldBoxStyle } from "@/shared/styles/field-box-style";
 
 // 태그 직접 입력창 + 제안/커스텀 태그 토글 목록. useTagSelection 훅이 들고 있는
 // 상태를 그대로 props로 받는 순수 렌더링 컴포넌트입니다.
@@ -68,19 +68,19 @@ export default function TagPicker({
               style={{
                 background: isOn
                   ? "oklch(0.912 0.014 315)"
-                  : "oklch(0.935 0.013 315)",
+                  : "var(--neu-surface)",
                 boxShadow: isOn
                   ? "inset 3px 3px 7px rgba(150,136,175,0.4), inset -3px -3px 6px rgba(255,255,255,0.85)"
-                  : "5px 5px 12px rgba(142,128,166,0.4), -4px -4px 10px rgba(255,255,255,0.9)",
+                  : "var(--neu-shadow-chip-raised)",
                 borderColor: isOn
                   ? "rgba(255,255,255,0.7)"
                   : "rgba(255,255,255,0.8)",
-                color: isOn ? "#6d1a9f" : "oklch(0.3 0.025 315)",
+                color: isOn ? "var(--neu-hi)" : "var(--neu-ink)",
               }}
             >
               <span className="text-[13.5px] font-bold">#{tag}</span>
               {count !== undefined && (
-                <span className="text-xs opacity-[0.68]">{count}곡</span>
+                <span className="text-xs opacity-68">{count}곡</span>
               )}
             </button>
           );

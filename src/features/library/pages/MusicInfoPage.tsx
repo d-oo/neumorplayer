@@ -4,33 +4,25 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVideoSlot } from "@/features/player/hooks/useVideoSlot";
 import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { supabase } from "@/shared/lib/supabase";
-import { tracksQueryKey, type Track } from "../lib/tracks";
+import {
+  deleteTrack,
+  fetchTrack,
+  trackQueryKey,
+  tracksQueryKey,
+} from "../lib/tracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { formatDuration } from "@/shared/lib/format-time";
+import { secondaryCircleButtonClass } from "@/shared/styles/secondary-button-class";
 import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButton";
+import PlayPauseButton from "@/features/player/components/PlayPauseButton";
 import IconCircleButton from "@/shared/components/IconCircleButton";
+import MutedNote from "@/shared/components/MutedNote";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
-import { PauseIcon, PencilIcon, PlayIcon, TrashIcon } from "@/shared/components/icons";
+import { PencilIcon, TrashIcon } from "@/shared/components/icons";
 import MarqueeText from "@/features/player/components/MarqueeText";
 
-async function fetchTrack(id: string): Promise<Track> {
-  const { data, error } = await supabase
-    .from("tracks")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-// 재생목록 정보(PlaylistInfoPage)의 "셔플·수정·삭제"와 같은 보조 44px 원형 버튼
-// 클래스 — 색상만 각자 다르게 얹습니다.
-const secondaryButtonClass =
-  "bg-neu-surface border border-white/85 shadow-neu-pill-secondary active:shadow-neu-pill-active";
-
 const statBoxStyle = {
-  background: "oklch(0.935 0.013 315)",
+  background: "var(--neu-surface)",
   boxShadow:
     "inset 4px 4px 9px rgba(150,136,175,0.42), inset -3px -3px 7px rgba(255,255,255,0.93)",
 };
@@ -65,7 +57,7 @@ export default function MusicInfoPage() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["track", musicId],
+    queryKey: trackQueryKey(musicId),
     queryFn: () => fetchTrack(musicId!),
     enabled: !!musicId,
   });
@@ -88,11 +80,7 @@ export default function MusicInfoPage() {
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!musicId) return;
-      const { error } = await supabase
-        .from("tracks")
-        .delete()
-        .eq("id", musicId);
-      if (error) throw error;
+      await deleteTrack(musicId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tracksQueryKey(user?.id) });
@@ -107,10 +95,10 @@ export default function MusicInfoPage() {
   }
 
   if (isLoading) {
-    return <p className="text-sm text-neu-muted">불러오는 중...</p>;
+    return <MutedNote>불러오는 중...</MutedNote>;
   }
   if (isError || !track) {
-    return <p className="text-sm text-neu-muted">곡 정보를 불러오지 못했습니다.</p>;
+    return <MutedNote>곡 정보를 불러오지 못했습니다.</MutedNote>;
   }
 
   return (
@@ -136,7 +124,7 @@ export default function MusicInfoPage() {
         </div>
       )}
 
-      <div className="my-6.5 h-px bg-[rgba(142,128,166,0.28)]" />
+      <div className="my-6.5 h-px bg-neu-divider" />
 
       <div className="flex items-start gap-6.5">
         <div
@@ -178,27 +166,16 @@ export default function MusicInfoPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <IconCircleButton
-              size="xl"
-              tooltip={isThisTrackPlaying && isPlaying ? "일시정지" : "재생"}
+            <PlayPauseButton
+              playing={isThisTrackPlaying && isPlaying}
               onClick={handlePlayClick}
-              aria-label={
-                isThisTrackPlaying && isPlaying ? "일시정지" : "재생"
-              }
-              className="[background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active"
-            >
-              {isThisTrackPlaying && isPlaying ? (
-                <PauseIcon />
-              ) : (
-                <PlayIcon className="ml-0.5" />
-              )}
-            </IconCircleButton>
+            />
             <AddToPlaylistButton track={track} size="xl" />
             <IconCircleButton
               size="xl"
               tooltip="수정"
               aria-label="수정"
-              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
             >
               <PencilIcon />
             </IconCircleButton>
@@ -208,7 +185,7 @@ export default function MusicInfoPage() {
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
               aria-label="삭제"
-              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
+              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
             >
               <TrashIcon />
             </IconCircleButton>

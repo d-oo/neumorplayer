@@ -5,7 +5,11 @@ import { deleteAccount } from "../api/account";
 import Modal from "@/shared/components/Modal";
 import { MoonIcon, SunIcon } from "@/shared/components/icons";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
-import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
+import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
+import {
+  segmentTabClass,
+  segmentTabStyle,
+} from "@/shared/styles/segment-tab-style";
 
 // ProfileDropdown의 "설정" 메뉴가 여는 모달(docs/todos.md 항목 처리). 테마 선택은
 // 아직 실제 다크모드 구현이 없어 선택 상태만 로컬로 바꾸는 UI 껍데기다 — 적용도,
@@ -63,7 +67,7 @@ export default function SettingsModal({
               type="button"
               onClick={() => setConfirmingDelete(false)}
               disabled={deleteMutation.isPending}
-              className="rounded-full border border-white/85 px-4.5 py-2.25 text-[13px] font-semibold text-[oklch(0.4_0.025_315)] shadow-neu-pill-secondary hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-pill-active disabled:cursor-default disabled:opacity-60"
+              className={`px-4.5 py-2.25 text-[13px] text-[oklch(0.4_0.025_315)] hover:text-[oklch(0.24_0.025_315)] disabled:cursor-default disabled:opacity-60 ${secondaryPillButtonClass}`}
             >
               취소
             </button>
@@ -94,11 +98,9 @@ export default function SettingsModal({
               <button
                 type="button"
                 onClick={() => setTheme("light")}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
-                  theme === "light"
-                    ? "text-neu-hi shadow-neu-tab-raised"
-                    : "text-neu-muted"
-                }`}
+                className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-[12.5px] ${segmentTabClass(
+                  theme === "light",
+                )}`}
                 style={segmentTabStyle(theme === "light")}
               >
                 <SunIcon className="flex-none" />
@@ -107,11 +109,9 @@ export default function SettingsModal({
               <button
                 type="button"
                 onClick={() => setTheme("dark")}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
-                  theme === "dark"
-                    ? "text-neu-hi shadow-neu-tab-raised"
-                    : "text-neu-muted"
-                }`}
+                className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-[12.5px] ${segmentTabClass(
+                  theme === "dark",
+                )}`}
                 style={segmentTabStyle(theme === "dark")}
               >
                 <MoonIcon className="flex-none" />
@@ -120,7 +120,7 @@ export default function SettingsModal({
             </div>
           </div>
 
-          <div className="h-px bg-[rgba(142,128,166,0.28)]" />
+          <div className="h-px bg-neu-divider" />
 
           <div className="flex items-center justify-between">
             <div>
@@ -134,7 +134,7 @@ export default function SettingsModal({
             <button
               type="button"
               onClick={() => setConfirmingDelete(true)}
-              className="flex-none rounded-full border border-white/85 px-4 py-2 text-[12.5px] font-semibold text-[oklch(0.5_0.17_22)] shadow-neu-pill-secondary hover:text-[oklch(0.44_0.17_22)] active:shadow-neu-pill-active"
+              className={`flex-none px-4 py-2 text-[12.5px] text-[oklch(0.5_0.17_22)] hover:text-[oklch(0.44_0.17_22)] ${secondaryPillButtonClass}`}
             >
               회원탈퇴
             </button>

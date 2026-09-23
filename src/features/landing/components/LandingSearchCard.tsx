@@ -1,13 +1,13 @@
-import ActionButton from "@/features/explore/components/ActionButton";
+import ActionButton from "@/shared/components/ActionButton";
 import ResultCard from "@/features/explore/components/ResultCard";
-import { fieldBoxStyle } from "@/features/explore/lib/field-box-style";
+import { fieldBoxStyle } from "@/shared/styles/field-box-style";
 import InfoBox from "@/shared/components/InfoBox";
 import { PlayIcon, SearchGlyphIcon, XIcon } from "@/shared/components/icons";
 import type { useGuestPlayer } from "../lib/useGuestPlayer";
 import type { useLandingSearch } from "../lib/useLandingSearch";
 
-// 886px 탐색 카드. 검색은 실제 /api/youtube-search + /api/youtube-video를 그대로
-// 호출하는 useLandingSearch가 담당하고, 결과 카드는 explore의 ResultCard를 그대로
+// 886px 탐색 카드. 검색은 실제 /api/youtube-search를 그대로 호출하는
+// useLandingSearch가 담당하고, 결과 카드는 explore의 ResultCard를 그대로
 // 재사용합니다(마크업이 시안과 동일). 시안엔 검색 결과에 "앨범"이 표시되지만 YouTube
 // Data API엔 앨범 개념이 없어 ResultCard도 표시하지 않으므로 추가 처리가 필요 없고,
 // placeholder 카피만 앨범을 빼서 맞췄습니다.

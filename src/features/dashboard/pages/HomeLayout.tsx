@@ -1,17 +1,24 @@
-import { useState, type ReactNode } from "react";
-import { NavLink, Outlet, useSearchParams } from "react-router-dom";
+import { type ReactNode } from "react";
+import { NavLink, Outlet } from "react-router-dom";
+import { useLibrarySearchQuery } from "../lib/useLibrarySearchQuery";
 import ProfileDropdown from "@/features/auth/components/ProfileDropdown";
+import BrandWordmark from "@/shared/components/BrandWordmark";
 import PlayerPanel from "@/features/player/components/PlayerPanel";
 import QueueCard from "@/features/player/components/QueueCard";
 import YouTubePlayer from "@/features/player/components/YouTubePlayer";
 import { VideoSlotProvider } from "@/features/player/VideoSlotProvider";
 import { SearchGlyphIcon } from "@/shared/components/icons";
 import SearchResultsView from "@/features/library/components/SearchResultsView";
-import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
+import {
+  segmentTabClass,
+  segmentTabStyle,
+} from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
+import { fieldBoxStyle } from "@/shared/styles/field-box-style";
 
-// docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 활성/비활성 배경은
-// segmentTabStyle 공유(LibraryPage 정렬 탭, QueueCard 토글과 동일한 값).
+// docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 배경(segmentTabStyle)과
+// 공통 클래스(segmentTabClass)를 LibraryPage 정렬 탭·QueueCard 토글·SettingsModal
+// 테마 선택과 공유하고, 패딩·글자 크기만 여기서 따로 얹습니다.
 function HeaderNavTab({
   to,
   end,
@@ -26,9 +33,7 @@ function HeaderNavTab({
       to={to}
       end={end}
       className={({ isActive }) =>
-        `whitespace-nowrap rounded-[9px] px-3.5 py-1.75 text-[13px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
-          isActive ? "text-neu-hi shadow-neu-tab-raised" : "text-neu-muted"
-        }`
+        `whitespace-nowrap px-3.5 py-1.75 text-[13px] ${segmentTabClass(isActive)}`
       }
       style={({ isActive }) => segmentTabStyle(isActive)}
     >
@@ -45,37 +50,13 @@ function HeaderNavTab({
 // music/:musicId 라우트에서만 화면에 보이지만 다른 라우트로 이동해도 배경 재생을 위해
 // 항상 마운트된 상태를 유지합니다(라우트 페이지 안에 두면 라우트 전환 시 언마운트되어
 // 재생이 끊깁니다 — 대신 VideoSlotProvider로 "어디에 보여줄지"만 전달합니다).
-// 헤더의 "라이브러리 내 검색" 입력은 시안대로 여기(헤더)에 있습니다. ?q=가 있으면
-// 시안의 isSearch 상태처럼 지금 보고 있던 라우트(Outlet) 대신 SearchResultsView를
-// 보여주고, 지우면 원래 라우트로 돌아갑니다.
+// 헤더의 "라이브러리 내 검색" 입력은 시안대로 여기(헤더)에 있습니다. 입력값/?q= 커밋
+// 규칙은 useLibrarySearchQuery가 담당하고, 여기서는 커밋된 query가 있으면 시안의
+// isSearch 상태처럼 지금 보고 있던 라우트(Outlet) 대신 SearchResultsView를 보여주고,
+// 지우면 원래 라우트로 돌아갑니다.
 export default function HomeLayout() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("q") ?? "";
-
-  // 입력창 값은 로컬 상태로만 들고 있다가, 엔터를 누르거나 검색 아이콘을 클릭했을 때만
-  // ?q=를 커밋합니다(타이핑 즉시 검색 결과 화면으로 넘어가지 않도록). 뒤로가기 등으로
-  // query가 바뀌면(예: 다른 탭으로 이동) 입력창도 따라갑니다 — useEffect 대신 React
-  // 공식 문서가 권장하는 "prop 변경 시 상태 조정" 패턴(렌더 중 직접 비교 후 setState)을
-  // 씁니다. useEffect로 하면 커밋된 값을 화면에 그리고 나서 한 프레임 뒤에 다시 리렌더가
-  // 발생합니다.
-  const [inputValue, setInputValue] = useState(query);
-  const [syncedQuery, setSyncedQuery] = useState(query);
-  if (query !== syncedQuery) {
-    setSyncedQuery(query);
-    setInputValue(query);
-  }
-
-  function commitQuery(value: string) {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (value) next.set("q", value);
-        else next.delete("q");
-        return next;
-      },
-      { replace: true },
-    );
-  }
+  const { query, inputValue, setInputValue, commitQuery } =
+    useLibrarySearchQuery();
 
   return (
     <VideoSlotProvider>
@@ -99,7 +80,7 @@ export default function HomeLayout() {
           <div className="flex h-full w-full flex-col overflow-hidden rounded-3xl border border-white/80 bg-neu-surface shadow-neu-raised">
             <header
               className="flex items-center gap-3.5 px-5.5 py-3.5"
-              style={{ borderBottom: "1px solid rgba(142,128,166,0.28)" }}
+              style={{ borderBottom: "1px solid var(--neu-divider)" }}
             >
               <div className="flex flex-none items-center gap-2.25">
                 <img
@@ -111,9 +92,7 @@ export default function HomeLayout() {
                       "5px 5px 11px rgba(142,128,166,0.55), -4px -4px 9px rgba(255,255,255,0.95)",
                   }}
                 />
-                <span className="text-base font-extrabold tracking-[-0.04em] text-neu-ink">
-                  YTMPlayer
-                </span>
+                <BrandWordmark />
               </div>
 
               <nav
@@ -128,11 +107,7 @@ export default function HomeLayout() {
 
               <div
                 className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[11px] border border-white/80 px-3.5 py-2.25"
-                style={{
-                  background: "oklch(0.915 0.014 315)",
-                  boxShadow:
-                    "inset 4px 4px 8px rgba(142,128,166,0.36), inset -3px -3px 7px rgba(255,255,255,0.85)",
-                }}
+                style={fieldBoxStyle}
               >
                 <input
                   value={inputValue}

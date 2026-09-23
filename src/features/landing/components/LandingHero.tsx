@@ -20,7 +20,7 @@ export default function LandingHero() {
           Neumorphism
         </span>
         <span
-          className="text-[#6d1a9f]"
+          className="text-neu-hi"
           style={{
             textShadow:
               "2px 2px 3px rgba(255,255,255,0.95), -2px -2px 4px rgba(128,108,158,0.5)",

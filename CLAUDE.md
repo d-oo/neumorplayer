@@ -48,7 +48,7 @@ npm run preview   # 프로덕션 빌드 미리보기
 등 이미 겪은 함정들이 그 파일에 정리되어 있습니다).
 
 `npm run dev`는 프론트엔드만 서빙합니다. `api/` 아래의 라우트는 Vercel Functions이라
-일반 `vite dev`로는 동작하지 않습니다 — `/api/youtube-search`, `/api/youtube-video`를
+일반 `vite dev`로는 동작하지 않습니다 — `/api/youtube-search`, `/api/account-delete`를
 로컬에서 테스트하려면 터미널을 하나 더 열어 `vercel dev`(`npm i -g vercel` 후 `vercel dev`,
 기본 3000번 포트)를 띄우세요. **브라우저로는 계속 `npm run dev`의 5173번 포트를 열어야
 합니다 — `vercel dev`가 띄우는 포트를 직접 열지 마세요.** `vite.config.ts`의

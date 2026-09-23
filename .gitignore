@@ -3,12 +3,14 @@ dist
 dist-ssr
 *.tsbuildinfo
 *.local
-.env
-.env.local
 .vercel
 .DS_Store
 *.log
 old-src
 .claude/skills/run-neumorplayer/screenshots/
-.vercel
 supabase/.temp
+
+# .env.example은 셋업 안내(docs/note.md)가 복사해 쓰라고 하는 파일이라 커밋합니다 —
+# .env* 뒤에 예외를 두지 않으면 조용히 무시됩니다.
+.env*
+!.env.example

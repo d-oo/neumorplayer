@@ -1,10 +1,10 @@
 import { useCdPlayerPhysics } from "@/features/player/hooks/useCdPlayerPhysics";
 import CdDisc from "@/features/player/components/CdDisc";
-import MarqueeText from "@/features/player/components/MarqueeText";
+import NowPlayingTitle from "@/features/player/components/NowPlayingTitle";
+import SeekBar from "@/features/player/components/SeekBar";
 import VolumeKnob from "@/features/player/components/VolumeKnob";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import { RepeatIcon } from "@/shared/components/icons";
-import { formatDuration } from "@/shared/lib/format-time";
 import type { useGuestPlayer } from "../lib/useGuestPlayer";
 
 // 340×297 CD 플레이어 카드. features/player의 CdDisc/VolumeKnob(순수 마크업)과
@@ -18,7 +18,6 @@ export default function LandingCdPlayer({
 }) {
   const { track, isPlaying, currentTime, duration, volume, repeat } =
     guestPlayer;
-  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const physics = useCdPlayerPhysics({
     hasTrack: !!track,
@@ -52,15 +51,10 @@ export default function LandingCdPlayer({
       </div>
 
       <div className="flex items-center gap-3.5">
-        <div className="min-w-0 flex-1">
-          <MarqueeText
-            text={track?.title ?? "재생 중인 곡 없음"}
-            className="text-xl font-extrabold tracking-[-0.035em] text-neu-ink"
-          />
-          <div className="mt-1.25 truncate text-[12.5px] text-neu-muted">
-            {track?.channelTitle ?? "-"}
-          </div>
-        </div>
+        <NowPlayingTitle
+          title={track?.title ?? "재생 중인 곡 없음"}
+          subtitle={track?.channelTitle ?? "-"}
+        />
         <IconCircleButton
           size="lg"
           onClick={guestPlayer.toggleRepeat}
@@ -76,32 +70,11 @@ export default function LandingCdPlayer({
         </IconCircleButton>
       </div>
 
-      <div className="flex items-center gap-2.5">
-        <div className="w-8.5 font-neu-mono text-[11px] text-[oklch(0.46_0.025_315)]">
-          {formatDuration(currentTime)}
-        </div>
-        <div
-          onPointerDown={physics.onSeekPointerDown}
-          className="flex h-3.5 flex-1 cursor-pointer touch-none select-none items-center"
-        >
-          <div
-            className="flex h-2.25 w-full items-center overflow-hidden rounded-full border border-white/60 px-0.5"
-            style={{
-              background: "oklch(0.905 0.014 315)",
-              boxShadow:
-                "inset 3px 3px 6px rgba(150,136,175,0.6), inset -2px -2px 5px rgba(255,255,255,0.95)",
-            }}
-          >
-            <div
-              className="h-1 rounded-full bg-neu-hi"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
-        <div className="w-8.5 text-right font-neu-mono text-[11px] text-[oklch(0.46_0.025_315)]">
-          -{formatDuration(Math.max(duration - currentTime, 0))}
-        </div>
-      </div>
+      <SeekBar
+        currentTime={currentTime}
+        duration={duration}
+        onPointerDown={physics.onSeekPointerDown}
+      />
     </section>
   );
 }

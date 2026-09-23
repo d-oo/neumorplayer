@@ -118,6 +118,15 @@
   --neu-shadow-tag-chip: inset 3px 3px 7px rgba(150, 136, 175, 0.35),
     inset -2px -2px 6px rgba(255, 255, 255, 0.85);
 
+  /* 목록 헤더/모달의 구분선과 트랙 행 hover 배경. 여러 화면이 똑같은 리터럴을 각자
+     박아 쓰고 있어서 값은 그대로 두고 이름만 붙였습니다. */
+  --neu-divider: rgba(142, 128, 166, 0.28);
+  --neu-row-hover: rgba(120, 100, 145, 0.09);
+  /* 태그 칩(탐색 화면 TagPicker, 헤더 검색 결과)이 공유하는 raised 그림자 —
+     라이브러리 태그 칩은 값이 미묘하게 달라서(--neu-shadow-tint-pill) 별개입니다. */
+  --neu-shadow-chip-raised: 5px 5px 12px rgba(142, 128, 166, 0.4),
+    -4px -4px 10px rgba(255, 255, 255, 0.9);
+
   /* docs/design/랜딩 페이지.zip — 랜딩 헤더의 "시작하기" 버튼 전용 그림자(idle/active).
      배경은 기존 --neu-cta-pill-grad와 값이 같아 재사용하지만, 그림자 오프셋/블러/알파는
      --neu-shadow-cta-pill과 미묘히 달라 섞지 않고 새 이름으로 둡니다. active 의사
@@ -163,6 +172,9 @@
   --shadow-neu-highlight: var(--neu-shadow-highlight);
   --shadow-neu-pill-secondary: var(--neu-shadow-pill-secondary);
   --shadow-neu-tag-chip: var(--neu-shadow-tag-chip);
+  --color-neu-divider: var(--neu-divider);
+  --color-neu-row-hover: var(--neu-row-hover);
+  --shadow-neu-chip-raised: var(--neu-shadow-chip-raised);
   --shadow-neu-header-cta: var(--neu-shadow-header-cta);
   --shadow-neu-header-cta-active: var(--neu-shadow-header-cta-active);
 }

@@ -5,6 +5,7 @@ import {
   type ReactNode,
 } from "react";
 import { CheckIcon, EmailIcon, EyeIcon, LockIcon } from "./icons";
+import CheckBox from "@/shared/components/CheckBox";
 
 // LoginPage/SignupPage가 공유하는 폼 조각들. docs/design/의 "데스크탑 로그인 및
 // 회원가입 화면" 시안을 그대로 옮겼습니다 — 인증 화면을 더 추가할 땐 AuthLayout과
@@ -14,7 +15,7 @@ const fieldRowClass =
   "flex h-12 items-center gap-2.5 rounded-[13px] border border-white/70";
 
 const fieldRowStyle = {
-  background: "oklch(0.908 0.014 315)",
+  background: "var(--neu-surface-sunken)",
   boxShadow:
     "inset 3px 3px 7px rgba(150,136,175,0.38), inset -3px -3px 6px rgba(255,255,255,0.88)",
 };
@@ -25,18 +26,25 @@ const fieldInputClass =
 const fieldLabelClass =
   "font-neu-mono text-[10px] tracking-[0.14em] text-[oklch(0.5_0.025_315)]";
 
+// 지금은 이메일 입력에만 쓰이지만 아이콘만 바꾸면 다른 입력에도 그대로 쓸 수 있어서
+// icon을 prop으로 받습니다(기본값은 기존 그대로 이메일 아이콘).
 export function Field({
   label,
   id,
+  icon = <EmailIcon className="flex-none text-[oklch(0.55_0.02_315)]" />,
   ...inputProps
-}: { label: string; id: string } & InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  label: string;
+  id: string;
+  icon?: ReactNode;
+} & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="flex flex-col gap-1.75">
       <label htmlFor={id} className={fieldLabelClass}>
         {label}
       </label>
       <div className={`${fieldRowClass} px-3.5`} style={fieldRowStyle}>
-        <EmailIcon className="flex-none text-[oklch(0.55_0.02_315)]" />
+        {icon}
         <input id={id} className={fieldInputClass} {...inputProps} />
       </div>
     </div>
@@ -74,7 +82,7 @@ export function PasswordField({
           className="grid size-8.5 flex-none place-items-center rounded-full"
           style={{
             color: visible ? "var(--neu-hi)" : "oklch(0.52 0.02 315)",
-            background: "oklch(0.935 0.013 315)",
+            background: "var(--neu-surface)",
             boxShadow: visible
               ? "inset 3px 3px 7px rgba(146,132,170,0.6), inset -2px -2px 6px rgba(255,255,255,0.9)"
               : "3px 3px 8px rgba(146,132,170,0.45), -2px -2px 6px rgba(255,255,255,0.95)",
@@ -101,19 +109,9 @@ export function AgreeCheckbox({
       onClick={() => onChange(!checked)}
       className="flex cursor-pointer items-start gap-2.25 py-0.5 select-none"
     >
-      <div
-        className="mt-px grid size-5 flex-none place-items-center rounded-md"
-        style={{
-          background: checked
-            ? "linear-gradient(145deg, #8127b8, #5c1287)"
-            : "oklch(0.908 0.014 315)",
-          boxShadow: checked
-            ? "3px 3px 7px rgba(124,94,164,0.45), -2px -2px 6px rgba(255,255,255,0.9)"
-            : "inset 3px 3px 6px rgba(150,136,175,0.5), inset -2px -2px 5px rgba(255,255,255,0.9)",
-        }}
-      >
-        {checked ? <CheckIcon /> : null}
-      </div>
+      <CheckBox checked={checked} className="mt-px">
+        <CheckIcon />
+      </CheckBox>
       <div className="text-[12.5px] leading-[1.6] text-[oklch(0.42_0.025_315)]">
         {children}
       </div>
@@ -157,7 +155,7 @@ export function GoogleButton({
 
 export function Divider({ children }: { children: ReactNode }) {
   const lineStyle = {
-    background: "oklch(0.908 0.014 315)",
+    background: "var(--neu-surface-sunken)",
     boxShadow:
       "inset 1px 1px 2px rgba(150,136,175,0.5), inset -1px -1px 2px rgba(255,255,255,0.9)",
   };

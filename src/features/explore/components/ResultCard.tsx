@@ -6,7 +6,7 @@ import type { ExploreResult } from "@/features/explore/api/search";
 // 카드. 선택 여부에 따라 sunken(선택됨)/raised(미선택) 그림자로 눌린 느낌을 줍니다.
 function getCardStyle(isSelected: boolean) {
   return {
-    background: isSelected ? "oklch(0.945 0.035 313)" : "oklch(0.935 0.013 315)",
+    background: isSelected ? "var(--neu-highlight)" : "var(--neu-surface)",
     boxShadow: isSelected
       ? "inset 5px 5px 11px rgba(150,136,175,0.45), inset -4px -4px 9px rgba(255,255,255,0.9)"
       : "8px 8px 18px rgba(142,128,166,0.45), -6px -6px 14px rgba(255,255,255,0.9)",
@@ -62,7 +62,7 @@ export default function ResultCard({
           <p
             className="line-clamp-2 h-9 text-[13.5px] leading-4.5 font-semibold"
             style={{
-              color: isSelected ? "#6d1a9f" : "oklch(0.3 0.025 315)",
+              color: isSelected ? "var(--neu-hi)" : "var(--neu-ink)",
             }}
           >
             {result.title}

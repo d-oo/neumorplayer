@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 
-// "검색"/"추가"가 공유하는 알약 모양 CTA 버튼 — docs/design/ 시안의 "추가" 버튼
-// 스타일 그대로입니다. 활성 상태일 때만 라벤더 그라디언트 + 보라색 글자로 강조되고,
-// 비활성 상태는 눌린 듯한 sunken 그림자로 가라앉습니다. shared/components/PillButton은
-// 아이콘+토글 색상 버튼이라 이 활성/비활성 CTA와는 다른 컴포넌트입니다.
+// 탐색 화면의 "검색"/"추가", 랜딩 탐색 카드의 "재생"이 공유하는 알약 모양 CTA 버튼 —
+// docs/design/ 시안의 "추가" 버튼 스타일 그대로입니다. 활성 상태일 때만 라벤더
+// 그라디언트 + 보라색 글자로 강조되고, 비활성 상태는 눌린 듯한 sunken 그림자로
+// 가라앉습니다. 모달 하단의 ModalCtaButton과는 배경·그림자 토큰이 같고 크기만
+// 다릅니다(이쪽이 px-6 py-2.75 / text-sm).
 //
 // 배경/그림자를 예전엔 enabled 여부로 분기한 인라인 style 객체로 지정했지만,
 // docs/design/수정사항.zip(02)의 hover 효과를 추가하면서 AuthForm.tsx의

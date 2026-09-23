@@ -47,7 +47,7 @@ export default function CdDisc({
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 50% 50%, oklch(0.935 0.013 315) 0 28px, transparent 28px 30px), repeating-radial-gradient(circle at 50% 50%, rgba(126,110,156,0.13) 0 1px, rgba(255,255,255,0) 1px 3px), linear-gradient(150deg, rgba(179,68,255,0.14), transparent 70%)",
+              "radial-gradient(circle at 50% 50%, var(--neu-surface) 0 28px, transparent 28px 30px), repeating-radial-gradient(circle at 50% 50%, rgba(126,110,156,0.13) 0 1px, rgba(255,255,255,0) 1px 3px), linear-gradient(150deg, rgba(179,68,255,0.14), transparent 70%)",
           }}
         />
         {/* 광택(빛반사) 레이어만 따로 분리 — 썸네일이 있으면 이미지를 뿌옇게 덮지

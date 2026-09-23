@@ -1,9 +1,9 @@
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { useCdPlayerPhysics } from "../hooks/useCdPlayerPhysics";
-import { formatDuration } from "@/shared/lib/format-time";
 import AddToPlaylistButton from "./AddToPlaylistButton";
 import CdDisc from "./CdDisc";
-import MarqueeText from "./MarqueeText";
+import NowPlayingTitle from "./NowPlayingTitle";
+import SeekBar from "./SeekBar";
 import VolumeKnob from "./VolumeKnob";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import {
@@ -38,7 +38,6 @@ export default function PlayerPanel() {
   const requestSeek = usePlayerStore((s) => s.requestSeek);
 
   const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
-  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const physics = useCdPlayerPhysics({
     hasTrack: !!currentTrack,
@@ -124,15 +123,10 @@ export default function PlayerPanel() {
       </div>
 
       <div className="flex items-center gap-3.5">
-        <div className="min-w-0 flex-1">
-          <MarqueeText
-            text={currentTrack?.title ?? "재생 중인 곡 없음"}
-            className="text-xl font-extrabold tracking-[-0.035em] text-neu-ink"
-          />
-          <div className="mt-1.25 truncate text-[12.5px] text-neu-muted">
-            {currentTrack?.artist.join(", ") ?? "-"}
-          </div>
-        </div>
+        <NowPlayingTitle
+          title={currentTrack?.title ?? "재생 중인 곡 없음"}
+          subtitle={currentTrack?.artist.join(", ") ?? "-"}
+        />
         {currentTrack ? (
           <AddToPlaylistButton track={currentTrack} size="lg" />
         ) : (
@@ -147,32 +141,11 @@ export default function PlayerPanel() {
         )}
       </div>
 
-      <div className="flex items-center gap-2.5">
-        <div className="w-8.5 font-neu-mono text-[11px] text-[oklch(0.46_0.025_315)]">
-          {formatDuration(currentTime)}
-        </div>
-        <div
-          onPointerDown={physics.onSeekPointerDown}
-          className="flex h-3.5 flex-1 cursor-pointer touch-none select-none items-center"
-        >
-          <div
-            className="flex h-2.25 w-full items-center overflow-hidden rounded-full border border-white/60 px-0.5"
-            style={{
-              background: "oklch(0.905 0.014 315)",
-              boxShadow:
-                "inset 3px 3px 6px rgba(150,136,175,0.6), inset -2px -2px 5px rgba(255,255,255,0.95)",
-            }}
-          >
-            <div
-              className="h-1 rounded-full bg-neu-hi"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
-        <div className="w-8.5 text-right font-neu-mono text-[11px] text-[oklch(0.46_0.025_315)]">
-          -{formatDuration(Math.max(duration - currentTime, 0))}
-        </div>
-      </div>
+      <SeekBar
+        currentTime={currentTime}
+        duration={duration}
+        onPointerDown={physics.onSeekPointerDown}
+      />
     </section>
   );
 }

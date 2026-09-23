@@ -40,7 +40,7 @@ export default function AuthLayout({
 
             <div className="flex flex-col gap-2.5">
               <div
-                className="font-['Space_Grotesk'] text-[27px] leading-[1.1] font-bold tracking-[-0.015em] whitespace-nowrap text-[#6d1a9f]"
+                className="font-['Space_Grotesk'] text-[27px] leading-[1.1] font-bold tracking-[-0.015em] whitespace-nowrap text-neu-hi"
                 style={{
                   textShadow:
                     "1px 1px 1.5px rgba(120,96,150,0.55), -1px -1px 1.5px rgba(255,255,255,0.95)",

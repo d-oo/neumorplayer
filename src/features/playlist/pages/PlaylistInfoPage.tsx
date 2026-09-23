@@ -33,27 +33,30 @@ import { formatDuration } from "@/shared/lib/format-time";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import {
   DragHandleIcon,
-  PauseIcon,
   PencilIcon,
-  PlayIcon,
   ShuffleIcon,
   TrashIcon,
   XIcon,
 } from "@/shared/components/icons";
+import { secondaryCircleButtonClass } from "@/shared/styles/secondary-button-class";
 import PlaylistCoverGrid from "@/features/player/components/PlaylistCoverGrid";
+import PlayPauseButton from "@/features/player/components/PlayPauseButton";
 import MarqueeText from "@/features/player/components/MarqueeText";
-import TrackThumbnail from "@/shared/components/TrackThumbnail";
-import ThumbBox from "@/shared/components/ThumbBox";
+import TrackRowInfo from "@/features/library/components/TrackRowInfo";
 import IconCircleButton from "@/shared/components/IconCircleButton";
+import MutedNote from "@/shared/components/MutedNote";
 
-// 재생목록 정보/트랙 상세의 "셔플·수정·삭제" 같은 보조 44px 원형 버튼이 공유하는
-// 클래스 — 색상만 각자 다르게 얹습니다.
-const secondaryButtonClass =
-  "bg-neu-surface border border-white/85 shadow-neu-pill-secondary active:shadow-neu-pill-active";
 // 드래그 손잡이/번호/썸네일은 한 그리드 컬럼(트랙 정보) 안에 flex로 넣어서 그
 // 사이 간격만 gap-4(16px)보다 좁은 gap-2(8px)를 따로 줍니다 — CSS grid의 gap은
 // 모든 컬럼 사이에 균일하게 적용되어 특정 구간만 좁힐 수 없기 때문입니다.
 const trackRowGridColumns = "minmax(0,1fr) 110px 74px 62px 28px";
+// "지금 재생 중" 번호 칸의 막대 이퀄라이저 — 시안 그대로 막대마다 주기와 시작
+// 지연이 달라서 서로 어긋나게 흔들립니다(@keyframes neu-eq, src/index.css).
+const EQ_BAR_ANIMATIONS = [
+  "neu-eq 0.72s ease-in-out infinite alternate",
+  "neu-eq 0.55s ease-in-out 0.1s infinite alternate",
+  "neu-eq 0.86s ease-in-out 0.22s infinite alternate",
+];
 
 // dnd-kit 순서 변경 + 목록 제거 버튼을 위해 각 행을 별도 컴포넌트로 뽑았습니다.
 // 드래그는 왼쪽 그립 아이콘(useSortable의 listeners)에만 걸려 있어서, 행 자체를
@@ -85,7 +88,7 @@ function SortableTrackRow({
         gridTemplateColumns: trackRowGridColumns,
         ...currentTrackRowStyle(isCurrentTrack),
       }}
-      className="grid items-center gap-4 rounded-[11px] px-3.5 py-2.25 hover:bg-[rgba(120,100,145,0.09)]"
+      className="grid items-center gap-4 rounded-[11px] px-3.5 py-2.25 hover:bg-neu-row-hover"
     >
       <div className="flex min-w-0 items-center gap-2">
         <button
@@ -101,27 +104,18 @@ function SortableTrackRow({
           onClick={onPlay}
           className="w-8.5 flex-none cursor-pointer font-neu-mono text-[12.5px]"
           style={{
-            color: isCurrentTrack ? "#6d1a9f" : "oklch(0.47 0.025 315)",
+            color: isCurrentTrack ? "var(--neu-hi)" : "var(--neu-muted)",
           }}
         >
           {isCurrentTrack ? (
             <div className="flex h-3.5 items-end gap-0.5">
-              <span
-                className="w-0.75 rounded-xs bg-neu-accent-light"
-                style={{ animation: "neu-eq 0.72s ease-in-out infinite alternate" }}
-              />
-              <span
-                className="w-0.75 rounded-xs bg-neu-accent-light"
-                style={{
-                  animation: "neu-eq 0.55s ease-in-out 0.1s infinite alternate",
-                }}
-              />
-              <span
-                className="w-0.75 rounded-xs bg-neu-accent-light"
-                style={{
-                  animation: "neu-eq 0.86s ease-in-out 0.22s infinite alternate",
-                }}
-              />
+              {EQ_BAR_ANIMATIONS.map((animation) => (
+                <span
+                  key={animation}
+                  className="w-0.75 rounded-xs bg-neu-accent-light"
+                  style={{ animation }}
+                />
+              ))}
             </div>
           ) : (
             String(index + 1).padStart(2, "0")
@@ -131,19 +125,7 @@ function SortableTrackRow({
           onClick={onPlay}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
         >
-          <ThumbBox size="row">
-            <TrackThumbnail videoId={track.video_id} className="h-full w-full" />
-          </ThumbBox>
-          <div className="min-w-0">
-            <MarqueeText
-              text={track.title}
-              className="text-sm font-semibold"
-              style={{ color: isCurrentTrack ? "#6d1a9f" : "oklch(0.3 0.025 315)" }}
-            />
-            <p className="mt-0.75 truncate text-[12.5px] text-[oklch(0.46_0.025_315)]">
-              {track.artist.join(", ")}
-            </p>
-          </div>
+          <TrackRowInfo track={track} isCurrentTrack={isCurrentTrack} />
         </div>
       </div>
       <MarqueeText
@@ -153,7 +135,7 @@ function SortableTrackRow({
       <div className="text-right font-neu-mono text-[12.5px] text-neu-muted">
         {track.play_count.toLocaleString()}
       </div>
-      <div className="text-right font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
+      <div className="text-right font-neu-mono text-[12.5px] text-neu-muted">
         {formatDuration(track.duration)}
       </div>
       <button
@@ -268,10 +250,10 @@ export default function PlaylistInfoPage() {
   }
 
   if (isPlaylistLoading || isTracksLoading) {
-    return <p className="text-sm text-neu-muted">불러오는 중...</p>;
+    return <MutedNote>불러오는 중...</MutedNote>;
   }
   if (isPlaylistError || !playlist) {
-    return <p className="text-sm text-neu-muted">재생목록을 찾을 수 없습니다.</p>;
+    return <MutedNote>재생목록을 찾을 수 없습니다.</MutedNote>;
   }
 
   return (
@@ -303,42 +285,30 @@ export default function PlaylistInfoPage() {
           </p>
 
           <div className="mt-4.5 flex items-center gap-3">
-            <IconCircleButton
-              size="xl"
-              tooltip={
-                isThisPlaylistPlaying && isPlaying ? "일시정지" : "전체 재생"
-              }
+            <PlayPauseButton
+              playing={isThisPlaylistPlaying && isPlaying}
               onClick={handlePlayClick}
               disabled={tracks.length === 0}
-              aria-label={
-                isThisPlaylistPlaying && isPlaying ? "일시정지" : "전체 재생"
-              }
-              className="[background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active"
-            >
-              {isThisPlaylistPlaying && isPlaying ? (
-                <PauseIcon />
-              ) : (
-                <PlayIcon className="ml-0.5" />
-              )}
-            </IconCircleButton>
+              playLabel="전체 재생"
+            />
             <IconCircleButton
               size="xl"
               tooltip="셔플"
               onClick={handleShuffleClick}
               disabled={tracks.length === 0}
               aria-label="셔플"
-              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
             >
               <ShuffleIcon />
             </IconCircleButton>
 
-            <div className="h-6 w-px bg-[rgba(142,128,166,0.28)]" />
+            <div className="h-6 w-px bg-neu-divider" />
 
             <IconCircleButton
               size="xl"
               tooltip="수정"
               aria-label="수정"
-              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
             >
               <PencilIcon />
             </IconCircleButton>
@@ -348,7 +318,7 @@ export default function PlaylistInfoPage() {
               onClick={() => deletePlaylistMutation.mutate()}
               disabled={deletePlaylistMutation.isPending}
               aria-label="재생목록 삭제"
-              className={`${secondaryButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
+              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
             >
               <TrashIcon />
             </IconCircleButton>
@@ -361,7 +331,7 @@ export default function PlaylistInfoPage() {
           className="grid gap-4 px-3.5 pb-2.5 text-[11px] font-bold tracking-wider text-neu-muted"
           style={{
             gridTemplateColumns: trackRowGridColumns,
-            borderBottom: "1px solid rgba(142,128,166,0.28)",
+            borderBottom: "1px solid var(--neu-divider)",
           }}
         >
           <div className="flex items-center gap-2">
@@ -376,10 +346,10 @@ export default function PlaylistInfoPage() {
         </div>
 
         {tracks.length === 0 ? (
-          <p className="px-3.5 py-6 text-sm text-neu-muted">
+          <MutedNote className="px-3.5 py-6">
             재생목록에 곡을 추가해주세요. 곡 상세 페이지 또는 재생 중인 곡
             카드의 "재생목록에 추가" 버튼으로 담을 수 있습니다.
-          </p>
+          </MutedNote>
         ) : (
           <DndContext
             sensors={sensors}

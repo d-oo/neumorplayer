@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { formatDuration } from "@/shared/lib/format-time";
-import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
+import {
+  segmentTabClass,
+  segmentTabStyle,
+} from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -18,11 +21,12 @@ import MarqueeText from "./MarqueeText";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
+import MutedNote from "@/shared/components/MutedNote";
 
 // 시안(docs/design/)의 "다음 트랙/재생목록" 카드. "재생목록" 탭은 지금 재생 중인
 // 재생목록의 트랙 목록이 아니라 — 원본 코드(PLAYLISTS.map)를 보면 — 내 재생목록
 // 목록(이동 링크)입니다. 헷갈렸던 부분이라 남겨둡니다.
-const rowHoverClass = "hover:bg-[rgba(120,100,145,0.09)]";
+const rowHoverClass = "hover:bg-neu-row-hover";
 
 export default function QueueCard() {
   const navigate = useNavigate();
@@ -75,11 +79,9 @@ export default function QueueCard() {
         <button
           type="button"
           onClick={() => setQueueView("next")}
-          className={`flex-1 whitespace-nowrap rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
-            queueView === "next"
-              ? "text-neu-hi shadow-neu-tab-raised"
-              : "text-neu-muted"
-          }`}
+          className={`flex-1 whitespace-nowrap px-2.5 py-2 text-[12.5px] ${segmentTabClass(
+            queueView === "next",
+          )}`}
           style={segmentTabStyle(queueView === "next")}
         >
           재생 트랙
@@ -87,11 +89,9 @@ export default function QueueCard() {
         <button
           type="button"
           onClick={() => setQueueView("playlist")}
-          className={`flex-1 whitespace-nowrap rounded-[9px] px-2.5 py-2 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
-            queueView === "playlist"
-              ? "text-neu-hi shadow-neu-tab-raised"
-              : "text-neu-muted"
-          }`}
+          className={`flex-1 whitespace-nowrap px-2.5 py-2 text-[12.5px] ${segmentTabClass(
+            queueView === "playlist",
+          )}`}
           style={segmentTabStyle(queueView === "playlist")}
         >
           재생목록
@@ -119,7 +119,7 @@ export default function QueueCard() {
                     <p className="truncate text-[13px] font-semibold leading-4.5 text-neu-ink">
                       {track.title}
                     </p>
-                    <p className="mt-0.5 truncate text-[11.5px] leading-3.75 text-[oklch(0.46_0.025_315)]">
+                    <p className="mt-0.5 truncate text-[11.5px] leading-3.75 text-neu-muted">
                       {track.artist.join(", ")}
                     </p>
                   </div>
@@ -130,9 +130,7 @@ export default function QueueCard() {
               ))}
             </div>
           ) : (
-            <p className="px-2 py-1.75 text-sm text-neu-muted">
-              다음 곡이 없습니다.
-            </p>
+            <MutedNote className="px-2 py-1.75">다음 곡이 없습니다.</MutedNote>
           )
         ) : (
           <div className="flex flex-col">
@@ -201,9 +199,9 @@ export default function QueueCard() {
                 })}
               </div>
             ) : (
-              <p className="px-2 py-1.75 text-sm text-neu-muted">
+              <MutedNote className="px-2 py-1.75">
                 아직 만든 재생목록이 없습니다.
-              </p>
+              </MutedNote>
             )}
           </div>
         )}

@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
+import { countTagUsage, fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
 import { formatDuration } from "@/shared/lib/format-time";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
+import MutedNote from "@/shared/components/MutedNote";
 import { PlayIcon } from "@/shared/components/icons";
 
 // docs/design/ 시안의 "검색 결과" 화면 — 헤더의 "라이브러리 내 검색"에 뭔가 입력하면
@@ -34,16 +35,10 @@ export default function SearchResultsView({ query }: { query: string }) {
     enabled: !!user,
   });
 
-  const suggestedTags = useMemo(() => {
-    const counts = new Map<string, number>();
-    tracks.forEach((t) =>
-      t.tags.forEach((tag) => counts.set(tag, (counts.get(tag) ?? 0) + 1)),
-    );
-    return Array.from(counts.entries())
-      .map(([tag, count]) => ({ tag, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
-  }, [tracks]);
+  const suggestedTags = useMemo(
+    () => countTagUsage(tracks).slice(0, 8),
+    [tracks],
+  );
 
   const topArtists = useMemo(() => {
     const totals = new Map<string, number>();
@@ -73,7 +68,7 @@ export default function SearchResultsView({ query }: { query: string }) {
         <h1 className="text-[26px] font-extrabold tracking-[-0.035em] text-neu-ink">
           검색 결과
         </h1>
-        <span className="text-[13px] font-semibold text-[oklch(0.46_0.025_315)]">
+        <span className="text-[13px] font-semibold text-neu-muted">
           &ldquo;{query}&rdquo; · {results.length}건
         </span>
       </div>
@@ -89,7 +84,7 @@ export default function SearchResultsView({ query }: { query: string }) {
               <div
                 key={track.id}
                 onClick={() => navigate(`/music/${track.id}`)}
-                className="flex cursor-pointer items-center gap-3.25 rounded-[11px] px-3 py-2.25 hover:bg-[rgba(120,100,145,0.09)]"
+                className="flex cursor-pointer items-center gap-3.25 rounded-[11px] px-3 py-2.25 hover:bg-neu-row-hover"
                 style={currentTrackRowStyle(isCurrentTrack)}
               >
                 <ThumbBox size="rowLg">
@@ -102,18 +97,16 @@ export default function SearchResultsView({ query }: { query: string }) {
                   <p
                     className="truncate text-sm font-semibold"
                     style={{
-                      color: isCurrentTrack
-                        ? "#6d1a9f"
-                        : "oklch(0.3 0.025 315)",
+                      color: isCurrentTrack ? "var(--neu-hi)" : "var(--neu-ink)",
                     }}
                   >
                     {track.title}
                   </p>
-                  <p className="mt-0.75 text-[12.5px] text-[oklch(0.46_0.025_315)]">
+                  <p className="mt-0.75 text-[12.5px] text-neu-muted">
                     {track.artist.join(", ")}
                   </p>
                 </div>
-                <span className="font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
+                <span className="font-neu-mono text-[12.5px] text-neu-muted">
                   {formatDuration(track.duration)}
                 </span>
                 <IconCircleButton
@@ -131,9 +124,9 @@ export default function SearchResultsView({ query }: { query: string }) {
             );
           })}
           {results.length === 0 && (
-            <p className="px-3 py-2.25 text-sm text-neu-muted">
+            <MutedNote className="px-3 py-2.25">
               일치하는 곡이 없습니다.
-            </p>
+            </MutedNote>
           )}
         </div>
       </div>
@@ -147,15 +140,14 @@ export default function SearchResultsView({ query }: { query: string }) {
             key={tg.tag}
             className="flex cursor-pointer items-baseline gap-2 rounded-full border border-white/80 px-3.75 py-2.25 transition-colors hover:border-neu-accent-light"
             style={{
-              background: "oklch(0.935 0.013 315)",
-              boxShadow:
-                "5px 5px 12px rgba(142,128,166,0.4), -4px -4px 10px rgba(255,255,255,0.9)",
+              background: "var(--neu-surface)",
+              boxShadow: "var(--neu-shadow-chip-raised)",
             }}
           >
             <span className="text-[13.5px] font-bold text-neu-ink">
               #{tg.tag}
             </span>
-            <span className="text-xs text-neu-ink opacity-[0.68]">
+            <span className="text-xs text-neu-ink opacity-68">
               {tg.count}곡
             </span>
           </div>
@@ -171,7 +163,7 @@ export default function SearchResultsView({ query }: { query: string }) {
             key={a.name}
             className="cursor-pointer rounded-[14px] border border-white/80 p-4 transition-colors hover:border-neu-accent-light"
             style={{
-              background: "oklch(0.935 0.013 315)",
+              background: "var(--neu-surface)",
               boxShadow:
                 "8px 8px 18px rgba(142,128,166,0.45), -6px -6px 14px rgba(255,255,255,0.9)",
             }}
@@ -180,7 +172,7 @@ export default function SearchResultsView({ query }: { query: string }) {
               className="mb-3 h-17 w-17 rounded-full border border-white/70"
               style={{
                 background:
-                  "repeating-linear-gradient(135deg, rgba(118,100,145,0.16) 0 6px, rgba(118,100,145,0.05) 6px 12px), color-mix(in oklab, #b344ff 14%, transparent)",
+                  "repeating-linear-gradient(135deg, rgba(118,100,145,0.16) 0 6px, rgba(118,100,145,0.05) 6px 12px), var(--neu-accent-tint)",
                 boxShadow:
                   "3px 3px 8px rgba(150,136,175,0.42), -2px -2px 6px rgba(255,255,255,0.92)",
               }}
@@ -188,7 +180,7 @@ export default function SearchResultsView({ query }: { query: string }) {
             <p className="truncate text-[13.5px] font-semibold text-neu-ink">
               {a.name}
             </p>
-            <p className="mt-1 text-xs text-[oklch(0.46_0.025_315)]">
+            <p className="mt-1 text-xs text-neu-muted">
               {a.totalPlays.toLocaleString()}회 재생
             </p>
           </div>

@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { supabase } from "@/shared/lib/supabase";
-import { tracksQueryKey } from "@/features/library/lib/tracks";
+import { trackQueryKey, tracksQueryKey } from "@/features/library/lib/tracks";
 import { useVideoSlot } from "../hooks/useVideoSlot";
 
 const opts: YouTubeProps["opts"] = {
@@ -100,7 +100,7 @@ export default function YouTubePlayer() {
         .eq("id", currentTrackId);
       if (cancelled) return;
       queryClient.invalidateQueries({ queryKey: tracksQueryKey(user?.id) });
-      queryClient.invalidateQueries({ queryKey: ["track", currentTrackId] });
+      queryClient.invalidateQueries({ queryKey: trackQueryKey(currentTrackId) });
     })();
     return () => {
       cancelled = true;

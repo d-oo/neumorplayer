@@ -1,5 +1,6 @@
 import Modal from "@/shared/components/Modal";
-import { XIcon } from "@/shared/components/icons";
+import CloseButton from "@/shared/components/CloseButton";
+import ModalCtaButton from "@/shared/components/ModalCtaButton";
 
 // PrivacyBanner의 "자세히 보기"에서 띄우는 개인정보 처리방침 본문 모달.
 // docs/todos.md의 "개인정보 처리방침/이용약관 페이지 신설" 항목이 아직 별도 라우트로
@@ -23,14 +24,7 @@ export default function PrivacyPolicyModal({
         <p className="text-base font-extrabold tracking-[-0.02em]">
           개인정보 처리방침
         </p>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="닫기"
-          className="grid size-7 flex-none place-items-center rounded-full text-[oklch(0.5_0.02_315)] hover:text-[oklch(0.2_0.025_315)]"
-        >
-          <XIcon />
-        </button>
+        <CloseButton onClick={onClose} />
       </div>
 
       <div className="flex max-h-100 flex-col gap-4 overflow-y-auto pr-1 text-[13px] leading-[1.7] text-[oklch(0.35_0.025_315)]">
@@ -117,13 +111,7 @@ export default function PrivacyPolicyModal({
       </div>
 
       <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full px-5 py-2.25 text-[13px] font-bold text-neu-hi [background:var(--neu-cta-pill-grad)] shadow-neu-cta-pill hover:[background:var(--neu-cta-pill-grad-hover)] hover:shadow-neu-cta-pill-hover active:shadow-neu-pill-active"
-        >
-          닫기
-        </button>
+        <ModalCtaButton onClick={onClose}>닫기</ModalCtaButton>
       </div>
     </Modal>
   );

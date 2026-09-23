@@ -46,28 +46,25 @@ function decodeHtmlEntities(text: string): string {
   return el.value;
 }
 
-// /api/youtube-search로 후보를 찾고, 그 videoId들을 한 번에 /api/youtube-video에
-// 넘겨 재생시간·조회수를 채웁니다(카드마다 따로 요청하지 않도록 배치 조회).
+// /api/youtube-search 한 번으로 후보와 각 영상의 재생시간·조회수·아동용 여부를 함께
+// 받아옵니다. 예전엔 이 두 가지를 브라우저가 순차로 두 번 호출했는데, 두 번째 요청이
+// 첫 번째 결과를 기다려야 해서 왕복 지연이 그대로 두 배가 됐습니다(자세한 배경은
+// api/youtube-search.ts 주석 참고).
 // "앨범"은 YouTube Data API에 없는 개념이라 표시하지 않습니다.
 export async function fetchExploreResults(
   query: string,
 ): Promise<ExploreResult[]> {
-  const searchRes = await fetch(
-    `/api/youtube-search?q=${encodeURIComponent(query)}`,
-  );
-  if (!searchRes.ok) throw new Error("YouTube 검색에 실패했습니다.");
-  const searchData: { items?: YoutubeSearchItem[] } = await searchRes.json();
-  const items = searchData.items ?? [];
+  const res = await fetch(`/api/youtube-search?q=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error("YouTube 검색에 실패했습니다.");
+  const data: {
+    items?: YoutubeSearchItem[];
+    details?: YoutubeVideoItem[];
+  } = await res.json();
+  const items = data.items ?? [];
   if (items.length === 0) return [];
 
-  const ids = items.map((item) => item.id.videoId).join(",");
-  const videoRes = await fetch(
-    `/api/youtube-video?id=${encodeURIComponent(ids)}`,
-  );
-  if (!videoRes.ok) throw new Error("영상 상세 조회에 실패했습니다.");
-  const videoData: { items?: YoutubeVideoItem[] } = await videoRes.json();
   const detailById = new Map(
-    (videoData.items ?? []).map((item) => [item.id, item]),
+    (data.details ?? []).map((item) => [item.id, item]),
   );
 
   // YouTube API Developer Policies E.4.i: Made For Kids로 지정된 영상은 결과에서

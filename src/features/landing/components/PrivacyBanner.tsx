@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { XIcon } from "@/shared/components/icons";
+import CloseButton from "@/shared/components/CloseButton";
+import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
 import PrivacyPolicyModal from "./PrivacyPolicyModal";
 
 const DISMISSED_KEY = "neumorplayer-privacy-banner-dismissed";
@@ -56,18 +57,11 @@ export default function PrivacyBanner() {
             <button
               type="button"
               onClick={openDetails}
-              className="rounded-full border border-white/85 px-4 py-2 text-[12.5px] font-semibold text-[oklch(0.4_0.025_315)] shadow-neu-pill-secondary hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-pill-active"
+              className={`px-4 py-2 text-[12.5px] text-[oklch(0.4_0.025_315)] hover:text-[oklch(0.24_0.025_315)] ${secondaryPillButtonClass}`}
             >
               자세히 보기
             </button>
-            <button
-              type="button"
-              onClick={dismiss}
-              aria-label="닫기"
-              className="grid size-7 flex-none place-items-center rounded-full text-[oklch(0.5_0.02_315)] hover:text-[oklch(0.2_0.025_315)]"
-            >
-              <XIcon />
-            </button>
+            <CloseButton onClick={dismiss} />
           </div>
         </div>
       )}

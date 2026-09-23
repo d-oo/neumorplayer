@@ -11,8 +11,11 @@ import {
 } from "@/features/playlist/lib/playlists";
 import type { Track } from "@/features/library/lib/tracks";
 import { CheckIcon, QueueIcon } from "@/shared/components/icons";
+import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
+import CheckBox from "@/shared/components/CheckBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import Modal from "@/shared/components/Modal";
+import ModalCtaButton from "@/shared/components/ModalCtaButton";
 
 // old-src/src/components/MusicInfo.js의 "playlist_add" 흐름을 이어받습니다.
 // PlayerPanel(현재 재생 곡)과 MusicInfoPage(곡 상세)가 정확히 같은 동작을 필요로 해서
@@ -139,19 +142,9 @@ export default function AddToPlaylistButton({
                   onClick={() => toggle(playlist.id)}
                   className="flex items-center gap-2.75 rounded-[11px] px-3 py-2.5 text-left select-none hover:bg-neu-accent-tint disabled:cursor-default"
                 >
-                  <span
-                    className="grid h-5 w-5 flex-none place-items-center rounded-md"
-                    style={{
-                      background: isChecked
-                        ? "linear-gradient(145deg, #8127b8, #5c1287)"
-                        : "oklch(0.908 0.014 315)",
-                      boxShadow: isChecked
-                        ? "3px 3px 7px rgba(124,94,164,0.45), -2px -2px 6px rgba(255,255,255,0.9)"
-                        : "inset 3px 3px 6px rgba(150,136,175,0.5), inset -2px -2px 5px rgba(255,255,255,0.9)",
-                    }}
-                  >
-                    {isChecked && <CheckIcon className="text-white" />}
-                  </span>
+                  <CheckBox checked={isChecked}>
+                    <CheckIcon className="text-white" />
+                  </CheckBox>
                   <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-neu-ink">
                     {playlist.title}
                   </span>
@@ -164,24 +157,19 @@ export default function AddToPlaylistButton({
           )}
         </div>
 
-        <div className="h-px bg-[rgba(142,128,166,0.28)]" />
+        <div className="h-px bg-neu-divider" />
 
         <div className="flex items-center justify-end gap-2.5">
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="rounded-full border border-white/85 px-4.5 py-2.25 text-[13px] font-semibold text-[oklch(0.4_0.025_315)] shadow-neu-pill-secondary hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-pill-active"
+            className={`px-4.5 py-2.25 text-[13px] text-[oklch(0.4_0.025_315)] hover:text-[oklch(0.24_0.025_315)] ${secondaryPillButtonClass}`}
           >
             취소
           </button>
-          <button
-            type="button"
-            onClick={commit}
-            disabled={addMutation.isPending}
-            className="rounded-full px-5 py-2.25 text-[13px] font-bold text-neu-hi [background:var(--neu-cta-pill-grad)] shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:cursor-default disabled:opacity-60"
-          >
+          <ModalCtaButton onClick={commit} disabled={addMutation.isPending}>
             추가
-          </button>
+          </ModalCtaButton>
         </div>
       </Modal>
     </>

@@ -5,8 +5,8 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 // 정보·트랙 상세의 44px 액션 버튼)이 공유하는 크기·모양(rounded-full/bg-neu-surface)과
 // disabled 흐림만 책임집니다. 색상·그림자·hover/active/눌림 표현은 자리마다 의미가
 // 달라서(예: 눌렸을 때 그림자까지 sunken으로 바뀌는 곳도 있고 색만 바뀌는 곳도 있음)
-// prop으로 만들지 않고 className/style로 그대로 받습니다 — PillButton의 `pressed`처럼
-// 의미가 완전히 같을 때만 prop화합니다.
+// prop으로 만들지 않고 className/style로 그대로 받습니다 — PlayPauseButton처럼
+// 의미가 완전히 같은 조합만 별도 컴포넌트로 뽑습니다.
 const SIZES = {
   sm: "h-7 w-7",
   md: "h-7.5 w-7.5",

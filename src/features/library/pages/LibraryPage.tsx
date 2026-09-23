@@ -6,12 +6,14 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { formatDuration } from "@/shared/lib/format-time";
-import { segmentTabStyle } from "@/shared/styles/segment-tab-style";
+import {
+  segmentTabClass,
+  segmentTabStyle,
+} from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import InfoBox from "@/shared/components/InfoBox";
-import TrackThumbnail from "@/shared/components/TrackThumbnail";
-import ThumbBox from "@/shared/components/ThumbBox";
+import TrackRowInfo from "../components/TrackRowInfo";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import { PlayIcon, SortArrowIcon } from "@/shared/components/icons";
 import MarqueeText from "@/features/player/components/MarqueeText";
@@ -28,13 +30,16 @@ const SORT_OPTIONS: { key: SortKey; label: string; defaultDesc: boolean }[] = [
 ];
 
 const chipStyle = (on: boolean) => ({
-  background: on ? "oklch(0.912 0.014 315)" : "oklch(0.935 0.013 315)",
+  background: on ? "oklch(0.912 0.014 315)" : "var(--neu-surface)",
   boxShadow: on
     ? "inset 3px 3px 7px rgba(150,136,175,0.4), inset -3px -3px 6px rgba(255,255,255,0.85)"
-    : "4px 4px 10px rgba(142,128,166,0.38), -3px -3px 8px rgba(255,255,255,0.9)",
+    : "var(--neu-shadow-tint-pill)",
   borderColor: on ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.8)",
-  color: on ? "#6d1a9f" : "oklch(0.34 0.025 315)",
+  color: on ? "var(--neu-hi)" : "oklch(0.34 0.025 315)",
 });
+
+// 헤더 행과 각 트랙 행이 같은 컬럼 폭을 써야 해서 한 곳에 둡니다.
+const trackRowGridColumns = "minmax(0,1fr) 190px 74px 46px 28px";
 
 // old-src/src/components/SearchMusic.js 를 대체할 자리(라이브러리 목록 + 검색).
 // "라이브러리 내 검색" 입력창은 시안대로 헤더(HomeLayout)에 있고, 이 페이지는
@@ -152,9 +157,7 @@ export default function LibraryPage() {
                 key={key}
                 type="button"
                 onClick={() => handleSortClick(key, defaultDesc)}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-[9px] px-3.25 py-1.75 text-[12.5px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
-                  isActive ? "text-neu-hi shadow-neu-tab-raised" : "text-neu-muted"
-                }`}
+                className={`flex items-center gap-1.5 whitespace-nowrap px-3.25 py-1.75 text-[12.5px] ${segmentTabClass(isActive)}`}
                 style={segmentTabStyle(isActive)}
               >
                 {label}
@@ -168,8 +171,8 @@ export default function LibraryPage() {
       <div
         className="grid gap-4 px-3.5 pb-2.5 text-[11px] font-bold tracking-wider text-neu-muted"
         style={{
-          gridTemplateColumns: "minmax(0,1fr) 190px 74px 46px 28px",
-          borderBottom: "1px solid rgba(142,128,166,0.28)",
+          gridTemplateColumns: trackRowGridColumns,
+          borderBottom: "1px solid var(--neu-divider)",
         }}
       >
         <div className="pl-18">제목</div>
@@ -186,33 +189,14 @@ export default function LibraryPage() {
             <div
               key={track.id}
               onClick={() => navigate(`/music/${track.id}`)}
-              className="grid cursor-pointer items-center gap-4 rounded-[11px] px-3.5 py-2.25 hover:bg-[rgba(120,100,145,0.09)]"
+              className="grid cursor-pointer items-center gap-4 rounded-[11px] px-3.5 py-2.25 hover:bg-neu-row-hover"
               style={{
-                gridTemplateColumns: "minmax(0,1fr) 190px 74px 46px 28px",
+                gridTemplateColumns: trackRowGridColumns,
                 ...currentTrackRowStyle(isCurrentTrack),
               }}
             >
               <div className="flex items-center gap-3">
-                <ThumbBox size="row">
-                  <TrackThumbnail
-                    videoId={track.video_id}
-                    className="h-full w-full"
-                  />
-                </ThumbBox>
-                <div className="min-w-0">
-                  <MarqueeText
-                    text={track.title}
-                    className="text-sm font-semibold"
-                    style={{
-                      color: isCurrentTrack
-                        ? "#6d1a9f"
-                        : "oklch(0.3 0.025 315)",
-                    }}
-                  />
-                  <p className="mt-0.75 truncate text-[12.5px] text-[oklch(0.46_0.025_315)]">
-                    {track.artist.join(", ")}
-                  </p>
-                </div>
+                <TrackRowInfo track={track} isCurrentTrack={isCurrentTrack} />
               </div>
               <MarqueeText
                 text={track.tags.map((tag) => `#${tag}`).join("  ")}
@@ -221,7 +205,7 @@ export default function LibraryPage() {
               <div className="font-neu-mono text-[12.5px] text-neu-muted">
                 {track.play_count.toLocaleString()}
               </div>
-              <span className="font-neu-mono text-[12.5px] text-[oklch(0.46_0.025_315)]">
+              <span className="font-neu-mono text-[12.5px] text-neu-muted">
                 {formatDuration(track.duration)}
               </span>
               <IconCircleButton

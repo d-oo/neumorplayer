@@ -35,22 +35,29 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
 
 - **`shared/lib/`** — 어떤 feature도 도메인으로 소유하지 않는 진짜 인프라/범용 유틸
   (`database.types.ts`, `format-time.ts`, `queryClient.ts`, `supabase.ts`,
-  `useDocumentTitle.ts`, `youtube-thumbnail.ts`). 클라이언트 상태 스토어도 그 상태를
-  소유하는 feature의 `lib/`에 둡니다(`usePlayerStore.ts`는 `features/player/lib/`) —
-  별도 `stores/`는 없습니다.
+  `useDocumentTitle.ts`, `useOutsideClick.ts`, `youtube-thumbnail.ts`). 클라이언트 상태
+  스토어도 그 상태를 소유하는 feature의 `lib/`에 둡니다(`usePlayerStore.ts`는
+  `features/player/lib/`) — 별도 `stores/`는 없습니다.
 - **`shared/components/`** — 어떤 feature의 도메인도 대표하지 않는 순수 UI 프리미티브
   (`icons.tsx`, `TrackThumbnail.tsx`, `ThumbBox.tsx`, `IconCircleButton.tsx`,
-  `InfoBox.tsx`). `auth`엔 `AuthForm.tsx` 전용의 별도
+  `InfoBox.tsx`, `Modal.tsx`, `CloseButton.tsx`, `ActionButton.tsx`,
+  `ModalCtaButton.tsx`). `auth`엔 `AuthForm.tsx` 전용의 별도
   `features/auth/components/icons.tsx`가 있으니 혼동하지 마세요. 반대로
   `PlaylistCoverGrid.tsx`는 "재생목록 커버"라는 playlist 도메인 개념을 대표하므로
   `features/player/components/`에 그대로 둡니다 — UI가 재사용 가능하다고 전부
   `shared/`로 보내는 게 아니라, 그 컴포넌트가 특정 도메인을 표현하는지를 봅니다.
+  같은 기준으로 `ActionButton`(알약 CTA)은 탐색 도메인을 대표하지 않아
+  `features/explore/`에서 여기로 옮겼고, 트랙 행의 `TrackRowInfo`는 "트랙"이라는
+  library 도메인을 대표하므로 `features/library/components/`에 둡니다.
 - **`shared/styles/`** — 호출부의 마크업/요소/동작이 서로 달라서 컴포넌트로 뽑을 수
-  없고 계산된 style 값(또는 상수)만 완전히 동일할 때(`segment-tab-style.ts`,
-  `sunken-panel-style.ts`, `current-track-row-style.ts`). **판단 기준**: 마크업(태그
-  종류, 자식 구조, 동작)까지 동일하면 `shared/components/`의 컴포넌트로, 마크업은
-  다르고 계산된 값만 동일하면 `shared/styles/`의 함수/상수로 — 억지로 하나로 합치면
-  "버튼도 되고 링크도 되는" 애매한 API가 됩니다.
+  없고 계산된 style 값(또는 클래스 문자열 상수)만 완전히 동일할 때
+  (`segment-tab-style.ts`, `sunken-panel-style.ts`, `current-track-row-style.ts`,
+  `thumbnail-placeholder-style.ts`, `field-box-style.ts`,
+  `secondary-circle-button-class.ts`). **판단 기준**: 마크업(태그 종류, 자식 구조,
+  동작)까지 동일하면 `shared/components/`의 컴포넌트로, 마크업은 다르고 계산된 값만
+  동일하면 `shared/styles/`의 함수/상수로 — 억지로 하나로 합치면 "버튼도 되고 링크도
+  되는" 애매한 API가 됩니다. 클래스 문자열을 공유할 땐 **어느 호출부도 덮어쓰지 않는
+  유틸리티만** 공통부에 넣으세요(패딩·글자 크기처럼 자리마다 다른 건 호출부에 남김).
 - **`shared/pages/`** — 어떤 feature 도메인도 대표하지 않는 라우트(`NotFoundPage.tsx`,
   404). 다른 세 갈래와 같은 기준(도메인 대표 여부)을 페이지에도 그대로 적용한 것뿐이라
   갈래를 하나 더 둡니다 — 페이지를 한 곳에 모으지 않는다는 원칙은 여전히 "도메인이
