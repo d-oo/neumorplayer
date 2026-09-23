@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import YouTubeIframe, {
   type YouTubeEvent,
@@ -15,20 +15,37 @@ import { useVideoSlot } from "../hooks/useVideoSlot";
 const opts: YouTubeProps["opts"] = {
   width: "100%",
   height: "100%",
-  playerVars: { autoplay: 1 },
+  // old-src/src/components/YT.js의 playerVars를 그대로 옮겼습니다.
+  playerVars: { autoplay: 1, controls: 0, rel: 0, disablekb: 1 },
 };
 
+// 미니 플레이어 박스 크기 — MusicInfoPage의 영상 영역(h-51.75 w-92)과 정확히
+// 같은 크기라, 도킹된 상태에서 그 자리를 크기 보간 없이 그대로 덮을 수 있습니다.
+const BOX_WIDTH = 368;
+const BOX_HEIGHT = 207;
+const FLOATING_MARGIN = 20;
+const TRANSITION_MS = 350;
+
 // HomeLayout에 항상 마운트해두는 컴포넌트입니다. music/:musicId 라우트를 벗어나도
-// 이 컴포넌트 자체는 언마운트되지 않아야 배경 재생이 끊기지 않으므로, 라우트 페이지
-// 안에 두지 않고 여기서 화면에 보이는 위치(포탈 대상)만 VideoSlotProvider를 통해
-// 바꿔줍니다. 슬롯이 없을 때는 화면 밖 컨테이너에 그대로 둡니다 — display:none을 쓰면
-// 일부 브라우저가 숨겨진 iframe의 재생을 스로틀링할 수 있어 화면 밖 배치를 씁니다.
+// 이 컴포넌트 자체는 언마운트되지 않아야 배경 재생이 끊기지 않으므로, 실제 iframe은
+// document.body에 딱 한 번만 포탈링해두고(포탈 대상 자체를 절대 바꾸지 않습니다 —
+// 대상이 바뀌면 그 순간 DOM에서 떨어져 나가 재생이 끊깁니다) 그 박스의 화면 좌표만
+// requestAnimationFrame으로 매 프레임 갱신합니다. VideoSlotProvider에 등록된 앵커가
+// 있으면(재생 중인 트랙의 MusicInfoPage) 그 앵커의 getBoundingClientRect() 좌표를,
+// 없으면 화면 우측 하단 고정 좌표를 목표로 삼습니다 — YouTube API Developer Policies의
+// "화면 밖 배경 재생 금지" 요구사항을 항상 만족합니다(재생 중엔 둘 중 어디에 있든
+// 실제로 화면에 보임). 도킹 여부가 바뀌는 순간에만 잠깐 CSS transition을 켜서 두 위치
+// 사이를 미끄러지듯 이동시키고, 스크롤 등으로 계속 좌표가 바뀌는 동안은 transition을
+// 꺼서 버벅임 없이 즉시 따라가게 합니다.
 export default function YouTubePlayer() {
-  const { slotEl } = useVideoSlot();
+  const { anchorEl } = useVideoSlot();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [offscreenEl, setOffscreenEl] = useState<HTMLDivElement | null>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const anchorElRef = useRef<HTMLDivElement | null>(anchorEl);
+  const wasDockedRef = useRef<boolean | null>(null);
+  const transitionTimeoutRef = useRef<number | null>(null);
 
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
@@ -44,6 +61,74 @@ export default function YouTubePlayer() {
   const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
   const currentTrackId = currentTrack?.id;
   const prevTrackIdRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    anchorElRef.current = anchorEl;
+  }, [anchorEl]);
+
+  // currentTrack에만 의존합니다(anchorEl 변경마다 effect를 다시 만들지 않고, 이미
+  // 돌고 있는 루프가 매 프레임 anchorElRef.current를 읽게 해서 도킹 여부가 바뀌어도
+  // 애니메이션 판단(wasDockedRef)이 끊기지 않게 합니다).
+  useEffect(() => {
+    if (!currentTrackId) return;
+    const box = boxRef.current;
+    if (!box) return;
+
+    function computeTarget() {
+      const anchor = anchorElRef.current;
+      // anchor.isConnected를 따로 확인하는 이유: 라우트를 벗어나면 그 문서 노드는
+      // React 커밋 시점에 곧바로 DOM에서 제거되지만, anchorElRef는 setAnchorEl(null)의
+      // effect가 한 박자 늦게 돌기 전까지 그 "이미 제거된" 노드를 계속 들고 있습니다.
+      // 문서에서 떨어져 나간 노드의 getBoundingClientRect()는 전부 0을 반환하므로,
+      // 이 확인이 없으면 그 한두 프레임 동안 목표 좌표가 (0,0)이 되어 좌측 상단으로
+      // 튀었다가 다시 우측 하단으로 이동하는 것처럼 보입니다.
+      if (anchor && anchor.isConnected) {
+        const rect = anchor.getBoundingClientRect();
+        return { top: rect.top, left: rect.left, docked: true };
+      }
+      return {
+        top: window.innerHeight - FLOATING_MARGIN - BOX_HEIGHT,
+        left: window.innerWidth - FLOATING_MARGIN - BOX_WIDTH,
+        docked: false,
+      };
+    }
+
+    // 최초 배치는 어딘가에서 미끄러져 오는 게 아니라 바로 제자리에 나타나야 하므로
+    // transition 없이 한 번 스냅합니다.
+    const initial = computeTarget();
+    box.style.transition = "none";
+    box.style.transform = `translate(${initial.left}px, ${initial.top}px)`;
+    wasDockedRef.current = initial.docked;
+
+    let rafId: number;
+    function tick() {
+      const target = computeTarget();
+      const current = boxRef.current;
+      if (current) {
+        if (wasDockedRef.current !== target.docked) {
+          current.style.transition = `transform ${TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+          if (transitionTimeoutRef.current !== null) {
+            window.clearTimeout(transitionTimeoutRef.current);
+          }
+          transitionTimeoutRef.current = window.setTimeout(() => {
+            if (boxRef.current) boxRef.current.style.transition = "none";
+          }, TRANSITION_MS + 10);
+          wasDockedRef.current = target.docked;
+        }
+        current.style.transform = `translate(${target.left}px, ${target.top}px)`;
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (transitionTimeoutRef.current !== null) {
+        window.clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = null;
+      }
+    };
+  }, [currentTrackId]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -122,17 +207,7 @@ export default function YouTubePlayer() {
     return () => window.clearInterval(interval);
   }, [currentTrackId, setProgress]);
 
-  const offscreenAnchor = (
-    <div
-      ref={setOffscreenEl}
-      aria-hidden
-      className="fixed left-[-9999px] top-[-9999px] h-px w-px overflow-hidden"
-    />
-  );
-
-  if (!currentTrack) return offscreenAnchor;
-
-  const target = slotEl ?? offscreenEl;
+  if (!currentTrack) return null;
 
   const handleReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
@@ -145,22 +220,22 @@ export default function YouTubePlayer() {
     if (event.data === YouTubeIframe.PlayerState.PAUSED) setIsPlaying(false);
   };
 
-  return (
-    <>
-      {offscreenAnchor}
-      {target &&
-        createPortal(
-          <YouTubeIframe
-            videoId={currentTrack.video_id}
-            opts={opts}
-            className="h-full w-full"
-            iframeClassName="h-full w-full"
-            onReady={handleReady}
-            onStateChange={handleStateChange}
-            onEnd={() => playNext()}
-          />,
-          target,
-        )}
-    </>
+  return createPortal(
+    <div
+      ref={boxRef}
+      className="fixed top-0 left-0 z-30 h-51.75 w-92 overflow-hidden rounded-[14px] border border-(--neu-border-80) bg-black"
+      style={{ boxShadow: "var(--neu-shadow-media-card)", willChange: "transform" }}
+    >
+      <YouTubeIframe
+        videoId={currentTrack.video_id}
+        opts={opts}
+        className="h-full w-full"
+        iframeClassName="h-full w-full"
+        onReady={handleReady}
+        onStateChange={handleStateChange}
+        onEnd={() => playNext()}
+      />
+    </div>,
+    document.body,
   );
 }

@@ -75,12 +75,14 @@ export function useExploreSearch() {
     setLookupVideoId(value.trim() === "" ? null : value.trim());
   }
 
-  // 추가 성공 후 선택 상태를 지웁니다 — 비디오 ID 입력칸도 함께 비워 다음 곡을
-  // 새로 고를 수 있는 상태로 되돌립니다.
+  // 추가 성공 후 선택 상태를 지웁니다 — 비디오 ID 입력칸과 검색 결과(텍스트 검색·
+  // 단건 조회 둘 다)를 함께 비워서, 제목/아티스트 입력칸이 지워지는 것과 마찬가지로
+  // 다음 곡을 처음부터 새로 찾을 수 있는 상태로 되돌립니다.
   function clearSelection() {
     setSelectedVideoId(null);
     setVideoIdInput("");
     setLookupVideoId(null);
+    setSubmittedQuery("");
   }
 
   const selected = useMemo(

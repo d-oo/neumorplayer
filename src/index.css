@@ -291,6 +291,16 @@
     -2px -2px 4px rgba(128, 108, 158, 0.45);
   --neu-shadow-hero-title-hi: 2px 2px 3px rgba(255, 255, 255, 0.95),
     -2px -2px 4px rgba(128, 108, 158, 0.5);
+  /* 위 두 토큰과 같은 값이지만, text-shadow는 안 먹는 히어로 타이틀의 인라인 음표
+     SVG(NoteGlyph.tsx)에 filter: drop-shadow()로 대신 적용하기 위한 버전입니다.
+     drop-shadow()는 한 번에 그림자 하나만 받아서(text-shadow처럼 콤마로 여러 개를
+     못 넣음) 두 그림자를 각각 토큰으로 쪼개뒀고, blur 반경도 시안 그대로 (3px→1.5px,
+     4px→2px)로 줄여서 옮겼습니다 — drop-shadow는 같은 blur 값이라도 text-shadow보다
+     퍼져 보여서 원본 시안(2a 음표 타이포그래피.zip)이 이미 그렇게 보정해뒀습니다. */
+  --neu-shadow-hero-title-filter-1: 2px 2px 1.5px rgba(255, 255, 255, 0.95);
+  --neu-shadow-hero-title-filter-2: -2px -2px 2px rgba(128, 108, 158, 0.45);
+  --neu-shadow-hero-title-hi-filter-1: 2px 2px 1.5px rgba(255, 255, 255, 0.95);
+  --neu-shadow-hero-title-hi-filter-2: -2px -2px 2px rgba(128, 108, 158, 0.5);
   --neu-video-placeholder-bg: repeating-linear-gradient(
       135deg,
       rgba(118, 100, 145, 0.1) 0 8px,
@@ -513,6 +523,10 @@
     -2px -2px 4px rgba(6, 3, 12, 0.608);
   --neu-shadow-hero-title-hi: 2px 2px 3px rgba(255, 255, 255, 0.071),
     -2px -2px 4px rgba(6, 3, 12, 0.675);
+  --neu-shadow-hero-title-filter-1: 2px 2px 1.5px rgba(255, 255, 255, 0.071);
+  --neu-shadow-hero-title-filter-2: -2px -2px 2px rgba(6, 3, 12, 0.608);
+  --neu-shadow-hero-title-hi-filter-1: 2px 2px 1.5px rgba(255, 255, 255, 0.071);
+  --neu-shadow-hero-title-hi-filter-2: -2px -2px 2px rgba(6, 3, 12, 0.675);
   --neu-video-placeholder-bg: repeating-linear-gradient(
       135deg,
       rgba(200, 180, 235, 0.055) 0 8px,

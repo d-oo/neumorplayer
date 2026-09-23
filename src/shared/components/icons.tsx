@@ -260,6 +260,28 @@ export function PencilIcon({ className }: IconProps) {
   );
 }
 
+export function InfoIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="8" cy="4.9" r="0.95" fill="currentColor" />
+      <path
+        d="M8 7.4V11.6"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function TrashIcon({ className }: IconProps) {
   return (
     <svg

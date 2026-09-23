@@ -25,6 +25,7 @@ interface PlayerState {
   playNext: () => void;
   playPrev: () => void;
   jumpTo: (index: number) => void;
+  detachCurrentFromPlaylist: () => void;
   setIsPlaying: (playing: boolean) => void;
   setVideoOn: (on: boolean) => void;
   toggleLoopTrack: () => void;
@@ -107,6 +108,21 @@ export const usePlayerStore = create<PlayerState>()(
           isPlaying: false,
           currentTime: 0,
           duration: 0,
+        });
+      },
+
+      // old-src(PlaylistInfo.js)의 playSingle과 같은 역할 — 지금 재생 중인 곡이
+      // 자신이 속한 바로 그 재생목록에서 제거될 때, 실제 재생(isPlaying/currentTime)은
+      // 끊지 않은 채로 "이 재생목록 소속" 컨텍스트만 떼어내 단독 재생으로 바꿉니다.
+      // 큐를 그 곡 하나만 남기는 이유도 old-src와 같습니다 — 더 이상 존재하지 않는
+      // 재생목록 순서를 다음/이전 곡 탐색이 계속 참조하지 않도록.
+      detachCurrentFromPlaylist: () => {
+        const { queue, currentIndex } = get();
+        if (currentIndex < 0) return;
+        set({
+          queue: [queue[currentIndex]],
+          currentIndex: 0,
+          playingPlaylistId: null,
         });
       },
 

@@ -5,7 +5,8 @@ import type { useGuestPlayer } from "../lib/useGuestPlayer";
 const opts: YouTubeProps["opts"] = {
   width: "100%",
   height: "100%",
-  playerVars: { autoplay: 1 },
+  // old-src/src/components/YT.js의 playerVars를 그대로 옮겼습니다.
+  playerVars: { autoplay: 1, controls: 0, rel: 0, disablekb: 1 },
 };
 
 // 528×297 동영상 자리. 재생 중인 곡이 없으면 시안 그대로 정적 플레이스홀더, 검색→선택

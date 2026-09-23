@@ -6,19 +6,6 @@
       아티스트·태그(또는 재생목록 제목)를 고치는 폼(react-hook-form + zod 추천)은 아직
       없다. docs/design/수정본2.zip 반영으로 두 화면 모두에 "수정" 원형 버튼이 생겼지만
       `onClick`이 비어있는 자리 표시자다 — 실제 폼을 만들면 여기에 연결한다.
-- [ ] **다크모드 실제 구현**: `SettingsModal`(`src/features/auth/components/SettingsModal.tsx`)에
-      라이트/다크 선택 UI는 있지만 로컬 `useState`로 선택 표시만 바꿀 뿐 실제 테마 적용도,
-      새로고침 후 유지도 안 한다. `index.css`의 색상 토큰(`:root`)을 다크 값으로 바꿔치기할
-      방법(예: `data-theme` 속성 + CSS 변수 재정의)과 선택값을 어디에 저장할지(zustand
-      persist 등)를 정해서 연결해야 한다.
-- [ ] **배경 재생을 항상 보이는 미니 플레이어로 교체(YouTube API 정책 위반 대응)**:
-      `YouTubePlayer.tsx`가 `music/:musicId`를 벗어나면 실제 iframe을 화면 밖(1px×1px,
-      `left:-9999px`) 컨테이너로 옮겨 재생을 계속 이어간다. 이는 YouTube API Developer
-      Policies의 "background player" 금지 조항(사용자가 보고 있는 페이지/탭/화면에 표시되지
-      않는 플레이어에서 재생하는 기능 금지)과 Required Minimum Functionality의 최소 뷰포트
-      (200×200px), 자동재생 가시성(50% 이상 노출) 요구를 함께 어긴다. `PlayerPanel`(CD 카드)
-      자리에 실제 iframe을 얹은, 가로 368×세로 207 크기의 미니 플레이어를 항상 띄우는
-      방향으로 교체할 예정 — 세부 설계는 추후 지시받아 진행한다.
 - [ ] **YouTube API 데이터 30일 갱신 배치 작업**: `tracks.duration`은 YouTube Data API에서
       가져온 값을 만료·재조회 로직 없이 영구 저장 중이다(Developer Policies — API 데이터는
       30일 넘게 저장할 수 없고 최신 상태로 유지해야 한다는 조항, 그리고 30일마다 영상이

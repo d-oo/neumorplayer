@@ -18,20 +18,14 @@ import Modal from "@/shared/components/Modal";
 import ModalCtaButton from "@/shared/components/ModalCtaButton";
 
 // old-src/src/components/MusicInfo.js의 "playlist_add" 흐름을 이어받습니다.
-// PlayerPanel(현재 재생 곡)과 MusicInfoPage(곡 상세)가 정확히 같은 동작을 필요로 해서
-// 여기 한 곳으로 뽑았습니다. docs/design/수정본2.zip부터 드롭다운이 아니라 화면
+// MusicInfoPage(곡 상세)가 이 흐름을 그대로 씁니다(PlayerPanel은 이 자리에 "음악
+// 정보" 버튼을 대신 두고 곡 상세 페이지로 이동시킵니다 — 재생목록 추가는 그 상세
+// 페이지에서 하면 됩니다). docs/design/수정본2.zip부터 드롭다운이 아니라 화면
 // 중앙 모달로 바뀌었고, 여러 재생목록을 체크한 뒤 "추가" 버튼으로 한 번에 커밋하는
 // 방식입니다(이미 들어있는 재생목록은 체크된 채로 비활성 표시 — 여기서 빼는 기능은
-// 없고, 빼는 건 PlaylistInfoPage의 트랙 행에서 합니다). 트리거는 항상 원형
-// 아이콘이라(트랙 상세도 시안에서 알약이 아니라 44px 원형으로 바뀜) 크기만
-// `size`로 받습니다.
-export default function AddToPlaylistButton({
-  track,
-  size,
-}: {
-  track: Track;
-  size: "lg" | "xl";
-}) {
+// 없고, 빼는 건 PlaylistInfoPage의 트랙 행에서 합니다). 트리거는 시안대로 44px
+// 원형 아이콘 하나뿐입니다.
+export default function AddToPlaylistButton({ track }: { track: Track }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -96,7 +90,7 @@ export default function AddToPlaylistButton({
   return (
     <>
       <IconCircleButton
-        size={size}
+        size="xl"
         onClick={openModal}
         title={isQueued ? "재생목록에 추가됨" : "재생목록에 추가"}
         aria-label={isQueued ? "재생목록에 추가됨" : "재생목록에 추가"}

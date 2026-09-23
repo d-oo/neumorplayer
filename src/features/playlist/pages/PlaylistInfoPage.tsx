@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -43,6 +44,7 @@ import PlaylistCoverGrid from "@/features/player/components/PlaylistCoverGrid";
 import PlayPauseButton from "@/features/player/components/PlayPauseButton";
 import MarqueeText from "@/features/player/components/MarqueeText";
 import TrackRowInfo from "@/features/library/components/TrackRowInfo";
+import ConfirmModal from "@/shared/components/ConfirmModal";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import MutedNote from "@/shared/components/MutedNote";
 
@@ -153,13 +155,14 @@ function SortableTrackRow({
 
 // old-src/src/components/PlaylistInfo.js 를 대체합니다. docs/design/ 시안(1b-A)의
 // 색상·그림자·치수는 그대로 두고, playlists/playlist_tracks 조회·트랙 추가는
-// AddToPlaylistButton(MusicInfoPage/PlayerPanel)에서 처리하므로 여기서는 조회 +
+// AddToPlaylistButton(MusicInfoPage)에서 처리하므로 여기서는 조회 +
 // 삭제 + 제거 + dnd-kit 순서 변경만 담당합니다.
 export default function PlaylistInfoPage() {
   const { playlistId } = useParams<{ playlistId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
@@ -168,6 +171,9 @@ export default function PlaylistInfoPage() {
   const playQueue = usePlayerStore((s) => s.playQueue);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
+  const detachCurrentFromPlaylist = usePlayerStore(
+    (s) => s.detachCurrentFromPlaylist,
+  );
 
   const {
     data: playlist,
@@ -249,6 +255,15 @@ export default function PlaylistInfoPage() {
     toggleShuffle();
   }
 
+  // old-src(PlaylistInfo.js)의 deleteFromPlaylist와 같은 순서 — 지금 재생 중인
+  // 곡을 이 재생목록에서 빼는 경우, 먼저 재생목록 컨텍스트에서 떼어낸(단독 재생으로
+  // 전환) 뒤에 실제 제거 mutation을 보냅니다. 순서를 반대로 하면 큐가 방금 DB에서
+  // 빠진 트랙을 여전히 "이 재생목록 소속"으로 가리키는 순간이 생깁니다.
+  function handleRemoveTrack(trackId: string) {
+    if (trackId === currentTrackId) detachCurrentFromPlaylist();
+    removeTrackMutation.mutate(trackId);
+  }
+
   if (isPlaylistLoading || isTracksLoading) {
     return <MutedNote>불러오는 중...</MutedNote>;
   }
@@ -311,11 +326,15 @@ export default function PlaylistInfoPage() {
             </IconCircleButton>
             <IconCircleButton
               size="xl"
-              tooltip="삭제"
-              onClick={() => deletePlaylistMutation.mutate()}
-              disabled={deletePlaylistMutation.isPending}
+              tooltip={
+                isThisPlaylistPlaying
+                  ? "재생 중인 재생목록은 삭제할 수 없습니다"
+                  : "삭제"
+              }
+              onClick={() => setConfirmingDelete(true)}
+              disabled={deletePlaylistMutation.isPending || isThisPlaylistPlaying}
               aria-label="재생목록 삭제"
-              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-(--neu-danger)`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) enabled:hover:text-(--neu-danger)`}
             >
               <TrashIcon />
             </IconCircleButton>
@@ -371,7 +390,7 @@ export default function PlaylistInfoPage() {
                     onPlay={() =>
                       playlistId && playQueue(tracks, index, playlistId)
                     }
-                    onRemove={() => removeTrackMutation.mutate(track.id)}
+                    onRemove={() => handleRemoveTrack(track.id)}
                   />
                 ))}
               </div>
@@ -379,6 +398,22 @@ export default function PlaylistInfoPage() {
           </DndContext>
         )}
       </div>
+
+      <ConfirmModal
+        open={confirmingDelete}
+        onClose={() => {
+          setConfirmingDelete(false);
+          deletePlaylistMutation.reset();
+        }}
+        onConfirm={() => deletePlaylistMutation.mutate()}
+        isPending={deletePlaylistMutation.isPending}
+        errorMessage={
+          deletePlaylistMutation.isError ? "삭제에 실패했습니다." : null
+        }
+        title="정말 삭제하시겠어요?"
+        description={`"${playlist.title}" 재생목록이 삭제되며 되돌릴 수 없습니다. 담긴 곡은 라이브러리에 그대로 남습니다.`}
+        confirmLabel="삭제"
+      />
     </div>
   );
 }

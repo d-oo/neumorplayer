@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVideoSlot } from "@/features/player/hooks/useVideoSlot";
@@ -15,6 +15,7 @@ import { formatDuration } from "@/shared/lib/format-time";
 import { secondaryCircleButtonClass } from "@/shared/styles/secondary-button-class";
 import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButton";
 import PlayPauseButton from "@/features/player/components/PlayPauseButton";
+import ConfirmModal from "@/shared/components/ConfirmModal";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import MutedNote from "@/shared/components/MutedNote";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
@@ -31,18 +32,19 @@ const statBoxStyle = {
 // TODO: 제목/아티스트/태그 수정 폼(react-hook-form + zod 추천)은 아직 없고, "수정"
 // 버튼은 자리만 있습니다(docs/todos.md 참고).
 //
-// 비디오 영역은 이 트랙이 실제로 재생 중(또는 일시정지 상태로 로드됨)일 때만
-// HomeLayout에 항상 마운트되어 있는 YouTubePlayer가 포탈링해 들어오고(이 페이지를
-// 벗어나거나 다른 곡이 재생되면 다시 화면 밖 오프스크린 컨테이너로 돌아가 배경
-// 재생을 유지합니다 — useVideoSlot 자체를 지우지 마세요), 그 외에는 TrackThumbnail로
-// 대체합니다(다른 곡이 재생 중일 때 이 페이지에 그 영상이 잘못 나타나거나, 빈 검은
-// 사각형만 보이는 걸 막기 위함). 시안의 재생 버튼 오버레이는 실제 iframe이 있을 땐
-// iframe 자체가 이미 클릭 가능한 컨트롤을 가져서 넣지 않았습니다.
+// 비디오 영역은 이 트랙이 지금 재생 중이 아니면 TrackThumbnail을 보여주고, 재생
+// 중이면 이 박스를 "앵커"로 등록합니다(useVideoSlot) — 그러면 HomeLayout에 항상
+// 마운트되어 있는 YouTubePlayer의 실제 iframe 박스가 화면 우측 하단 미니 플레이어
+// 위치에서 이 박스의 좌표로 애니메이션 이동해 와서 바로 위에 겹쳐집니다(재생 중엔
+// 박스를 비워둡니다 — 유튜브 썸네일이 잠깐 보였다가 실제 영상으로 스왑되면 어색해서).
+// 이 페이지를 벗어나면 다시 우측 하단으로 미끄러져 돌아가고(iframe 자체는 한 번도
+// 제거되지 않으므로 재생이 끊기지 않습니다 — useVideoSlot 자체를 지우지 마세요).
 export default function MusicInfoPage() {
   const { musicId } = useParams<{ musicId: string }>();
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setSlotEl } = useVideoSlot();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const { setAnchorEl } = useVideoSlot();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const playQueue = usePlayerStore((s) => s.playQueue);
@@ -64,17 +66,17 @@ export default function MusicInfoPage() {
   useDocumentTitle(track ? track.title : "NeumorPlayer");
 
   // 이 트랙이 지금 큐에서 재생 중인(또는 일시정지된) 바로 그 트랙일 때만 이
-  // 자리에 실제 유튜브 iframe을 붙입니다 — 그렇지 않으면(다른 곡이 재생 중이거나
-  // 아무것도 재생 중이 아니면) YouTubePlayer는 화면 밖 오프스크린 컨테이너에
-  // 남아있고, 여기는 아래에서 트랙 썸네일을 대신 보여줍니다.
+  // 자리를 앵커로 등록해 실제 유튜브 iframe을 이 위치로 끌어옵니다 — 그렇지
+  // 않으면(다른 곡이 재생 중이거나 아무것도 재생 중이 아니면) 앵커를 등록하지
+  // 않고, 여기는 TrackThumbnail만 보여줍니다.
   const isThisTrackPlaying =
     !!track && currentIndex >= 0 && queue[currentIndex]?.id === track.id;
 
   useEffect(() => {
     if (!isThisTrackPlaying) return;
-    setSlotEl(containerRef.current);
-    return () => setSlotEl(null);
-  }, [isThisTrackPlaying, setSlotEl]);
+    setAnchorEl(containerRef.current);
+    return () => setAnchorEl(null);
+  }, [isThisTrackPlaying, setAnchorEl]);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -127,12 +129,14 @@ export default function MusicInfoPage() {
 
       <div className="flex items-start gap-6.5">
         <div
+          ref={containerRef}
           className="h-51.75 w-92 flex-none overflow-hidden rounded-[14px] border border-(--neu-border-80)"
           style={{ boxShadow: "var(--neu-shadow-media-card)" }}
         >
-          {isThisTrackPlaying ? (
-            <div ref={containerRef} className="h-full w-full bg-black" />
-          ) : (
+          {/* 재생 중일 때는 썸네일을 안 그립니다 — 실제 iframe이 도킹돼 겹쳐지기
+              전까지 유튜브 썸네일이 잠깐 보였다가 실제 영상으로 스왑되는 게 어색해서,
+              빈 박스로 두고 iframe이 미끄러져 들어오는 것만 보이게 합니다. */}
+          {!isThisTrackPlaying && (
             <TrackThumbnail
               videoId={track.video_id}
               quality="high"
@@ -166,31 +170,51 @@ export default function MusicInfoPage() {
               playing={isThisTrackPlaying && isPlaying}
               onClick={handlePlayClick}
             />
-            <AddToPlaylistButton track={track} size="xl" />
+            <AddToPlaylistButton track={track} />
             <IconCircleButton
               size="xl"
-              tooltip="수정"
+              tooltip={
+                isThisTrackPlaying
+                  ? "재생 중인 곡은 수정할 수 없습니다"
+                  : "수정"
+              }
+              disabled={isThisTrackPlaying}
               aria-label="수정"
-              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) enabled:hover:text-neu-hi`}
             >
               <PencilIcon />
             </IconCircleButton>
             <IconCircleButton
               size="xl"
-              tooltip="삭제"
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
+              tooltip={
+                isThisTrackPlaying
+                  ? "재생 중인 곡은 삭제할 수 없습니다"
+                  : "삭제"
+              }
+              onClick={() => setConfirmingDelete(true)}
+              disabled={deleteMutation.isPending || isThisTrackPlaying}
               aria-label="삭제"
-              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-(--neu-danger)`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) enabled:hover:text-(--neu-danger)`}
             >
               <TrashIcon />
             </IconCircleButton>
           </div>
-          {deleteMutation.isError && (
-            <p className="text-xs text-red-500">삭제에 실패했습니다.</p>
-          )}
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmingDelete}
+        onClose={() => {
+          setConfirmingDelete(false);
+          deleteMutation.reset();
+        }}
+        onConfirm={() => deleteMutation.mutate()}
+        isPending={deleteMutation.isPending}
+        errorMessage={deleteMutation.isError ? "삭제에 실패했습니다." : null}
+        title="정말 삭제하시겠어요?"
+        description={`"${track.title}"이(가) 라이브러리와 모든 재생목록에서 삭제되며 되돌릴 수 없습니다.`}
+        confirmLabel="삭제"
+      />
     </div>
   );
 }

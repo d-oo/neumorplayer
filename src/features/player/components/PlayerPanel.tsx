@@ -1,15 +1,15 @@
+import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { useCdPlayerPhysics } from "../hooks/useCdPlayerPhysics";
-import AddToPlaylistButton from "./AddToPlaylistButton";
 import CdDisc from "./CdDisc";
 import NowPlayingTitle from "./NowPlayingTitle";
 import SeekBar from "./SeekBar";
 import VolumeKnob from "./VolumeKnob";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import {
+  InfoIcon,
   NextIcon,
   PrevIcon,
-  QueueIcon,
   RepeatIcon,
   ShuffleIcon,
 } from "@/shared/components/icons";
@@ -21,6 +21,7 @@ import {
 // 스크럽·듀얼모드 볼륨 노브·드래그 시크바 물리는 features/landing과 공유하는
 // useCdPlayerPhysics가 담당합니다.
 export default function PlayerPanel() {
+  const navigate = useNavigate();
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -127,18 +128,15 @@ export default function PlayerPanel() {
           title={currentTrack?.title ?? "재생 중인 곡 없음"}
           subtitle={currentTrack?.artist.join(", ") ?? "-"}
         />
-        {currentTrack ? (
-          <AddToPlaylistButton track={currentTrack} size="lg" />
-        ) : (
-          <IconCircleButton
-            size="lg"
-            disabled
-            aria-label="재생목록에 추가"
-            className="flex-none text-(--neu-ink-52) shadow-neu-raised-sm"
-          >
-            <QueueIcon />
-          </IconCircleButton>
-        )}
+        <IconCircleButton
+          size="lg"
+          disabled={!currentTrack}
+          onClick={() => currentTrack && navigate(`/music/${currentTrack.id}`)}
+          aria-label="음악 정보"
+          className="flex-none text-(--neu-ink-52) shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken"
+        >
+          <InfoIcon />
+        </IconCircleButton>
       </div>
 
       <SeekBar

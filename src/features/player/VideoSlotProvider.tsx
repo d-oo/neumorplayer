@@ -5,11 +5,11 @@ import {
 } from "./hooks/video-slot-context";
 
 export function VideoSlotProvider({ children }: { children: ReactNode }) {
-  const [slotEl, setSlotEl] = useState<HTMLDivElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
 
   const value = useMemo<VideoSlotContextValue>(
-    () => ({ slotEl, setSlotEl }),
-    [slotEl],
+    () => ({ anchorEl, setAnchorEl }),
+    [anchorEl],
   );
 
   return (
