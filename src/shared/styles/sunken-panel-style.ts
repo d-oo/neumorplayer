@@ -3,6 +3,5 @@
 // 없는 고정 값이라 함수가 아니라 상수로 export합니다.
 export const sunkenPanelStyle = {
   background: "var(--neu-surface-sunken)",
-  boxShadow:
-    "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
+  boxShadow: "var(--neu-shadow-sunken-panel)",
 };

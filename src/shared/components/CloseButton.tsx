@@ -7,7 +7,7 @@ export default function CloseButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="닫기"
-      className="grid size-7 flex-none place-items-center rounded-full text-[oklch(0.5_0.02_315)] hover:text-[oklch(0.2_0.025_315)]"
+      className="grid size-7 flex-none place-items-center rounded-full text-(--neu-ink-50-b) hover:text-(--neu-ink-20)"
     >
       <XIcon />
     </button>

@@ -21,7 +21,7 @@ export default function ProfileDropdown() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex flex-none items-center gap-2 rounded-full border border-white/80 py-1.25 pr-2.75 pl-1.5 [background:oklch(0.915_0.014_315)] transition-[background,box-shadow] duration-150 hover:[background:var(--neu-hover-tint-grad)]"
+        className="flex flex-none items-center gap-2 rounded-full border border-(--neu-border-80) py-1.25 pr-2.75 pl-1.5 [background:var(--neu-ink-915)] transition-[background,box-shadow] duration-150 hover:[background:var(--neu-hover-tint-grad)]"
         style={{
           boxShadow: open
             ? "var(--neu-shadow-profile-open)"
@@ -29,33 +29,30 @@ export default function ProfileDropdown() {
         }}
       >
         <div
-          className="h-6 w-6 rounded-full border border-white/85 bg-neu-accent-tint"
-          style={{
-            boxShadow:
-              "inset 3px 3px 6px rgba(150,136,175,0.45), inset -2px -2px 5px rgba(255,255,255,0.9)",
-          }}
+          className="h-6 w-6 rounded-full border border-(--neu-border-85) bg-neu-accent-tint"
+          style={{ boxShadow: "var(--neu-shadow-avatar-chip)" }}
         />
-        <CaretIcon open={open} className="flex-none text-[oklch(0.5_0.025_315)]" />
+        <CaretIcon open={open} className="flex-none text-(--neu-ink-50-a)" />
       </button>
 
       {open && (
-        <div className="absolute top-11.5 right-0 z-20 w-56 rounded-[14px] border border-white/85 bg-neu-surface p-2 shadow-neu-dropdown">
+        <div className="absolute top-11.5 right-0 z-20 w-56 rounded-[14px] border border-(--neu-border-85) bg-neu-surface p-2 shadow-neu-dropdown">
           <div className="px-3.5 pt-2.25 pb-2.75">
             <p
               title={user?.email}
-              className="truncate text-[12.5px] font-semibold text-[oklch(0.34_0.025_315)]"
+              className="truncate text-[12.5px] font-semibold text-(--neu-ink-34)"
             >
               {user?.email}
             </p>
           </div>
-          <div className="mx-1.5 mb-1.5 h-px bg-[rgba(142,128,166,0.26)]" />
+          <div className="mx-1.5 mb-1.5 h-px bg-(--neu-shc-142-26)" />
           <button
             type="button"
             onClick={() => {
               setOpen(false);
               setSettingsOpen(true);
             }}
-            className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-[oklch(0.32_0.025_315)] transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
+            className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-(--neu-ink-32) transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
           >
             <SettingsIcon className="flex-none" />
             설정
@@ -63,7 +60,7 @@ export default function ProfileDropdown() {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-[oklch(0.32_0.025_315)] transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
+            className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-(--neu-ink-32) transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
           >
             <LogoutIcon className="flex-none" />
             로그아웃

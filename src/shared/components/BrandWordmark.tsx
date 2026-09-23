@@ -9,10 +9,7 @@ export default function BrandWordmark() {
   return (
     <div
       className="font-['Space_Grotesk'] text-base font-bold tracking-[-0.01em] text-neu-hi"
-      style={{
-        textShadow:
-          "1px 1px 1.5px rgba(120,96,150,0.5), -1px -1px 1.5px rgba(255,255,255,0.95)",
-      }}
+      style={{ textShadow: "var(--neu-shadow-wordmark)" }}
     >
       NEUMORPLAYER
     </div>

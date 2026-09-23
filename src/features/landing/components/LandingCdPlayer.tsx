@@ -31,7 +31,7 @@ export default function LandingCdPlayer({
   });
 
   return (
-    <section className="flex h-74.25 w-85 flex-none flex-col gap-3.75 rounded-3xl border border-white/80 bg-neu-surface p-4.5 shadow-neu-raised">
+    <section className="flex h-74.25 w-85 flex-none flex-col gap-3.75 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-4.5 shadow-neu-raised">
       <div className="flex w-full items-center gap-3.5">
         <CdDisc
           discRef={physics.discRef}
@@ -63,7 +63,7 @@ export default function LandingCdPlayer({
           className={
             repeat
               ? "flex-none text-neu-hi shadow-neu-sunken"
-              : "flex-none text-[oklch(0.56_0.02_315)] shadow-neu-raised-sm hover:text-neu-hi"
+              : "flex-none text-(--neu-ink-56) shadow-neu-raised-sm hover:text-neu-hi"
           }
         >
           <RepeatIcon />

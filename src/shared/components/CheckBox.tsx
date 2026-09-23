@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useThemed } from "@/shared/lib/theme";
 
 // 체크박스의 "네모 칸"만 담당합니다 — 회원가입 약관 동의(AuthForm)와 재생목록 추가
 // 모달(AddToPlaylistButton)이 배경 그라디언트·그림자까지 똑같은 값을 각자 들고
@@ -18,6 +19,11 @@ export default function CheckBox({
   className?: string;
   children: ReactNode;
 }) {
+  const shadow = useThemed(
+    checked
+      ? "3px 3px 7px rgba(124,94,164,0.45), -2px -2px 6px rgba(255,255,255,0.9)"
+      : "inset 3px 3px 6px rgba(150,136,175,0.5), inset -2px -2px 5px rgba(255,255,255,0.9)",
+  );
   return (
     <span
       className={`grid size-5 flex-none place-items-center rounded-md ${className ?? ""}`}
@@ -25,9 +31,7 @@ export default function CheckBox({
         background: checked
           ? "linear-gradient(145deg, #8127b8, #5c1287)"
           : "var(--neu-surface-sunken)",
-        boxShadow: checked
-          ? "3px 3px 7px rgba(124,94,164,0.45), -2px -2px 6px rgba(255,255,255,0.9)"
-          : "inset 3px 3px 6px rgba(150,136,175,0.5), inset -2px -2px 5px rgba(255,255,255,0.9)",
+        boxShadow: shadow,
       }}
     >
       {checked ? children : null}

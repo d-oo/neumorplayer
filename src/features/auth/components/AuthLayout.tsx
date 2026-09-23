@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useThemed } from "@/shared/lib/theme";
 
 // LoginPage/SignupPage가 공유하는 바깥 껍데기(브랜드 패널 + 폼 패널 카드).
 // docs/design/의 "데스크탑 로그인 및 회원가입 화면" 시안을 옮긴 뒤, docs/design/
@@ -18,9 +19,12 @@ export default function AuthLayout({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const logoShadow = useThemed(
+    "7px 7px 16px rgba(142,128,166,0.5), -5px -5px 13px rgba(255,255,255,0.9)",
+  );
   return (
     <div className="flex min-h-screen items-center justify-center bg-neu-bg p-6 font-neu text-neu-ink">
-      <section className="grid w-full max-w-180.5 grid-cols-[240px_minmax(0,1fr)] gap-10 rounded-[28px] border border-white/80 bg-neu-surface px-11.5 py-11 shadow-neu-card">
+      <section className="grid w-full max-w-180.5 grid-cols-[240px_minmax(0,1fr)] gap-10 rounded-[28px] border border-(--neu-border-80) bg-neu-surface px-11.5 py-11 shadow-neu-card">
         <div className="flex flex-col justify-between gap-7">
           <div className="flex flex-col gap-5.5">
             {/* 브랜드 로고 — public/favicon.png(정사각형 원본)를 씁니다. docs/design/
@@ -31,20 +35,14 @@ export default function AuthLayout({
             <img
               src="/favicon.png"
               alt="neumorplayer"
-              className="size-33 rounded-[26px] border border-white/70 object-cover"
-              style={{
-                boxShadow:
-                  "7px 7px 16px rgba(142,128,166,0.5), -5px -5px 13px rgba(255,255,255,0.9)",
-              }}
+              className="size-33 rounded-[26px] border border-(--neu-border-70) object-cover"
+              style={{ boxShadow: logoShadow }}
             />
 
             <div className="flex flex-col gap-2.5">
               <div
                 className="font-['Space_Grotesk'] text-[27px] leading-[1.1] font-bold tracking-[-0.015em] whitespace-nowrap text-neu-hi"
-                style={{
-                  textShadow:
-                    "1px 1px 1.5px rgba(120,96,150,0.55), -1px -1px 1.5px rgba(255,255,255,0.95)",
-                }}
+                style={{ textShadow: "var(--neu-shadow-wordmark-lg)" }}
               >
                 NEUMORPLAYER
               </div>

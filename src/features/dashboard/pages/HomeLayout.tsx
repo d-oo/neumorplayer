@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useLibrarySearchQuery } from "../lib/useLibrarySearchQuery";
+import { useThemeSync } from "@/features/auth/hooks/useThemeSync";
 import ProfileDropdown from "@/features/auth/components/ProfileDropdown";
 import BrandWordmark from "@/shared/components/BrandWordmark";
 import PlayerPanel from "@/features/player/components/PlayerPanel";
@@ -8,6 +9,7 @@ import QueueCard from "@/features/player/components/QueueCard";
 import YouTubePlayer from "@/features/player/components/YouTubePlayer";
 import { VideoSlotProvider } from "@/features/player/VideoSlotProvider";
 import { SearchGlyphIcon } from "@/shared/components/icons";
+import SearchFieldInput from "@/shared/components/SearchFieldInput";
 import SearchResultsView from "@/features/library/components/SearchResultsView";
 import {
   segmentTabClass,
@@ -55,6 +57,7 @@ function HeaderNavTab({
 // isSearch 상태처럼 지금 보고 있던 라우트(Outlet) 대신 SearchResultsView를 보여주고,
 // 지우면 원래 라우트로 돌아갑니다.
 export default function HomeLayout() {
+  useThemeSync();
   const { query, inputValue, setInputValue, commitQuery } =
     useLibrarySearchQuery();
 
@@ -77,7 +80,7 @@ export default function HomeLayout() {
           {/* 헤더와 본문을 하나의 카드로 묶습니다 — 각자 shadow-neu-raised를 따로 두면
               둘 사이 좁은 간격에서 한쪽 그림자의 어두운 번짐과 다른 쪽의 밝은 하이라이트가
               충돌해 윤곽선처럼 보이는 문제가 있었습니다. */}
-          <div className="flex h-full w-full flex-col overflow-hidden rounded-3xl border border-white/80 bg-neu-surface shadow-neu-raised">
+          <div className="flex h-full w-full flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
             <header
               className="flex items-center gap-3.5 px-5.5 py-3.5"
               style={{ borderBottom: "1px solid var(--neu-divider)" }}
@@ -87,16 +90,13 @@ export default function HomeLayout() {
                   src="/favicon.png"
                   alt=""
                   className="h-5.5 w-5.5 rounded-full object-cover"
-                  style={{
-                    boxShadow:
-                      "5px 5px 11px rgba(142,128,166,0.55), -4px -4px 9px rgba(255,255,255,0.95)",
-                  }}
+                  style={{ boxShadow: "var(--neu-shadow-logo)" }}
                 />
                 <BrandWordmark />
               </div>
 
               <nav
-                className="ml-1.5 flex flex-none gap-0.75 rounded-xl border border-white/70 p-1"
+                className="ml-1.5 flex flex-none gap-0.75 rounded-xl border border-(--neu-border-70) p-1"
                 style={sunkenPanelStyle}
               >
                 <HeaderNavTab to="/" end>
@@ -106,10 +106,10 @@ export default function HomeLayout() {
               </nav>
 
               <div
-                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[11px] border border-white/80 px-3.5 py-2.25"
+                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.25"
                 style={fieldBoxStyle}
               >
-                <input
+                <SearchFieldInput
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => {
@@ -119,13 +119,13 @@ export default function HomeLayout() {
                     }
                   }}
                   placeholder="라이브러리 내 검색(제목, 아티스트, 태그 검색)"
-                  className="min-w-0 flex-1 bg-transparent text-[13.5px] font-medium text-[oklch(0.25_0.025_315)] outline-none placeholder:text-[oklch(0.63_0.018_315)]"
+                  className="placeholder:text-(--neu-ink-63)"
                 />
                 <button
                   type="button"
                   onClick={() => commitQuery(inputValue)}
                   aria-label="검색"
-                  className="grid h-4.5 w-4.5 flex-none cursor-pointer place-items-center text-[oklch(0.55_0.02_315)] hover:text-[oklch(0.2_0.025_315)]"
+                  className="grid h-4.5 w-4.5 flex-none cursor-pointer place-items-center text-(--neu-ink-55) hover:text-(--neu-ink-20)"
                 >
                   <SearchGlyphIcon />
                 </button>

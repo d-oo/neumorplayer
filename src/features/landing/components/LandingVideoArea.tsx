@@ -21,7 +21,7 @@ export default function LandingVideoArea({
 
   if (track) {
     return (
-      <div className="h-74.25 w-132 flex-1 overflow-hidden rounded-[20px] border border-white/70">
+      <div className="h-74.25 w-132 flex-1 overflow-hidden rounded-[20px] border border-(--neu-border-70)">
         <YouTubeIframe
           videoId={track.videoId}
           opts={opts}
@@ -37,12 +37,10 @@ export default function LandingVideoArea({
 
   return (
     <div
-      className="flex h-74.25 w-132 flex-1 flex-col items-center justify-center gap-3.5 rounded-[20px] border border-white/70"
+      className="flex h-74.25 w-132 flex-1 flex-col items-center justify-center gap-3.5 rounded-[20px] border border-(--neu-border-70)"
       style={{
-        background:
-          "repeating-linear-gradient(135deg, rgba(118,100,145,0.1) 0 8px, rgba(118,100,145,0.03) 8px 16px), oklch(0.915 0.014 315)",
-        boxShadow:
-          "inset 5px 5px 12px rgba(150,136,175,0.42), inset -4px -4px 9px rgba(255,255,255,0.9)",
+        background: "var(--neu-video-placeholder-bg)",
+        boxShadow: "var(--neu-shadow-video-placeholder)",
       }}
     >
       <button
@@ -50,10 +48,7 @@ export default function LandingVideoArea({
         disabled
         aria-label="재생할 영상 없음"
         className="grid h-14.5 w-14.5 place-items-center rounded-full bg-neu-surface opacity-40"
-        style={{
-          boxShadow:
-            "6px 6px 14px rgba(146,132,170,0.5), -5px -5px 12px rgba(255,255,255,0.95)",
-        }}
+        style={{ boxShadow: "var(--neu-shadow-google)" }}
       >
         <PlayIcon className="ml-0.75 h-4.5 w-4 text-neu-hi" />
       </button>

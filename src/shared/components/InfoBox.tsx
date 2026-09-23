@@ -11,11 +11,10 @@ export default function InfoBox({
 }) {
   return (
     <div
-      className={`rounded-xl border border-white/70 px-5.5 py-5 text-[13px] text-neu-muted ${className ?? ""}`}
+      className={`rounded-xl border border-(--neu-border-70) px-5.5 py-5 text-[13px] text-neu-muted ${className ?? ""}`}
       style={{
-        background: "oklch(0.915 0.014 315)",
-        boxShadow:
-          "inset 3px 3px 7px rgba(150,136,175,0.34), inset -3px -3px 6px rgba(255,255,255,0.85)",
+        background: "var(--neu-ink-915)",
+        boxShadow: "var(--neu-shadow-sunken-panel)",
       }}
     >
       {children}

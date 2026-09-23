@@ -27,7 +27,7 @@ export default function PrivacyPolicyModal({
         <CloseButton onClick={onClose} />
       </div>
 
-      <div className="flex max-h-100 flex-col gap-4 overflow-y-auto pr-1 text-[13px] leading-[1.7] text-[oklch(0.35_0.025_315)]">
+      <div className="flex max-h-100 flex-col gap-4 overflow-y-auto pr-1 text-[13px] leading-[1.7] text-(--neu-ink-35)">
         <p>
           NeumorPlayer는 아래와 같이 이용자의 정보를 수집·이용합니다. 본
           서비스는 YouTube API Services를 사용합니다.

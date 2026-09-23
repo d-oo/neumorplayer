@@ -3,8 +3,8 @@
 // 그대로 유지합니다(AuthLayout.tsx가 쓰는 것과 같은 public/developed-with-youtube.png).
 export default function LandingFooter() {
   return (
-    <div className="flex items-center justify-between gap-6 border-t border-white/75 pt-6.5 pr-0.5 pb-8.5 pl-0.5">
-      <div className="font-neu-mono text-[11px] tracking-widest text-[oklch(0.52_0.02_315)]">
+    <div className="flex items-center justify-between gap-6 border-t border-(--neu-border-75) pt-6.5 pr-0.5 pb-8.5 pl-0.5">
+      <div className="font-neu-mono text-[11px] tracking-widest text-(--neu-ink-52)">
         © 2026 NEUMORPLAYER
       </div>
       <img

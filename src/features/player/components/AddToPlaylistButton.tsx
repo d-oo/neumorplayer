@@ -101,7 +101,7 @@ export default function AddToPlaylistButton({
         title={isQueued ? "재생목록에 추가됨" : "재생목록에 추가"}
         aria-label={isQueued ? "재생목록에 추가됨" : "재생목록에 추가"}
         aria-pressed={isQueued}
-        className="flex-none text-[oklch(0.52_0.02_315)] shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken"
+        className="flex-none text-(--neu-ink-52) shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken"
       >
         <QueueIcon />
       </IconCircleButton>
@@ -163,7 +163,7 @@ export default function AddToPlaylistButton({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className={`px-4.5 py-2.25 text-[13px] text-[oklch(0.4_0.025_315)] hover:text-[oklch(0.24_0.025_315)] ${secondaryPillButtonClass}`}
+            className={`px-4.5 py-2.25 text-[13px] text-(--neu-ink-40) hover:text-(--neu-ink-24) ${secondaryPillButtonClass}`}
           >
             취소
           </button>

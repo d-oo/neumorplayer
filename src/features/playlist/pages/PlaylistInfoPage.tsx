@@ -96,7 +96,7 @@ function SortableTrackRow({
           {...attributes}
           {...listeners}
           aria-label="순서 변경"
-          className="w-5.5 flex-none touch-none text-[oklch(0.6_0.02_315)] hover:text-neu-hi"
+          className="w-5.5 flex-none touch-none text-(--neu-ink-60) hover:text-neu-hi"
         >
           <DragHandleIcon />
         </button>
@@ -143,7 +143,7 @@ function SortableTrackRow({
         onClick={onRemove}
         disabled={isRemoving}
         aria-label={`${track.title} 재생목록에서 제거`}
-        className="grid h-6 w-6 place-items-center justify-self-end rounded-full text-[oklch(0.55_0.02_315)] hover:text-red-500 disabled:opacity-40"
+        className="grid h-6 w-6 place-items-center justify-self-end rounded-full text-(--neu-ink-55) hover:text-red-500 disabled:opacity-40"
       >
         <XIcon />
       </button>
@@ -260,11 +260,8 @@ export default function PlaylistInfoPage() {
     <div>
       <div className="flex items-end gap-5.5">
         <div
-          className="h-34.75 w-62 flex-none overflow-hidden rounded-xl border border-white/80"
-          style={{
-            boxShadow:
-              "9px 9px 20px rgba(142,128,166,0.45), -7px -7px 16px rgba(255,255,255,0.92)",
-          }}
+          className="h-34.75 w-62 flex-none overflow-hidden rounded-xl border border-(--neu-border-80)"
+          style={{ boxShadow: "var(--neu-shadow-media-card)" }}
         >
           <PlaylistCoverGrid
             videoIds={tracks.slice(0, 4).map((t) => t.video_id)}
@@ -297,7 +294,7 @@ export default function PlaylistInfoPage() {
               onClick={handleShuffleClick}
               disabled={tracks.length === 0}
               aria-label="셔플"
-              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-neu-hi`}
             >
               <ShuffleIcon />
             </IconCircleButton>
@@ -308,7 +305,7 @@ export default function PlaylistInfoPage() {
               size="xl"
               tooltip="수정"
               aria-label="수정"
-              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-neu-hi`}
             >
               <PencilIcon />
             </IconCircleButton>
@@ -318,7 +315,7 @@ export default function PlaylistInfoPage() {
               onClick={() => deletePlaylistMutation.mutate()}
               disabled={deletePlaylistMutation.isPending}
               aria-label="재생목록 삭제"
-              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-(--neu-danger)`}
             >
               <TrashIcon />
             </IconCircleButton>

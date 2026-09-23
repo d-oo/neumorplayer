@@ -136,6 +136,397 @@
     -4px -4px 11px rgba(255, 255, 255, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.65);
   --neu-shadow-header-cta-active: inset 4px 4px 10px rgba(150, 120, 182, 0.5),
     inset -3px -3px 8px rgba(255, 255, 255, 0.9);
+
+  /* 다크모드 지원(docs/design/다크모드.zip) 과정에서 여러 컴포넌트에 하드코딩돼 있던
+     리터럴 색/그림자 값을 토큰으로 승격한 것들입니다. 위 디자인 시스템 토큰과 달리
+     "여러 곳에서 재사용"이 아니라 "테마 전환에 반응해야 함"이 등록 기준이라 값이 한
+     곳에서만 쓰여도 토큰으로 뺐습니다 — 값 자체는 원래 있던 리터럴과 동일합니다. */
+  --neu-ink-905: oklch(0.905 0.014 315);
+  --neu-ink-912: oklch(0.912 0.014 315);
+  --neu-ink-915: oklch(0.915 0.014 315);
+  --neu-ink-928: oklch(0.928 0.013 315);
+  --neu-ink-20: oklch(0.2 0.025 315);
+  --neu-ink-24: oklch(0.24 0.025 315);
+  --neu-ink-25: oklch(0.25 0.025 315);
+  --neu-ink-32: oklch(0.32 0.025 315);
+  --neu-ink-34: oklch(0.34 0.025 315);
+  --neu-ink-34-hero: oklch(0.34 0.03 315);
+  --neu-ink-35: oklch(0.35 0.025 315);
+  --neu-ink-38: oklch(0.38 0.025 315);
+  --neu-ink-40: oklch(0.4 0.025 315);
+  --neu-ink-42: oklch(0.42 0.025 315);
+  --neu-ink-45: oklch(0.45 0.025 315);
+  --neu-ink-50-a: oklch(0.5 0.025 315);
+  --neu-ink-50-b: oklch(0.5 0.02 315);
+  --neu-ink-52: oklch(0.52 0.02 315);
+  --neu-ink-55: oklch(0.55 0.02 315);
+  --neu-ink-56: oklch(0.56 0.02 315);
+  --neu-ink-58: oklch(0.58 0.02 315);
+  --neu-ink-60: oklch(0.6 0.02 315);
+  --neu-ink-63: oklch(0.63 0.018 315);
+  --neu-danger: oklch(0.5 0.17 22);
+  --neu-danger-hover: oklch(0.44 0.17 22);
+  --neu-accent-hover: oklch(0.32 0.14 305);
+  --neu-shc-124-45: rgba(124, 94, 164, 0.45);
+  --neu-shc-146-3: rgba(146, 132, 170, 0.3);
+  --neu-shc-146-35: rgba(146, 132, 170, 0.35);
+  --neu-shc-142-26: rgba(142, 128, 166, 0.26);
+  --neu-tick-off: rgba(126, 110, 156, 0.3);
+  --neu-knob-texture: conic-gradient(
+    from 210deg,
+    oklch(0.93 0.012 315),
+    oklch(0.98 0.006 315) 9%,
+    oklch(0.87 0.016 315) 23%,
+    oklch(0.96 0.008 315) 37%,
+    oklch(0.875 0.016 315) 51%,
+    oklch(0.97 0.007 315) 65%,
+    oklch(0.87 0.016 315) 79%,
+    oklch(0.95 0.009 315) 91%,
+    oklch(0.93 0.012 315)
+  );
+  /* `border-white/N` Tailwind 유틸리티(카드·필드·칩 테두리 전역)는 컴파일된 정적
+     클래스라 테마에 반응할 수 없어서, 같은 알파값의 var() 토큰으로 대체합니다. */
+  --neu-border-60: rgba(255, 255, 255, 0.6);
+  --neu-border-70: rgba(255, 255, 255, 0.7);
+  --neu-border-75: rgba(255, 255, 255, 0.75);
+  --neu-border-80: rgba(255, 255, 255, 0.8);
+  --neu-border-85: rgba(255, 255, 255, 0.85);
+  --neu-shadow-field: inset 4px 4px 8px rgba(142, 128, 166, 0.36),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.85);
+  --neu-shadow-sunken-panel: inset 3px 3px 7px rgba(150, 136, 175, 0.34),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+  --neu-thumb-placeholder-bg: repeating-linear-gradient(
+      135deg,
+      rgba(118, 100, 145, 0.16) 0 5px,
+      rgba(118, 100, 145, 0.05) 5px 10px
+    ),
+    var(--neu-accent-tint);
+  /* BrandWordmark/AuthLayout 워드마크의 각인(textShadow) 전용 — 어두운 쪽 rgba(120,96,150,*)가
+     darkify()의 DK_SHADOW 목록에 없는 값이라, 목록에 있는 값들과 같은 계열(보라 회색 그림자)
+     이라고 보고 같은 변환식(a*1.35, 최대 0.9 → rgba(6,3,12,*))을 그대로 적용했습니다. */
+  --neu-shadow-wordmark: 1px 1px 1.5px rgba(120, 96, 150, 0.5),
+    -1px -1px 1.5px rgba(255, 255, 255, 0.95);
+  --neu-shadow-wordmark-lg: 1px 1px 1.5px rgba(120, 96, 150, 0.55),
+    -1px -1px 1.5px rgba(255, 255, 255, 0.95);
+  --neu-shadow-stat-box: inset 4px 4px 9px rgba(150, 136, 175, 0.42),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.93);
+  /* 트랙 상세/재생목록 정보/검색결과의 큰 썸네일 박스가 공유하는 그림자. */
+  --neu-shadow-media-card: 9px 9px 20px rgba(142, 128, 166, 0.45),
+    -7px -7px 16px rgba(255, 255, 255, 0.92);
+  --neu-shadow-chip-active: inset 3px 3px 7px rgba(150, 136, 175, 0.4),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+  --neu-shadow-logo: 5px 5px 11px rgba(142, 128, 166, 0.55),
+    -4px -4px 9px rgba(255, 255, 255, 0.95);
+  --neu-shadow-card-sunken: inset 5px 5px 11px rgba(150, 136, 175, 0.45),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.9);
+  --neu-shadow-card-raised: 8px 8px 18px rgba(142, 128, 166, 0.45),
+    -6px -6px 14px rgba(255, 255, 255, 0.9);
+  --neu-shadow-thumb-inset: inset 2px 2px 5px rgba(146, 132, 170, 0.3),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+  --neu-shadow-avatar: 2px 2px 6px rgba(150, 136, 175, 0.4),
+    -2px -2px 5px rgba(255, 255, 255, 0.9);
+  --neu-thumb-placeholder-bg-lg: repeating-linear-gradient(
+      135deg,
+      rgba(118, 100, 145, 0.16) 0 6px,
+      rgba(118, 100, 145, 0.05) 6px 12px
+    ),
+    var(--neu-accent-tint);
+  --neu-shadow-artist-avatar: 3px 3px 8px rgba(150, 136, 175, 0.42),
+    -2px -2px 6px rgba(255, 255, 255, 0.92);
+  --neu-shadow-field-row: inset 3px 3px 7px rgba(150, 136, 175, 0.38),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.88);
+  --neu-shadow-eye-btn: 3px 3px 8px rgba(146, 132, 170, 0.45),
+    -2px -2px 6px rgba(255, 255, 255, 0.95);
+  --neu-shadow-divider-line: inset 1px 1px 2px rgba(150, 136, 175, 0.5),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.9);
+  --neu-shadow-disc-outer: 7px 7px 16px rgba(146, 132, 170, 0.5),
+    -6px -6px 14px rgba(255, 255, 255, 0.95);
+  --neu-disc-texture-1: radial-gradient(
+      circle at 50% 50%,
+      var(--neu-surface) 0 28px,
+      transparent 28px 30px
+    ),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(126, 110, 156, 0.13) 0 1px,
+      rgba(255, 255, 255, 0) 1px 3px
+    ),
+    linear-gradient(150deg, rgba(179, 68, 255, 0.14), transparent 70%);
+  --neu-disc-sheen: conic-gradient(
+    from 210deg,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0) 22%,
+    rgba(255, 255, 255, 0.6) 48%,
+    rgba(255, 255, 255, 0) 72%,
+    rgba(255, 255, 255, 0.85)
+  );
+  --neu-shadow-disc-inset: inset 2px 2px 5px rgba(146, 132, 170, 0.4),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.9);
+  --neu-disc-texture-2: linear-gradient(
+    150deg,
+    rgba(179, 68, 255, 0.16),
+    rgba(255, 255, 255, 0.5) 72%
+  );
+  --neu-shadow-disc-inset-2: inset 3px 3px 7px rgba(146, 132, 170, 0.45),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.95);
+  --neu-shadow-disc-hub: 5px 5px 12px rgba(146, 132, 170, 0.5),
+    -4px -4px 10px rgba(255, 255, 255, 0.95);
+  --neu-shadow-disc-play: 4px 4px 9px rgba(146, 132, 170, 0.5),
+    -3px -3px 8px rgba(255, 255, 255, 0.95);
+  --neu-shadow-seekbar: inset 3px 3px 6px rgba(150, 136, 175, 0.6),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.95);
+  /* 셔플/반복이 켜졌을 때 아이콘 색 — VolumeKnob.tsx의 TICK_ON(--neu-hi와 같은
+     #6d1a9f)과는 다른 진보라(#7b1fb0)라 darkify()의 두 번째 hex 매핑을 그대로 씁니다. */
+  --neu-tick-on-active: #7b1fb0;
+  --neu-shadow-knob-hub: 6px 6px 14px rgba(146, 132, 170, 0.55),
+    -5px -5px 12px rgba(255, 255, 255, 0.95);
+  --neu-shadow-knob-dial: inset 2px 2px 5px rgba(146, 132, 170, 0.35),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.9);
+  --neu-shadow-avatar-chip: inset 3px 3px 6px rgba(150, 136, 175, 0.45),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.9);
+  /* 랜딩 히어로 대형 타이틀의 각인(textShadow) — rgba(128,108,158,*)도 DK_SHADOW
+     목록엔 없지만 --neu-shadow-wordmark와 같은 "보라 회색 그림자" 계열이라 같은 규칙을
+     적용했습니다. */
+  --neu-shadow-hero-title: 2px 2px 3px rgba(255, 255, 255, 0.95),
+    -2px -2px 4px rgba(128, 108, 158, 0.45);
+  --neu-shadow-hero-title-hi: 2px 2px 3px rgba(255, 255, 255, 0.95),
+    -2px -2px 4px rgba(128, 108, 158, 0.5);
+  --neu-video-placeholder-bg: repeating-linear-gradient(
+      135deg,
+      rgba(118, 100, 145, 0.1) 0 8px,
+      rgba(118, 100, 145, 0.03) 8px 16px
+    ),
+    oklch(0.915 0.014 315);
+  --neu-shadow-video-placeholder: inset 5px 5px 12px rgba(150, 136, 175, 0.42),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.9);
+  --neu-shadow-feature-card: 14px 14px 30px rgba(142, 128, 166, 0.45),
+    -7px -7px 15px rgba(255, 255, 255, 0.68);
+  --neu-shadow-landing-header: 12px 12px 26px rgba(142, 128, 166, 0.45),
+    -6px -6px 14px rgba(255, 255, 255, 0.7);
+  --neu-shadow-landing-logo: 3px 3px 8px rgba(146, 132, 170, 0.5),
+    -2px -2px 6px rgba(255, 255, 255, 0.95);
+}
+
+/* docs/design/다크모드.zip의 darkify() 변환 규칙(src/shared/lib/darkify.ts에 이식)으로
+   계산한 다크 모드 값입니다. --neu-accent/--neu-accent-light/--neu-accent-tint처럼 다크에서도
+   값이 그대로인 토큰은 여기서 다시 선언하지 않고 위 :root 값을 그대로 상속합니다.
+   --neu-cta-pill-grad-hover는 시안에 정확히 대응하는 hover 스크린샷이 없어서, darkify()가
+   제공하는 나머지 두 특수 매핑(대응하는 라이트 값이 지금 토큰과 소수점 몇 자리 다름 — 이전에
+   시안을 코드로 가져온 뒤 손으로 조금 고친 값으로 추정)을 그대로 적용했습니다. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --neu-bg: oklch(0.219 0.014 315);
+  --neu-surface: oklch(0.235 0.013 315);
+  --neu-surface-sunken: oklch(0.192 0.014 315);
+  --neu-ink: oklch(0.92 0.025 315);
+  --neu-muted: oklch(0.75 0.025 315);
+  --neu-hi: #d6a4ff;
+  --neu-shadow-raised: 15px 15px 30px rgba(6, 3, 12, 0.675),
+    -7px -7px 15px rgba(255, 255, 255, 0.049);
+  --neu-shadow-raised-sm: 4px 4px 10px rgba(6, 3, 12, 0.675),
+    -3px -3px 8px rgba(255, 255, 255, 0.071);
+  --neu-shadow-sunken: inset 4px 4px 9px rgba(6, 3, 12, 0.81),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.068);
+  --neu-shadow-pill-active: inset 5px 5px 11px rgba(6, 3, 12, 0.675),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.071);
+  --neu-shadow-card: 18px 18px 36px rgba(6, 3, 12, 0.675),
+    -8px -8px 18px rgba(255, 255, 255, 0.052);
+  --neu-shadow-auth-cta-active: inset 4px 4px 10px rgba(6, 3, 12, 0.675),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.068);
+  --neu-shadow-google: 6px 6px 14px rgba(6, 3, 12, 0.675),
+    -5px -5px 12px rgba(255, 255, 255, 0.071);
+  --neu-shadow-google-active: inset 5px 5px 11px rgba(6, 3, 12, 0.81),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.068);
+  --neu-shadow-tab-raised: 2px 2px 5px rgba(6, 3, 12, 0.459),
+    -2px -2px 4px rgba(255, 255, 255, 0.052);
+  --neu-shadow-tab-active: inset 4px 4px 9px rgba(6, 3, 12, 0.675),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.071);
+  --neu-cta-pill-grad: linear-gradient(155deg, oklch(0.46 0.13 308), oklch(0.36 0.14 308));
+  --neu-cta-pill-grad-hover: linear-gradient(155deg, oklch(0.5 0.14 308), oklch(0.4 0.15 308));
+  --neu-shadow-cta-pill: 7px 7px 16px rgba(6, 3, 12, 0.743),
+    -5px -5px 13px rgba(255, 255, 255, 0.071), inset 0 1px 0 rgba(255, 255, 255, 0.049);
+  --neu-shadow-cta-pill-hover: 9px 9px 20px rgba(6, 3, 12, 0.81),
+    -6px -6px 15px rgba(255, 255, 255, 0.073), inset 0 1px 0 rgba(255, 255, 255, 0.052);
+  --neu-shadow-cta-pill-disabled: inset 3px 3px 7px rgba(6, 3, 12, 0.405),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.06);
+  --neu-hover-tint-grad: linear-gradient(155deg, oklch(0.251 0.03 312), oklch(0.187 0.042 312));
+  --neu-shadow-tint-pill: 4px 4px 10px rgba(6, 3, 12, 0.513),
+    -3px -3px 8px rgba(255, 255, 255, 0.068);
+  --neu-shadow-tag-add-hover: 6px 6px 14px rgba(6, 3, 12, 0.648),
+    -4px -4px 11px rgba(255, 255, 255, 0.072);
+  --neu-shadow-profile-open: inset 4px 4px 9px rgba(6, 3, 12, 0.567),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.068);
+  --neu-shadow-dropdown: 12px 12px 26px rgba(6, 3, 12, 0.675),
+    -6px -6px 14px rgba(255, 255, 255, 0.068);
+  --neu-highlight: oklch(0.251 0.035 313);
+  --neu-shadow-highlight: 2px 2px 6px rgba(6, 3, 12, 0.513),
+    -2px -2px 5px rgba(255, 255, 255, 0.06);
+  --neu-shadow-pill-secondary: 7px 7px 16px rgba(6, 3, 12, 0.608),
+    -5px -5px 12px rgba(255, 255, 255, 0.071);
+  --neu-shadow-tag-chip: inset 3px 3px 7px rgba(6, 3, 12, 0.472),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.064);
+  --neu-divider: rgba(6, 3, 12, 0.378);
+  --neu-row-hover: rgba(255, 255, 255, 0.05);
+  --neu-shadow-chip-raised: 5px 5px 12px rgba(6, 3, 12, 0.54),
+    -4px -4px 10px rgba(255, 255, 255, 0.068);
+  --neu-shadow-header-cta: 6px 6px 14px rgba(6, 3, 12, 0.675),
+    -4px -4px 11px rgba(255, 255, 255, 0.071), inset 0 1px 0 rgba(255, 255, 255, 0.049);
+  --neu-shadow-header-cta-active: inset 4px 4px 10px rgba(6, 3, 12, 0.675),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.068);
+
+  --neu-ink-905: oklch(0.187 0.014 315);
+  --neu-ink-912: oklch(0.198 0.014 315);
+  --neu-ink-915: oklch(0.203 0.014 315);
+  --neu-ink-928: oklch(0.224 0.013 315);
+  --neu-ink-20: oklch(1.02 0.025 315);
+  --neu-ink-24: oklch(0.98 0.025 315);
+  --neu-ink-25: oklch(0.97 0.025 315);
+  --neu-ink-32: oklch(0.9 0.025 315);
+  --neu-ink-34: oklch(0.88 0.025 315);
+  --neu-ink-34-hero: oklch(0.88 0.03 315);
+  --neu-ink-35: oklch(0.87 0.025 315);
+  --neu-ink-38: oklch(0.84 0.025 315);
+  --neu-ink-40: oklch(0.82 0.025 315);
+  --neu-ink-42: oklch(0.8 0.025 315);
+  --neu-ink-45: oklch(0.77 0.025 315);
+  --neu-ink-50-a: oklch(0.72 0.025 315);
+  --neu-ink-50-b: oklch(0.72 0.02 315);
+  --neu-ink-52: oklch(0.7 0.02 315);
+  --neu-ink-55: oklch(0.67 0.02 315);
+  --neu-ink-56: oklch(0.66 0.02 315);
+  --neu-ink-58: oklch(0.64 0.02 315);
+  --neu-ink-60: oklch(0.62 0.02 315);
+  --neu-ink-63: oklch(0.63 0.018 315);
+  --neu-danger: oklch(0.72 0.17 22);
+  --neu-danger-hover: oklch(0.78 0.17 22);
+  --neu-accent-hover: oklch(0.9 0.14 305);
+  --neu-shc-124-45: rgba(6, 3, 12, 0.608);
+  --neu-shc-146-3: rgba(6, 3, 12, 0.405);
+  --neu-shc-146-35: rgba(6, 3, 12, 0.472);
+  --neu-shc-142-26: rgba(6, 3, 12, 0.351);
+  --neu-tick-off: rgba(200, 180, 235, 0.165);
+  --neu-knob-texture: conic-gradient(
+    from 210deg,
+    oklch(0.227 0.012 315),
+    oklch(0.307 0.006 315) 9%,
+    oklch(0.131 0.016 315) 23%,
+    oklch(0.275 0.008 315) 37%,
+    oklch(0.139 0.016 315) 51%,
+    oklch(0.291 0.007 315) 65%,
+    oklch(0.131 0.016 315) 79%,
+    oklch(0.259 0.009 315) 91%,
+    oklch(0.227 0.012 315)
+  );
+  --neu-border-60: rgba(255, 255, 255, 0.045);
+  --neu-border-70: rgba(255, 255, 255, 0.052);
+  --neu-border-75: rgba(255, 255, 255, 0.056);
+  --neu-border-80: rgba(255, 255, 255, 0.06);
+  --neu-border-85: rgba(255, 255, 255, 0.064);
+  --neu-shadow-field: inset 4px 4px 8px rgba(6, 3, 12, 0.486),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.064);
+  --neu-shadow-sunken-panel: inset 3px 3px 7px rgba(6, 3, 12, 0.459),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.064);
+  --neu-thumb-placeholder-bg: repeating-linear-gradient(
+      135deg,
+      rgba(200, 180, 235, 0.088) 0 5px,
+      rgba(200, 180, 235, 0.028) 5px 10px
+    ),
+    var(--neu-accent-tint);
+  --neu-shadow-wordmark: 1px 1px 1.5px rgba(6, 3, 12, 0.675),
+    -1px -1px 1.5px rgba(255, 255, 255, 0.071);
+  --neu-shadow-wordmark-lg: 1px 1px 1.5px rgba(6, 3, 12, 0.743),
+    -1px -1px 1.5px rgba(255, 255, 255, 0.071);
+  --neu-shadow-stat-box: inset 4px 4px 9px rgba(6, 3, 12, 0.567),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.07);
+  --neu-shadow-media-card: 9px 9px 20px rgba(6, 3, 12, 0.608),
+    -7px -7px 16px rgba(255, 255, 255, 0.069);
+  --neu-shadow-chip-active: inset 3px 3px 7px rgba(6, 3, 12, 0.54),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.064);
+  --neu-shadow-logo: 5px 5px 11px rgba(6, 3, 12, 0.743),
+    -4px -4px 9px rgba(255, 255, 255, 0.071);
+  --neu-shadow-card-sunken: inset 5px 5px 11px rgba(6, 3, 12, 0.608),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.068);
+  --neu-shadow-card-raised: 8px 8px 18px rgba(6, 3, 12, 0.608),
+    -6px -6px 14px rgba(255, 255, 255, 0.068);
+  --neu-shadow-thumb-inset: inset 2px 2px 5px rgba(6, 3, 12, 0.405),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.052);
+  --neu-shadow-avatar: 2px 2px 6px rgba(6, 3, 12, 0.54),
+    -2px -2px 5px rgba(255, 255, 255, 0.068);
+  --neu-thumb-placeholder-bg-lg: repeating-linear-gradient(
+      135deg,
+      rgba(200, 180, 235, 0.088) 0 6px,
+      rgba(200, 180, 235, 0.028) 6px 12px
+    ),
+    var(--neu-accent-tint);
+  --neu-shadow-artist-avatar: 3px 3px 8px rgba(6, 3, 12, 0.567),
+    -2px -2px 6px rgba(255, 255, 255, 0.069);
+  --neu-shadow-field-row: inset 3px 3px 7px rgba(6, 3, 12, 0.513),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.066);
+  --neu-shadow-eye-btn: 3px 3px 8px rgba(6, 3, 12, 0.608),
+    -2px -2px 6px rgba(255, 255, 255, 0.071);
+  --neu-shadow-divider-line: inset 1px 1px 2px rgba(6, 3, 12, 0.675),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.068);
+  --neu-shadow-disc-outer: 7px 7px 16px rgba(6, 3, 12, 0.675),
+    -6px -6px 14px rgba(255, 255, 255, 0.071);
+  --neu-disc-texture-1: radial-gradient(
+      circle at 50% 50%,
+      var(--neu-surface) 0 28px,
+      transparent 28px 30px
+    ),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(200, 180, 235, 0.072) 0 1px,
+      rgba(255, 255, 255, 0) 1px 3px
+    ),
+    linear-gradient(150deg, rgba(179, 68, 255, 0.14), transparent 70%);
+  --neu-disc-sheen: conic-gradient(
+    from 210deg,
+    rgba(255, 255, 255, 0.064),
+    rgba(255, 255, 255, 0) 22%,
+    rgba(255, 255, 255, 0.045) 48%,
+    rgba(255, 255, 255, 0) 72%,
+    rgba(255, 255, 255, 0.064)
+  );
+  --neu-shadow-disc-inset: inset 2px 2px 5px rgba(6, 3, 12, 0.54),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.068);
+  --neu-disc-texture-2: linear-gradient(
+    150deg,
+    rgba(179, 68, 255, 0.16),
+    rgba(255, 255, 255, 0.037) 72%
+  );
+  --neu-shadow-disc-inset-2: inset 3px 3px 7px rgba(6, 3, 12, 0.608),
+    inset -3px -3px 7px rgba(255, 255, 255, 0.071);
+  --neu-shadow-disc-hub: 5px 5px 12px rgba(6, 3, 12, 0.675),
+    -4px -4px 10px rgba(255, 255, 255, 0.071);
+  --neu-shadow-disc-play: 4px 4px 9px rgba(6, 3, 12, 0.675),
+    -3px -3px 8px rgba(255, 255, 255, 0.071);
+  --neu-shadow-seekbar: inset 3px 3px 6px rgba(6, 3, 12, 0.81),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.071);
+  --neu-tick-on-active: #c98cff;
+  --neu-shadow-knob-hub: 6px 6px 14px rgba(6, 3, 12, 0.743),
+    -5px -5px 12px rgba(255, 255, 255, 0.071);
+  --neu-shadow-knob-dial: inset 2px 2px 5px rgba(6, 3, 12, 0.472),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.068);
+  --neu-shadow-avatar-chip: inset 3px 3px 6px rgba(6, 3, 12, 0.608),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.068);
+  --neu-shadow-hero-title: 2px 2px 3px rgba(255, 255, 255, 0.071),
+    -2px -2px 4px rgba(6, 3, 12, 0.608);
+  --neu-shadow-hero-title-hi: 2px 2px 3px rgba(255, 255, 255, 0.071),
+    -2px -2px 4px rgba(6, 3, 12, 0.675);
+  --neu-video-placeholder-bg: repeating-linear-gradient(
+      135deg,
+      rgba(200, 180, 235, 0.055) 0 8px,
+      rgba(200, 180, 235, 0.017) 8px 16px
+    ),
+    oklch(0.203 0.014 315);
+  --neu-shadow-video-placeholder: inset 5px 5px 12px rgba(6, 3, 12, 0.567),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.068);
+  --neu-shadow-feature-card: 14px 14px 30px rgba(6, 3, 12, 0.608),
+    -7px -7px 15px rgba(255, 255, 255, 0.051);
+  --neu-shadow-landing-header: 12px 12px 26px rgba(6, 3, 12, 0.608),
+    -6px -6px 14px rgba(255, 255, 255, 0.052);
+  --neu-shadow-landing-logo: 3px 3px 8px rgba(6, 3, 12, 0.675),
+    -2px -2px 6px rgba(255, 255, 255, 0.071);
 }
 
 @theme {

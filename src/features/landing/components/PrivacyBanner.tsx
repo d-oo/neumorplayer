@@ -46,10 +46,10 @@ export default function PrivacyBanner() {
     <>
       {!dismissed && (
         <div
-          className="fixed inset-x-0 bottom-5 z-30 mx-auto flex w-137.5 max-w-[calc(100%-2.75rem)] items-center justify-between gap-4 rounded-2xl border border-white/80 bg-neu-surface px-5.5 py-3.5 shadow-neu-raised"
+          className="fixed inset-x-0 bottom-5 z-30 mx-auto flex w-137.5 max-w-[calc(100%-2.75rem)] items-center justify-between gap-4 rounded-2xl border border-(--neu-border-80) bg-neu-surface px-5.5 py-3.5 shadow-neu-raised"
           role="status"
         >
-          <p className="text-[12.5px] leading-[1.55] text-[oklch(0.35_0.025_315)]">
+          <p className="text-[12.5px] leading-[1.55] text-(--neu-ink-35)">
             NeumorPlayer는 YouTube API Services를 사용하며, 검색·재생을 위해
             최소한의 정보를 수집합니다.
           </p>
@@ -57,7 +57,7 @@ export default function PrivacyBanner() {
             <button
               type="button"
               onClick={openDetails}
-              className={`px-4 py-2 text-[12.5px] text-[oklch(0.4_0.025_315)] hover:text-[oklch(0.24_0.025_315)] ${secondaryPillButtonClass}`}
+              className={`px-4 py-2 text-[12.5px] text-(--neu-ink-40) hover:text-(--neu-ink-24) ${secondaryPillButtonClass}`}
             >
               자세히 보기
             </button>

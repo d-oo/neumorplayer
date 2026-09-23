@@ -15,7 +15,14 @@ export function useTagSelection(libraryTracks: Track[]) {
     [libraryTracks],
   );
 
-  const allTags = [...suggestedTags.map((t) => t.tag), ...customTags];
+  // customTags(이번 세션에 직접 입력한 태그)는 곡 추가 후 라이브러리 쿼리가
+  // 무효화되면서 suggestedTags(라이브러리 기준 집계)에 같은 태그가 새로 들어올 수
+  // 있습니다 — 그대로 이어붙이면 새로고침 전까지 같은 태그 칩이 두 번 보이므로,
+  // suggestedTags에 이미 있는 건 걸러냅니다.
+  const allTags = [
+    ...suggestedTags.map((t) => t.tag),
+    ...customTags.filter((tag) => !suggestedTags.some((s) => s.tag === tag)),
+  ];
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) => {
@@ -36,6 +43,7 @@ export function useTagSelection(libraryTracks: Track[]) {
 
   function reset() {
     setSelectedTags(new Set());
+    setTagInput("");
   }
 
   return {

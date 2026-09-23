@@ -23,8 +23,7 @@ import MarqueeText from "@/features/player/components/MarqueeText";
 
 const statBoxStyle = {
   background: "var(--neu-surface)",
-  boxShadow:
-    "inset 4px 4px 9px rgba(150,136,175,0.42), inset -3px -3px 7px rgba(255,255,255,0.93)",
+  boxShadow: "var(--neu-shadow-stat-box)",
 };
 
 // old-src/src/components/MusicInfo.js 를 대체합니다. docs/design/수정본2.zip
@@ -116,7 +115,7 @@ export default function MusicInfoPage() {
           {track.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-white/70 bg-neu-accent-tint px-3.25 py-1.75 text-xs font-semibold text-neu-hi shadow-neu-tag-chip"
+              className="rounded-full border border-(--neu-border-70) bg-neu-accent-tint px-3.25 py-1.75 text-xs font-semibold text-neu-hi shadow-neu-tag-chip"
             >
               #{tag}
             </span>
@@ -128,11 +127,8 @@ export default function MusicInfoPage() {
 
       <div className="flex items-start gap-6.5">
         <div
-          className="h-51.75 w-92 flex-none overflow-hidden rounded-[14px] border border-white/80"
-          style={{
-            boxShadow:
-              "9px 9px 20px rgba(142,128,166,0.45), -7px -7px 16px rgba(255,255,255,0.92)",
-          }}
+          className="h-51.75 w-92 flex-none overflow-hidden rounded-[14px] border border-(--neu-border-80)"
+          style={{ boxShadow: "var(--neu-shadow-media-card)" }}
         >
           {isThisTrackPlaying ? (
             <div ref={containerRef} className="h-full w-full bg-black" />
@@ -175,7 +171,7 @@ export default function MusicInfoPage() {
               size="xl"
               tooltip="수정"
               aria-label="수정"
-              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-neu-hi`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-neu-hi`}
             >
               <PencilIcon />
             </IconCircleButton>
@@ -185,7 +181,7 @@ export default function MusicInfoPage() {
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
               aria-label="삭제"
-              className={`${secondaryCircleButtonClass} text-[oklch(0.34_0.025_315)] hover:text-[oklch(0.5_0.17_22)]`}
+              className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-(--neu-danger)`}
             >
               <TrashIcon />
             </IconCircleButton>

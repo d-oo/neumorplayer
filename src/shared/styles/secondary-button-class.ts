@@ -5,8 +5,8 @@
 
 // 재생목록 정보/트랙 상세의 "셔플·수정·삭제" 보조 44px 원형 버튼.
 export const secondaryCircleButtonClass =
-  "bg-neu-surface border border-white/85 shadow-neu-pill-secondary active:shadow-neu-pill-active";
+  "bg-neu-surface border border-[var(--neu-border-85)] shadow-neu-pill-secondary active:shadow-neu-pill-active";
 
 // 모달의 "취소", 배너의 "자세히 보기", 설정의 "회원탈퇴" 같은 보조 알약 버튼.
 export const secondaryPillButtonClass =
-  "rounded-full border border-white/85 font-semibold shadow-neu-pill-secondary active:shadow-neu-pill-active";
+  "rounded-full border border-[var(--neu-border-85)] font-semibold shadow-neu-pill-secondary active:shadow-neu-pill-active";

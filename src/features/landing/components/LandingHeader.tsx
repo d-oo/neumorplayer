@@ -7,11 +7,10 @@ import BrandWordmark from "@/shared/components/BrandWordmark";
 export default function LandingHeader() {
   return (
     <header
-      className="flex w-fit max-w-full items-center gap-5 self-center rounded-[22px] border border-white/80 py-3 pr-3.5 pl-5.5"
+      className="flex w-fit max-w-full items-center gap-5 self-center rounded-[22px] border border-(--neu-border-80) py-3 pr-3.5 pl-5.5"
       style={{
         background: "var(--neu-surface)",
-        boxShadow:
-          "12px 12px 26px rgba(142,128,166,0.45), -6px -6px 14px rgba(255,255,255,0.7)",
+        boxShadow: "var(--neu-shadow-landing-header)",
       }}
     >
       <div className="flex items-center gap-3">
@@ -19,10 +18,7 @@ export default function LandingHeader() {
           src="/favicon-round.png"
           alt="Neumorplayer"
           className="h-8.5 w-8.5 flex-none rounded-full object-cover"
-          style={{
-            boxShadow:
-              "3px 3px 8px rgba(146,132,170,0.5), -2px -2px 6px rgba(255,255,255,0.95)",
-          }}
+          style={{ boxShadow: "var(--neu-shadow-landing-logo)" }}
         />
         <BrandWordmark />
       </div>

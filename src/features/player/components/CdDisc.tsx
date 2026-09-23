@@ -32,9 +32,8 @@ export default function CdDisc({
         onPointerDown={onPointerDown}
         className="absolute inset-0 cursor-grab touch-none select-none overflow-hidden rounded-full active:cursor-grabbing"
         style={{
-          background: "oklch(0.905 0.014 315)",
-          boxShadow:
-            "7px 7px 16px rgba(146,132,170,0.5), -6px -6px 14px rgba(255,255,255,0.95)",
+          background: "var(--neu-ink-905)",
+          boxShadow: "var(--neu-shadow-disc-outer)",
         }}
       >
         {videoId && (
@@ -45,56 +44,41 @@ export default function CdDisc({
         )}
         <div
           className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 50%, var(--neu-surface) 0 28px, transparent 28px 30px), repeating-radial-gradient(circle at 50% 50%, rgba(126,110,156,0.13) 0 1px, rgba(255,255,255,0) 1px 3px), linear-gradient(150deg, rgba(179,68,255,0.14), transparent 70%)",
-          }}
+          style={{ background: "var(--neu-disc-texture-1)" }}
         />
         {/* 광택(빛반사) 레이어만 따로 분리 — 썸네일이 있으면 이미지를 뿌옇게 덮지
             않도록 세기를 낮춥니다(트랙 없을 때는 시안 원래 세기 그대로). */}
         <div
           className="absolute inset-0"
           style={{
-            background:
-              "conic-gradient(from 210deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 22%, rgba(255,255,255,0.6) 48%, rgba(255,255,255,0) 72%, rgba(255,255,255,0.85))",
+            background: "var(--neu-disc-sheen)",
             opacity: videoId ? 0.4 : 1,
           }}
         />
         <div
           className="absolute left-1/2 top-1/2 h-25.5 w-25.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            boxShadow:
-              "inset 2px 2px 5px rgba(146,132,170,0.4), inset -2px -2px 5px rgba(255,255,255,0.9)",
-          }}
+          style={{ boxShadow: "var(--neu-shadow-disc-inset)" }}
         />
         <div
           className="absolute left-1/2 top-1/2 h-15 w-15 -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
-            background:
-              "linear-gradient(150deg, rgba(179,68,255,0.16), rgba(255,255,255,0.5) 72%)",
-            boxShadow:
-              "inset 3px 3px 7px rgba(146,132,170,0.45), inset -3px -3px 7px rgba(255,255,255,0.95)",
+            background: "var(--neu-disc-texture-2)",
+            boxShadow: "var(--neu-shadow-disc-inset-2)",
           }}
         />
       </div>
 
       <div
         className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-neu-surface"
-        style={{
-          boxShadow:
-            "5px 5px 12px rgba(146,132,170,0.5), -4px -4px 10px rgba(255,255,255,0.95)",
-        }}
+        style={{ boxShadow: "var(--neu-shadow-disc-hub)" }}
       >
         <button
           type="button"
           onClick={onTogglePlayClick}
           disabled={!hasTrack}
           aria-label={isPlaying ? "일시정지" : "재생"}
-          className="grid h-9.5 w-9.5 place-items-center rounded-full bg-neu-surface text-neu-hi transition-shadow hover:text-[oklch(0.32_0.14_305)] active:shadow-neu-sunken disabled:opacity-40"
-          style={{
-            boxShadow:
-              "4px 4px 9px rgba(146,132,170,0.5), -3px -3px 8px rgba(255,255,255,0.95)",
-          }}
+          className="grid h-9.5 w-9.5 place-items-center rounded-full bg-neu-surface text-neu-hi transition-shadow hover:text-(--neu-accent-hover) active:shadow-neu-sunken disabled:opacity-40"
+          style={{ boxShadow: "var(--neu-shadow-disc-play)" }}
         >
           {isPlaying ? <PauseIcon /> : <PlayIcon className="ml-0.5" />}
         </button>

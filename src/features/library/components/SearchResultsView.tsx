@@ -138,7 +138,7 @@ export default function SearchResultsView({ query }: { query: string }) {
         {suggestedTags.map((tg) => (
           <div
             key={tg.tag}
-            className="flex cursor-pointer items-baseline gap-2 rounded-full border border-white/80 px-3.75 py-2.25 transition-colors hover:border-neu-accent-light"
+            className="flex cursor-pointer items-baseline gap-2 rounded-full border border-(--neu-border-80) px-3.75 py-2.25 transition-colors hover:border-neu-accent-light"
             style={{
               background: "var(--neu-surface)",
               boxShadow: "var(--neu-shadow-chip-raised)",
@@ -161,20 +161,17 @@ export default function SearchResultsView({ query }: { query: string }) {
         {topArtists.map((a) => (
           <div
             key={a.name}
-            className="cursor-pointer rounded-[14px] border border-white/80 p-4 transition-colors hover:border-neu-accent-light"
+            className="cursor-pointer rounded-[14px] border border-(--neu-border-80) p-4 transition-colors hover:border-neu-accent-light"
             style={{
               background: "var(--neu-surface)",
-              boxShadow:
-                "8px 8px 18px rgba(142,128,166,0.45), -6px -6px 14px rgba(255,255,255,0.9)",
+              boxShadow: "var(--neu-shadow-card-raised)",
             }}
           >
             <div
-              className="mb-3 h-17 w-17 rounded-full border border-white/70"
+              className="mb-3 h-17 w-17 rounded-full border border-(--neu-border-70)"
               style={{
-                background:
-                  "repeating-linear-gradient(135deg, rgba(118,100,145,0.16) 0 6px, rgba(118,100,145,0.05) 6px 12px), var(--neu-accent-tint)",
-                boxShadow:
-                  "3px 3px 8px rgba(150,136,175,0.42), -2px -2px 6px rgba(255,255,255,0.92)",
+                background: "var(--neu-thumb-placeholder-bg-lg)",
+                boxShadow: "var(--neu-shadow-artist-avatar)",
               }}
             />
             <p className="truncate text-[13.5px] font-semibold text-neu-ink">

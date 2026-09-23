@@ -12,26 +12,25 @@ import CheckBox from "@/shared/components/CheckBox";
 // 함께 이 컴포넌트들을 재사용하세요.
 
 const fieldRowClass =
-  "flex h-12 items-center gap-2.5 rounded-[13px] border border-white/70";
+  "flex h-12 items-center gap-2.5 rounded-[13px] border border-(--neu-border-70)";
 
 const fieldRowStyle = {
   background: "var(--neu-surface-sunken)",
-  boxShadow:
-    "inset 3px 3px 7px rgba(150,136,175,0.38), inset -3px -3px 6px rgba(255,255,255,0.88)",
+  boxShadow: "var(--neu-shadow-field-row)",
 };
 
 const fieldInputClass =
   "min-w-0 flex-1 border-none bg-transparent text-sm text-neu-ink outline-none placeholder:text-neu-muted";
 
 const fieldLabelClass =
-  "font-neu-mono text-[10px] tracking-[0.14em] text-[oklch(0.5_0.025_315)]";
+  "font-neu-mono text-[10px] tracking-[0.14em] text-(--neu-ink-50-a)";
 
 // 지금은 이메일 입력에만 쓰이지만 아이콘만 바꾸면 다른 입력에도 그대로 쓸 수 있어서
 // icon을 prop으로 받습니다(기본값은 기존 그대로 이메일 아이콘).
 export function Field({
   label,
   id,
-  icon = <EmailIcon className="flex-none text-[oklch(0.55_0.02_315)]" />,
+  icon = <EmailIcon className="flex-none text-(--neu-ink-55)" />,
   ...inputProps
 }: {
   label: string;
@@ -67,7 +66,7 @@ export function PasswordField({
         {label}
       </label>
       <div className={`${fieldRowClass} pr-2 pl-3.5`} style={fieldRowStyle}>
-        <LockIcon className="flex-none text-[oklch(0.55_0.02_315)]" />
+        <LockIcon className="flex-none text-(--neu-ink-55)" />
         <input
           id={id}
           type={visible ? "text" : "password"}
@@ -81,11 +80,11 @@ export function PasswordField({
           aria-label="비밀번호 표시"
           className="grid size-8.5 flex-none place-items-center rounded-full"
           style={{
-            color: visible ? "var(--neu-hi)" : "oklch(0.52 0.02 315)",
+            color: visible ? "var(--neu-hi)" : "var(--neu-ink-52)",
             background: "var(--neu-surface)",
             boxShadow: visible
-              ? "inset 3px 3px 7px rgba(146,132,170,0.6), inset -2px -2px 6px rgba(255,255,255,0.9)"
-              : "3px 3px 8px rgba(146,132,170,0.45), -2px -2px 6px rgba(255,255,255,0.95)",
+              ? "var(--neu-shadow-google-active)"
+              : "var(--neu-shadow-eye-btn)",
           }}
         >
           <EyeIcon hidden={!visible} />
@@ -112,7 +111,7 @@ export function AgreeCheckbox({
       <CheckBox checked={checked} className="mt-px">
         <CheckIcon />
       </CheckBox>
-      <div className="text-[12.5px] leading-[1.6] text-[oklch(0.42_0.025_315)]">
+      <div className="text-[12.5px] leading-[1.6] text-(--neu-ink-42)">
         {children}
       </div>
     </div>
@@ -145,7 +144,7 @@ export function GoogleButton({
   return (
     <button
       type="button"
-      className="flex h-12.5 items-center justify-center gap-2.5 rounded-[14px] border border-white/80 bg-neu-surface text-sm font-bold text-[oklch(0.32_0.025_315)] shadow-neu-google transition-shadow duration-150 active:shadow-neu-google-active"
+      className="flex h-12.5 items-center justify-center gap-2.5 rounded-[14px] border border-(--neu-border-80) bg-neu-surface text-sm font-bold text-(--neu-ink-32) shadow-neu-google transition-shadow duration-150 active:shadow-neu-google-active"
       {...props}
     >
       {children}
@@ -156,13 +155,12 @@ export function GoogleButton({
 export function Divider({ children }: { children: ReactNode }) {
   const lineStyle = {
     background: "var(--neu-surface-sunken)",
-    boxShadow:
-      "inset 1px 1px 2px rgba(150,136,175,0.5), inset -1px -1px 2px rgba(255,255,255,0.9)",
+    boxShadow: "var(--neu-shadow-divider-line)",
   };
   return (
     <div className="flex items-center gap-3">
       <div className="h-0.5 flex-1 rounded-xs" style={lineStyle} />
-      <div className="font-neu-mono text-[10px] tracking-[0.16em] text-[oklch(0.55_0.02_315)]">
+      <div className="font-neu-mono text-[10px] tracking-[0.16em] text-(--neu-ink-55)">
         {children}
       </div>
       <div className="h-0.5 flex-1 rounded-xs" style={lineStyle} />

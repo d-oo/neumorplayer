@@ -56,18 +56,12 @@ export default function LandingFeatureCards() {
       {FEATURES.map((f) => (
         <div
           key={f.title}
-          className="flex flex-col gap-3.5 rounded-[26px] border border-white/80 bg-neu-surface p-7"
-          style={{
-            boxShadow:
-              "14px 14px 30px rgba(142,128,166,0.45), -7px -7px 15px rgba(255,255,255,0.68)",
-          }}
+          className="flex flex-col gap-3.5 rounded-[26px] border border-(--neu-border-80) bg-neu-surface p-7"
+          style={{ boxShadow: "var(--neu-shadow-feature-card)" }}
         >
           <div
             className="grid h-13 w-13 place-items-center rounded-2xl bg-neu-surface text-neu-hi"
-            style={{
-              boxShadow:
-                "5px 5px 12px rgba(146,132,170,0.5), -4px -4px 10px rgba(255,255,255,0.95)",
-            }}
+            style={{ boxShadow: "var(--neu-shadow-disc-hub)" }}
           >
             {f.icon}
           </div>

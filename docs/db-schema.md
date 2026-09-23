@@ -1,6 +1,8 @@
 # DB 스키마
 
-`docs/migrations/0001_init.sql`이 스키마의 소스 오브 트루스입니다.
+`docs/migrations/0001_init.sql`, `docs/migrations/0002_user_settings.sql`,
+`docs/migrations/0003_user_settings_drop_updated_at.sql`이 스키마의 소스 오브
+트루스입니다.
 
 ## 테이블
 
@@ -9,6 +11,10 @@
 - `playlist_tracks` — `playlists`와 `tracks`를 잇는 join 테이블. 재생목록 row 자체에 순서
   배열을 두는 대신 `position` 컬럼을 두는 방식으로 설계했습니다 — dnd-kit으로 재정렬할 때
   변경된 항목들의 `position`만 batch update하는 로직과 짝을 이룹니다.
+- `user_settings` — 사용자별 화면 테마(`theme`: `'light' | 'dark'`, 기본값 `'light'`) 하나만
+  들어있는 1행 테이블. 새 사용자는 row가 없을 수 있어(첫 테마 변경 전) 읽을 때 없으면
+  기본값으로 취급하고, 쓸 때는 upsert합니다. 로그인 화면·랜딩 페이지 같은 비로그인 화면은
+  이 값과 무관하게 항상 라이트를 씁니다(HomeLayout 하위 인증 영역에서만 적용).
 
 ## 인덱스
 

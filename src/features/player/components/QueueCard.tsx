@@ -71,9 +71,9 @@ export default function QueueCard() {
   }
 
   return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-white/80 bg-neu-surface shadow-neu-raised">
+    <section className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
       <div
-        className="mx-3.5 mt-3.5 mb-2.5 flex gap-1 rounded-[13px] border border-white/70 p-1"
+        className="mx-3.5 mt-3.5 mb-2.5 flex gap-1 rounded-[13px] border border-(--neu-border-70) p-1"
         style={sunkenPanelStyle}
       >
         <button
@@ -136,7 +136,7 @@ export default function QueueCard() {
           <div className="flex flex-col">
             <div className="mb-1.5 flex items-center gap-1.5">
               <div
-                className="flex min-w-0 flex-1 items-center rounded-[10px] border border-white/80 px-2.5 py-1.5"
+                className="flex min-w-0 flex-1 items-center rounded-[10px] border border-(--neu-border-80) px-2.5 py-1.5"
                 style={sunkenPanelStyle}
               >
                 <input
@@ -146,7 +146,7 @@ export default function QueueCard() {
                     if (e.key === "Enter") handleCreatePlaylist();
                   }}
                   placeholder="새 재생목록 이름"
-                  className="min-w-0 flex-1 bg-transparent text-[12.5px] font-medium text-[oklch(0.25_0.025_315)] outline-none placeholder:text-[oklch(0.63_0.018_315)]"
+                  className="min-w-0 flex-1 bg-transparent text-[12.5px] font-medium text-(--neu-ink-25) outline-none placeholder:text-(--neu-ink-63)"
                 />
               </div>
               <IconCircleButton

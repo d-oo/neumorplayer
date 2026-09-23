@@ -30,12 +30,10 @@ const SORT_OPTIONS: { key: SortKey; label: string; defaultDesc: boolean }[] = [
 ];
 
 const chipStyle = (on: boolean) => ({
-  background: on ? "oklch(0.912 0.014 315)" : "var(--neu-surface)",
-  boxShadow: on
-    ? "inset 3px 3px 7px rgba(150,136,175,0.4), inset -3px -3px 6px rgba(255,255,255,0.85)"
-    : "var(--neu-shadow-tint-pill)",
-  borderColor: on ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.8)",
-  color: on ? "var(--neu-hi)" : "oklch(0.34 0.025 315)",
+  background: on ? "var(--neu-ink-912)" : "var(--neu-surface)",
+  boxShadow: on ? "var(--neu-shadow-chip-active)" : "var(--neu-shadow-tint-pill)",
+  borderColor: on ? "var(--neu-border-70)" : "var(--neu-border-80)",
+  color: on ? "var(--neu-hi)" : "var(--neu-ink-34)",
 });
 
 // 헤더 행과 각 트랙 행이 같은 컬럼 폭을 써야 해서 한 곳에 둡니다.
@@ -147,7 +145,7 @@ export default function LibraryPage() {
         </div>
 
         <div
-          className="flex flex-none gap-0.75 rounded-xl border border-white/70 p-1"
+          className="flex flex-none gap-0.75 rounded-xl border border-(--neu-border-70) p-1"
           style={sunkenPanelStyle}
         >
           {SORT_OPTIONS.map(({ key, label, defaultDesc }) => {

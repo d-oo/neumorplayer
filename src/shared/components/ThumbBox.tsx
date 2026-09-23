@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useThemed } from "@/shared/lib/theme";
 
 // 트랙/재생목록 썸네일이 공통으로 쓰는 테두리·모서리·그림자 박스. 실제 이미지(또는
 // PlaylistCoverGrid의 2x2 콜라주)는 children으로 넘기고, 이 컴포넌트는 크기별 chrome만
@@ -22,10 +23,11 @@ export default function ThumbBox({
   children: ReactNode;
   className?: string;
 }) {
+  const shadow = useThemed(SHADOW);
   return (
     <div
-      className={`${SIZES[size]} flex-none overflow-hidden rounded-md border border-white/70 ${className ?? ""}`}
-      style={{ boxShadow: SHADOW }}
+      className={`${SIZES[size]} flex-none overflow-hidden rounded-md border border-(--neu-border-70) ${className ?? ""}`}
+      style={{ boxShadow: shadow }}
     >
       {children}
     </div>

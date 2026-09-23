@@ -21,7 +21,7 @@ export default function LandingPage() {
   return (
     <div
       className="mx-auto flex w-7xl flex-col gap-19.5 px-5.5 pt-5.5 font-neu text-neu-ink"
-      style={{ background: "oklch(0.925 0.014 315)" }}
+      style={{ background: "var(--neu-bg)" }}
     >
       <LandingHeader />
       <LandingHero />

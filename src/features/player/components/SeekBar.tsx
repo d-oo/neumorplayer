@@ -24,11 +24,10 @@ export default function SeekBar({
         className="flex h-3.5 flex-1 cursor-pointer touch-none select-none items-center"
       >
         <div
-          className="flex h-2.25 w-full items-center overflow-hidden rounded-full border border-white/60 px-0.5"
+          className="flex h-2.25 w-full items-center overflow-hidden rounded-full border border-(--neu-border-60) px-0.5"
           style={{
-            background: "oklch(0.905 0.014 315)",
-            boxShadow:
-              "inset 3px 3px 6px rgba(150,136,175,0.6), inset -2px -2px 5px rgba(255,255,255,0.95)",
+            background: "var(--neu-ink-905)",
+            boxShadow: "var(--neu-shadow-seekbar)",
           }}
         >
           <div

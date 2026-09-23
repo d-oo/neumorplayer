@@ -1,5 +1,6 @@
 import ActionButton from "@/shared/components/ActionButton";
 import ResultCard from "@/features/explore/components/ResultCard";
+import SearchFieldInput from "@/shared/components/SearchFieldInput";
 import { fieldBoxStyle } from "@/shared/styles/field-box-style";
 import InfoBox from "@/shared/components/InfoBox";
 import { PlayIcon, SearchGlyphIcon, XIcon } from "@/shared/components/icons";
@@ -28,27 +29,26 @@ export default function LandingSearchCard({
   }
 
   return (
-    <section className="flex w-full flex-col gap-5.5 rounded-3xl border border-white/80 bg-neu-surface p-6.5 pt-6 shadow-neu-raised">
+    <section className="flex w-full flex-col gap-5.5 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-6.5 pt-6 shadow-neu-raised">
       <div className="flex items-center justify-between gap-4">
         <div
-          className="flex w-95 items-center gap-2.5 rounded-xl border border-white/80 px-4 py-2.75"
+          className="flex w-95 items-center gap-2.5 rounded-xl border border-(--neu-border-80) px-4 py-2.75"
           style={fieldBoxStyle}
         >
-          <input
+          <SearchFieldInput
             value={search.query}
             onChange={(e) => search.setQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") search.submitSearch();
             }}
             placeholder="제목이나 아티스트로 검색"
-            className="min-w-0 flex-1 bg-transparent text-[13.5px] font-medium text-[oklch(0.25_0.025_315)] outline-none"
           />
           {search.query !== "" && (
             <button
               type="button"
               onClick={search.clearQuery}
               aria-label="검색어 지우기"
-              className="grid h-4.5 w-4.5 flex-none place-items-center text-[oklch(0.55_0.02_315)] hover:text-[oklch(0.2_0.025_315)]"
+              className="grid h-4.5 w-4.5 flex-none place-items-center text-(--neu-ink-55) hover:text-(--neu-ink-20)"
             >
               <XIcon />
             </button>
@@ -57,7 +57,7 @@ export default function LandingSearchCard({
             type="button"
             onClick={search.submitSearch}
             aria-label="검색"
-            className="grid h-4.25 w-4.25 flex-none cursor-pointer place-items-center text-[oklch(0.5_0.02_315)] hover:text-[oklch(0.2_0.025_315)]"
+            className="grid h-4.25 w-4.25 flex-none cursor-pointer place-items-center text-(--neu-ink-50-b) hover:text-(--neu-ink-20)"
           >
             <SearchGlyphIcon />
           </button>

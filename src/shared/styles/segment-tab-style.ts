@@ -17,7 +17,7 @@ export function segmentTabStyle(active: boolean) {
 }
 
 export function segmentTabClass(active: boolean) {
-  return `rounded-[9px] font-bold transition-shadow duration-150 hover:text-[oklch(0.24_0.025_315)] active:shadow-neu-tab-active ${
+  return `rounded-[9px] font-bold transition-shadow duration-150 hover:text-(--neu-ink-24) active:shadow-neu-tab-active ${
     active ? "text-neu-hi shadow-neu-tab-raised" : "text-neu-muted"
   }`;
 }

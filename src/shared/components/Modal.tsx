@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useThemed } from "@/shared/lib/theme";
 
 // 화면 중앙 모달의 공통 껍데기(오버레이 + neu-surface 카드) — AddToPlaylistButton.tsx의
 // "재생목록에 추가" 모달에서 처음 쓰인 마크업을 뽑아낸 것입니다. 내용(제목/본문/버튼
@@ -15,6 +16,9 @@ export default function Modal({
   children: ReactNode;
   className?: string;
 }) {
+  const shadow = useThemed(
+    "18px 18px 40px rgba(60,40,84,0.45), -8px -8px 18px rgba(255,255,255,0.7)",
+  );
   if (!open) return null;
 
   return (
@@ -24,11 +28,8 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`flex flex-col gap-4 rounded-[20px] border border-white/85 bg-neu-surface ${className ?? ""}`}
-        style={{
-          boxShadow:
-            "18px 18px 40px rgba(60,40,84,0.45), -8px -8px 18px rgba(255,255,255,0.7)",
-        }}
+        className={`flex flex-col gap-4 rounded-[20px] border border-(--neu-border-85) bg-neu-surface ${className ?? ""}`}
+        style={{ boxShadow: shadow }}
       >
         {children}
       </div>

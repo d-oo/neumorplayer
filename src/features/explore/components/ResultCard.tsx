@@ -8,9 +8,9 @@ function getCardStyle(isSelected: boolean) {
   return {
     background: isSelected ? "var(--neu-highlight)" : "var(--neu-surface)",
     boxShadow: isSelected
-      ? "inset 5px 5px 11px rgba(150,136,175,0.45), inset -4px -4px 9px rgba(255,255,255,0.9)"
-      : "8px 8px 18px rgba(142,128,166,0.45), -6px -6px 14px rgba(255,255,255,0.9)",
-    borderColor: isSelected ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.8)",
+      ? "var(--neu-shadow-card-sunken)"
+      : "var(--neu-shadow-card-raised)",
+    borderColor: isSelected ? "var(--neu-border-70)" : "var(--neu-border-80)",
   };
 }
 
@@ -31,11 +31,8 @@ export default function ResultCard({
       style={getCardStyle(isSelected)}
     >
       <div
-        className="relative aspect-video w-full overflow-hidden rounded-[10px] border border-white/70"
-        style={{
-          boxShadow:
-            "inset 2px 2px 5px rgba(146,132,170,0.3), inset -2px -2px 5px rgba(255,255,255,0.7)",
-        }}
+        className="relative aspect-video w-full overflow-hidden rounded-[10px] border border-(--neu-border-70)"
+        style={{ boxShadow: "var(--neu-shadow-thumb-inset)" }}
       >
         {result.thumbnailUrl ? (
           <img
@@ -51,11 +48,10 @@ export default function ResultCard({
       </div>
       <div className="mt-2.75 flex gap-2.25">
         <div
-          className="h-7.5 w-7.5 flex-none rounded-full border border-white/70"
+          className="h-7.5 w-7.5 flex-none rounded-full border border-(--neu-border-70)"
           style={{
             background: thumbnailPlaceholderBackground,
-            boxShadow:
-              "2px 2px 6px rgba(150,136,175,0.4), -2px -2px 5px rgba(255,255,255,0.9)",
+            boxShadow: "var(--neu-shadow-avatar)",
           }}
         />
         <div className="min-w-0 flex-1">
@@ -70,7 +66,7 @@ export default function ResultCard({
           <p className="mt-0.75 truncate text-xs text-neu-muted">
             {result.channelTitle}
           </p>
-          <p className="mt-0.5 truncate text-[11.5px] text-[oklch(0.55_0.02_315)]">
+          <p className="mt-0.5 truncate text-[11.5px] text-(--neu-ink-55)">
             {result.viewCount.toLocaleString()}회
           </p>
         </div>

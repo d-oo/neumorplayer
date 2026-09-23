@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { deleteAccount } from "../api/account";
+import { themeQueryKey, updateThemeSetting } from "../api/settings";
 import Modal from "@/shared/components/Modal";
 import { MoonIcon, SunIcon } from "@/shared/components/icons";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
@@ -10,12 +11,13 @@ import {
   segmentTabClass,
   segmentTabStyle,
 } from "@/shared/styles/segment-tab-style";
+import { useThemeStore, type Theme } from "@/shared/lib/theme";
 
 // ProfileDropdown의 "설정" 메뉴가 여는 모달(docs/todos.md 항목 처리). 테마 선택은
-// 아직 실제 다크모드 구현이 없어 선택 상태만 로컬로 바꾸는 UI 껍데기다 — 적용도,
-// 새로고침 후 유지도 안 한다(실제 구현은 별도 작업으로 docs/todos.md에 남겨둠).
-// 회원탈퇴는 docs/todos.md의 "회원 탈퇴(계정+데이터 삭제)" 항목대로 확인 단계를
-// 거쳐 /api/account-delete를 호출한다.
+// user_settings.theme(Supabase, features/auth/api/settings.ts)에 저장되고, 화면에는
+// useThemeStore를 통해 즉시(낙관적으로) 반영됩니다 — 이 모달은 HomeLayout(인증 영역)
+// 안에서만 열리므로 user가 항상 있습니다. 회원탈퇴는 docs/todos.md의 "회원 탈퇴(계정+
+// 데이터 삭제)" 항목대로 확인 단계를 거쳐 /api/account-delete를 호출한다.
 export default function SettingsModal({
   open,
   onClose,
@@ -23,8 +25,10 @@ export default function SettingsModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const { signOut } = useAuth();
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { user, signOut } = useAuth();
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
+  const queryClient = useQueryClient();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const deleteMutation = useMutation({
@@ -32,6 +36,14 @@ export default function SettingsModal({
     onSuccess: async () => {
       await signOut();
       handleClose();
+    },
+  });
+
+  const themeMutation = useMutation({
+    mutationFn: (next: Theme) => updateThemeSetting(user!.id, next),
+    onSuccess: (_data, next) => {
+      setTheme(next);
+      queryClient.setQueryData(themeQueryKey(user?.id), next);
     },
   });
 
@@ -67,7 +79,7 @@ export default function SettingsModal({
               type="button"
               onClick={() => setConfirmingDelete(false)}
               disabled={deleteMutation.isPending}
-              className={`px-4.5 py-2.25 text-[13px] text-[oklch(0.4_0.025_315)] hover:text-[oklch(0.24_0.025_315)] disabled:cursor-default disabled:opacity-60 ${secondaryPillButtonClass}`}
+              className={`px-4.5 py-2.25 text-[13px] text-(--neu-ink-40) hover:text-(--neu-ink-24) disabled:cursor-default disabled:opacity-60 ${secondaryPillButtonClass}`}
             >
               취소
             </button>
@@ -75,7 +87,7 @@ export default function SettingsModal({
               type="button"
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
-              className="rounded-full bg-[oklch(0.5_0.17_22)] px-5 py-2.25 text-[13px] font-bold text-white shadow-neu-cta-pill enabled:hover:bg-[oklch(0.44_0.17_22)] disabled:cursor-default disabled:opacity-60"
+              className="rounded-full bg-(--neu-danger) px-5 py-2.25 text-[13px] font-bold text-white shadow-neu-cta-pill enabled:hover:bg-(--neu-danger-hover) disabled:cursor-default disabled:opacity-60"
             >
               탈퇴
             </button>
@@ -92,13 +104,14 @@ export default function SettingsModal({
               화면 테마
             </p>
             <div
-              className="flex gap-1 rounded-[13px] border border-white/70 p-1"
+              className="flex gap-1 rounded-[13px] border border-(--neu-border-70) p-1"
               style={sunkenPanelStyle}
             >
               <button
                 type="button"
-                onClick={() => setTheme("light")}
-                className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-[12.5px] ${segmentTabClass(
+                onClick={() => themeMutation.mutate("light")}
+                disabled={themeMutation.isPending}
+                className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-[12.5px] disabled:cursor-default ${segmentTabClass(
                   theme === "light",
                 )}`}
                 style={segmentTabStyle(theme === "light")}
@@ -108,8 +121,9 @@ export default function SettingsModal({
               </button>
               <button
                 type="button"
-                onClick={() => setTheme("dark")}
-                className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-[12.5px] ${segmentTabClass(
+                onClick={() => themeMutation.mutate("dark")}
+                disabled={themeMutation.isPending}
+                className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 py-2 text-[12.5px] disabled:cursor-default ${segmentTabClass(
                   theme === "dark",
                 )}`}
                 style={segmentTabStyle(theme === "dark")}
@@ -134,7 +148,7 @@ export default function SettingsModal({
             <button
               type="button"
               onClick={() => setConfirmingDelete(true)}
-              className={`flex-none px-4 py-2 text-[12.5px] text-[oklch(0.5_0.17_22)] hover:text-[oklch(0.44_0.17_22)] ${secondaryPillButtonClass}`}
+              className={`flex-none px-4 py-2 text-[12.5px] text-(--neu-danger) hover:text-(--neu-danger-hover) ${secondaryPillButtonClass}`}
             >
               회원탈퇴
             </button>

@@ -6,13 +6,14 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import InfoBox from "@/shared/components/InfoBox";
+import SearchFieldInput from "@/shared/components/SearchFieldInput";
 import { fieldBoxStyle } from "@/shared/styles/field-box-style";
 import { useExploreSearch } from "@/features/explore/lib/useExploreSearch";
 import { useTagSelection } from "@/features/explore/lib/useTagSelection";
 import { useAddTrackMutation } from "@/features/explore/lib/useAddTrackMutation";
 import ActionButton from "@/shared/components/ActionButton";
 import ResultCard from "@/features/explore/components/ResultCard";
-import TagPicker from "@/features/explore/components/TagPicker";
+import { TagInputRow, TagChipList } from "@/features/explore/components/TagPicker";
 
 // old-src/src/components/AddMusic.js + VideoSearchResult.js가 하던 역할을 이어받는
 // 자리. old-src에서는 라이브러리 검색 화면 안의 모달이었지만, docs/product-flow.md에
@@ -37,13 +38,16 @@ export default function ExplorePage() {
     setTitleQuery,
     artistQuery,
     setArtistQuery,
+    videoIdInput,
+    handleVideoIdInputChange: setVideoIdInputRaw,
     hasSearched,
     handleSearch: submitSearch,
     results,
     isFetching,
     isError,
     selectedVideoId,
-    setSelectedVideoId,
+    selectVideo: selectVideoRaw,
+    clearSelection,
     selected,
   } = useExploreSearch();
 
@@ -65,7 +69,9 @@ export default function ExplorePage() {
     selected,
     selectedTags,
     onSuccess: () => {
-      setSelectedVideoId(null);
+      setTitleQuery("");
+      setArtistQuery("");
+      clearSelection();
       resetTagSelection();
     },
   });
@@ -80,7 +86,12 @@ export default function ExplorePage() {
 
   function selectVideo(videoId: string) {
     addTrack.mutation.reset();
-    setSelectedVideoId(videoId);
+    selectVideoRaw(videoId);
+  }
+
+  function handleVideoIdInputChange(value: string) {
+    addTrack.mutation.reset();
+    setVideoIdInputRaw(value);
   }
 
   function toggleTag(tag: string) {
@@ -114,17 +125,17 @@ export default function ExplorePage() {
             제목
           </div>
           <div
-            className="flex items-center rounded-[11px] border border-white/80 px-3.5 py-2.5"
+            className="flex items-center rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.5"
             style={fieldBoxStyle}
           >
-            <input
+            <SearchFieldInput
               value={titleQuery}
               onChange={(e) => setTitleQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSearch();
               }}
               placeholder="예: Bloom"
-              className="min-w-0 flex-1 bg-transparent text-[13.5px] font-medium text-[oklch(0.25_0.025_315)] outline-none"
+              lineHeightPx={20.25}
             />
           </div>
         </div>
@@ -133,17 +144,17 @@ export default function ExplorePage() {
             아티스트
           </div>
           <div
-            className="flex items-center rounded-[11px] border border-white/80 px-3.5 py-2.5"
+            className="flex items-center rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.5"
             style={fieldBoxStyle}
           >
-            <input
+            <SearchFieldInput
               value={artistQuery}
               onChange={(e) => setArtistQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSearch();
               }}
               placeholder="예: Mira Vell"
-              className="min-w-0 flex-1 bg-transparent text-[13.5px] font-medium text-[oklch(0.25_0.025_315)] outline-none"
+              lineHeightPx={20.25}
             />
           </div>
         </div>
@@ -161,7 +172,7 @@ export default function ExplorePage() {
         <div className="text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
           검색 결과
         </div>
-        <div className="text-xs text-[oklch(0.55_0.02_315)]">
+        <div className="text-xs text-(--neu-ink-55)">
           {hasSearched && !isFetching ? `${results.length}건` : ""}
         </div>
       </div>
@@ -189,10 +200,31 @@ export default function ExplorePage() {
         </InfoBox>
       )}
 
-      <TagPicker
-        tagInput={tagInput}
-        onTagInputChange={setTagInput}
-        onAddTagInput={handleAddTagInput}
+      <div className="mb-3 grid grid-cols-2 items-start gap-3.5">
+        <TagInputRow
+          tagInput={tagInput}
+          onTagInputChange={setTagInput}
+          onAddTagInput={handleAddTagInput}
+        />
+        <div>
+          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
+            비디오 ID
+          </div>
+          <div
+            className="flex items-center rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.5"
+            style={fieldBoxStyle}
+          >
+            <SearchFieldInput
+              value={videoIdInput}
+              onChange={(e) => handleVideoIdInputChange(e.target.value)}
+              placeholder="유튜브 영상을 검색 결과에서 고르거나, 비디오 ID를 붙여넣으세요"
+              lineHeightPx={20.25}
+            />
+          </div>
+        </div>
+      </div>
+
+      <TagChipList
         allTags={allTags}
         suggestedTags={suggestedTags}
         selectedTags={selectedTags}

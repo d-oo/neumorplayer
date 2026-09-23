@@ -54,7 +54,7 @@ export default function PlayerPanel() {
     "shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken";
 
   return (
-    <section className="flex flex-col gap-3.75 rounded-3xl border border-white/80 bg-neu-surface p-4.5 shadow-neu-raised">
+    <section className="flex flex-col gap-3.75 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-4.5 shadow-neu-raised">
       <div className="flex w-full items-center gap-3.5">
         <CdDisc
           discRef={physics.discRef}
@@ -73,7 +73,7 @@ export default function PlayerPanel() {
               onClick={playPrev}
               disabled={!currentTrack}
               aria-label="이전 곡"
-              className={`${toggleButtonClass} text-[oklch(0.34_0.025_315)]`}
+              className={`${toggleButtonClass} text-(--neu-ink-34)`}
             >
               <PrevIcon />
             </IconCircleButton>
@@ -82,7 +82,7 @@ export default function PlayerPanel() {
               onClick={playNext}
               disabled={!currentTrack}
               aria-label="다음 곡"
-              className={`${toggleButtonClass} text-[oklch(0.34_0.025_315)]`}
+              className={`${toggleButtonClass} text-(--neu-ink-34)`}
             >
               <NextIcon />
             </IconCircleButton>
@@ -93,8 +93,8 @@ export default function PlayerPanel() {
               aria-label="셔플"
               className={
                 shuffle
-                  ? "text-[#7b1fb0] shadow-neu-sunken"
-                  : `${toggleButtonClass} text-[oklch(0.52_0.02_315)]`
+                  ? "text-(--neu-tick-on-active) shadow-neu-sunken"
+                  : `${toggleButtonClass} text-(--neu-ink-52)`
               }
             >
               <ShuffleIcon />
@@ -106,8 +106,8 @@ export default function PlayerPanel() {
               aria-label="반복"
               className={
                 loopQueue
-                  ? "text-[#7b1fb0] shadow-neu-sunken"
-                  : `${toggleButtonClass} text-[oklch(0.52_0.02_315)]`
+                  ? "text-(--neu-tick-on-active) shadow-neu-sunken"
+                  : `${toggleButtonClass} text-(--neu-ink-52)`
               }
             >
               <RepeatIcon />
@@ -134,7 +134,7 @@ export default function PlayerPanel() {
             size="lg"
             disabled
             aria-label="재생목록에 추가"
-            className="flex-none text-[oklch(0.52_0.02_315)] shadow-neu-raised-sm"
+            className="flex-none text-(--neu-ink-52) shadow-neu-raised-sm"
           >
             <QueueIcon />
           </IconCircleButton>

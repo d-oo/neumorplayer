@@ -12,19 +12,15 @@ export default function LandingHero() {
       <h1 className="font-['Space_Grotesk'] flex flex-col items-center gap-1 text-[92px] leading-[0.96] font-bold tracking-[-0.045em]">
         <span
           style={{
-            color: "oklch(0.34 0.03 315)",
-            textShadow:
-              "2px 2px 3px rgba(255,255,255,0.95), -2px -2px 4px rgba(128,108,158,0.45)",
+            color: "var(--neu-ink-34-hero)",
+            textShadow: "var(--neu-shadow-hero-title)",
           }}
         >
           Neumorphism
         </span>
         <span
           className="text-neu-hi"
-          style={{
-            textShadow:
-              "2px 2px 3px rgba(255,255,255,0.95), -2px -2px 4px rgba(128,108,158,0.5)",
-          }}
+          style={{ textShadow: "var(--neu-shadow-hero-title-hi)" }}
         >
           Music Player
         </span>
@@ -32,7 +28,7 @@ export default function LandingHero() {
 
       <p
         className="max-w-140 text-pretty break-keep text-base leading-[1.8]"
-        style={{ color: "oklch(0.45 0.025 315)" }}
+        style={{ color: "var(--neu-ink-45)" }}
       >
         눌리고 솟아오르는 물리적인 인터페이스로 음악을 다룹니다. 아티스트와
         제목으로 찾아, 고른 곡을 그 자리에서 재생합니다.

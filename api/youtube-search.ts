@@ -15,8 +15,25 @@ interface SearchItem {
 
 type VideoSearchItem = SearchItem & { id: { videoId: string } };
 
-// GET /api/youtube-search?q=검색어
+interface VideoWithSnippetItem {
+  id: string;
+  snippet: {
+    title: string;
+    channelTitle: string;
+    thumbnails: {
+      medium?: { url: string };
+      default?: { url: string };
+    };
+  };
+}
+
+// GET /api/youtube-search?q=검색어  또는  ?id=비디오ID
 // → { items: [search 결과], details: [각 영상의 재생시간/조회수/아동용 여부] }
+//
+// id가 주어지면 검색(search.list) 없이 videos.list 한 번으로 해당 영상 1건만 조회하고,
+// 나머지 응답 모양(items/details)은 q 검색 경로와 똑같이 맞춥니다 — 탐색 화면이 비디오
+// ID를 직접 붙여넣었을 때도 프론트 파싱 코드(fetchExploreResults)를 그대로 재사용할 수
+// 있게 하기 위해서입니다.
 //
 // 예전엔 search와 videos.list를 각각 별도 엔드포인트로 두고 브라우저가 "순차로" 두 번
 // 호출했는데, 두 번째 호출은 첫 번째 결과의 videoId가 나와야 시작할 수 있어서 왕복
@@ -29,12 +46,44 @@ type VideoSearchItem = SearchItem & { id: { videoId: string } };
 // 직접 호출했습니다 — old-src/src/components/AddMusic.js).
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const q = req.query.q;
-  if (typeof q !== "string" || q.trim() === "") {
-    return res.status(400).json({ error: "쿼리 파라미터 q가 필요합니다." });
-  }
+  const id = req.query.id;
 
   try {
     const apiKey = getApiKeyOrThrow();
+
+    if (typeof id === "string" && id.trim() !== "") {
+      const videoUrl = new URL(`${YOUTUBE_API_BASE}/videos`);
+      videoUrl.searchParams.set("part", "snippet,contentDetails,statistics,status");
+      videoUrl.searchParams.set(
+        "fields",
+        "items(id,snippet(thumbnails,title,channelTitle),contentDetails/duration,statistics/viewCount,status/madeForKids)"
+      );
+      videoUrl.searchParams.set("id", id.trim());
+      videoUrl.searchParams.set("key", apiKey);
+
+      const videoRes = await fetch(videoUrl);
+      const videoData = (await videoRes.json()) as {
+        items?: VideoWithSnippetItem[];
+      };
+      if (!videoRes.ok) {
+        return res.status(videoRes.status).json(videoData);
+      }
+
+      const videoItems = videoData.items ?? [];
+      const items = videoItems.map((item) => ({
+        id: { videoId: item.id },
+        snippet: item.snippet,
+      }));
+
+      res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate");
+      return res.status(200).json({ items, details: videoItems });
+    }
+
+    if (typeof q !== "string" || q.trim() === "") {
+      return res
+        .status(400)
+        .json({ error: "쿼리 파라미터 q 또는 id가 필요합니다." });
+    }
 
     const searchUrl = new URL(`${YOUTUBE_API_BASE}/search`);
     searchUrl.searchParams.set("part", "snippet");

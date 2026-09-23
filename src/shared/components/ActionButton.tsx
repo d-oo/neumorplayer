@@ -34,7 +34,7 @@ export default function ActionButton({
       type="button"
       onClick={onClick}
       disabled={!enabled}
-      className="flex items-center gap-2.25 rounded-full px-6 py-2.75 text-sm font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 [background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:[background:oklch(0.928_0.013_315)] disabled:text-[oklch(0.58_0.02_315)] disabled:shadow-neu-cta-pill-disabled disabled:cursor-default"
+      className="flex items-center gap-2.25 rounded-full px-6 py-2.75 text-sm font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 [background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:[background:var(--neu-ink-928)] disabled:text-(--neu-ink-58) disabled:shadow-neu-cta-pill-disabled disabled:cursor-default"
     >
       {icon}
       {label}
