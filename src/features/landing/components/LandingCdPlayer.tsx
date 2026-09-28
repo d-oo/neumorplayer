@@ -1,4 +1,8 @@
 import { useCdPlayerPhysics } from "@/features/player/hooks/useCdPlayerPhysics";
+import {
+  selectIsAudible,
+  selectIsLoading,
+} from "@/features/player/lib/playback-display";
 import CdDisc from "@/features/player/components/CdDisc";
 import NowPlayingTitle from "@/features/player/components/NowPlayingTitle";
 import SeekBar from "@/features/player/components/SeekBar";
@@ -11,6 +15,8 @@ import type { useGuestPlayer } from "../lib/useGuestPlayer";
 // useCdPlayerPhysics(공유 물리)를 그대로 재사용하되, 대시보드 PlayerPanel과 달리
 // 이전/다음/셔플 버튼은 없습니다(시안 스펙 — 랜딩은 큐가 없어 반복 버튼 하나뿐).
 // 실제 아티스트·앨범 구분이 없는 YouTube 데이터라 부제는 channelTitle만 씁니다.
+// 재생 아이콘/스피너/CD 회전·스크럽 동작은 대시보드 PlayerPanel과 똑같이 맞춥니다
+// (같은 셀렉터·같은 물리 옵션 — 한쪽만 바뀌면 안 됨).
 export default function LandingCdPlayer({
   guestPlayer,
 }: {
@@ -18,16 +24,20 @@ export default function LandingCdPlayer({
 }) {
   const { track, isPlaying, currentTime, duration, volume, repeat } =
     guestPlayer;
+  const isAudible = selectIsAudible(guestPlayer);
+  const isLoading = selectIsLoading(guestPlayer);
 
   const physics = useCdPlayerPhysics({
     hasTrack: !!track,
-    isPlaying,
+    trackKey: track?.videoId,
+    isSpinning: isAudible,
     currentTime,
     duration,
     volume,
-    onSetPlaying: guestPlayer.setPlaying,
     onSeek: guestPlayer.seek,
     onVolumeChange: guestPlayer.setVolume,
+    onScrubbingChange: guestPlayer.setScrubbing,
+    onPreviewTime: guestPlayer.previewTime,
   });
 
   return (
@@ -36,7 +46,8 @@ export default function LandingCdPlayer({
         <CdDisc
           discRef={physics.discRef}
           onPointerDown={physics.onDiscPointerDown}
-          isPlaying={isPlaying}
+          isPlaying={isAudible}
+          isLoading={isLoading}
           hasTrack={!!track}
           videoId={track?.videoId}
           onTogglePlayClick={() => guestPlayer.setPlaying(!isPlaying)}

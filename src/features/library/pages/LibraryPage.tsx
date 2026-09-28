@@ -1,22 +1,17 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
-import { formatDuration } from "@/shared/lib/format-time";
 import {
   segmentTabClass,
   segmentTabStyle,
 } from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
-import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import InfoBox from "@/shared/components/InfoBox";
-import TrackRowInfo from "../components/TrackRowInfo";
-import IconCircleButton from "@/shared/components/IconCircleButton";
-import { PlayIcon, SortArrowIcon } from "@/shared/components/icons";
-import MarqueeText from "@/features/player/components/MarqueeText";
+import LibraryTrackList from "../components/LibraryTrackList";
+import { SortArrowIcon } from "@/shared/components/icons";
 
 type SortKey = "recentAdd" | "title" | "artist" | "playCount";
 
@@ -36,20 +31,15 @@ const chipStyle = (on: boolean) => ({
   color: on ? "var(--neu-hi)" : "var(--neu-ink-34)",
 });
 
-// 헤더 행과 각 트랙 행이 같은 컬럼 폭을 써야 해서 한 곳에 둡니다.
-const trackRowGridColumns = "minmax(0,1fr) 190px 74px 46px 28px";
-
 // old-src/src/components/SearchMusic.js 를 대체할 자리(라이브러리 목록 + 검색).
 // "라이브러리 내 검색" 입력창은 시안대로 헤더(HomeLayout)에 있고, 이 페이지는
 // ?q= 쿼리 파라미터로 그 값을 공유받아 필터링만 합니다.
-// 행 클릭 = 정보 페이지 이동, 재생은 별도 버튼(사용자가 명시적으로 요청한 흐름) —
-// 원본 시안은 행 클릭 자체가 재생이라 이 버튼은 시안엔 없는 추가 요소입니다.
+// 목록 자체(열 제목 헤더 + 트랙 행)는 헤더 검색 결과와 공유하는 LibraryTrackList가
+// 그립니다 — 행 클릭 = 정보 페이지 이동, 재생은 hover 때 재생시간 자리의 버튼으로만
+// (사용자가 명시적으로 요청한 흐름 — 원본 시안은 행 클릭 자체가 재생이라 이 버튼은
+// 시안엔 없는 추가 요소입니다).
 export default function LibraryPage() {
   useDocumentTitle("NeumorPlayer");
-  const navigate = useNavigate();
-  const playQueue = usePlayerStore((s) => s.playQueue);
-  const queue = usePlayerStore((s) => s.queue);
-  const currentIndex = usePlayerStore((s) => s.currentIndex);
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
@@ -67,9 +57,6 @@ export default function LibraryPage() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("recentAdd");
   const [sortDesc, setSortDesc] = useState(true);
-
-  const currentTrackId =
-    currentIndex >= 0 ? queue[currentIndex]?.id : undefined;
 
   const usedTags = useMemo(() => {
     const set = new Set<string>();
@@ -166,61 +153,7 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      <div
-        className="grid gap-4 px-3.5 pb-2.5 text-[11px] font-bold tracking-wider text-neu-muted"
-        style={{
-          gridTemplateColumns: trackRowGridColumns,
-          borderBottom: "1px solid var(--neu-divider)",
-        }}
-      >
-        <div className="pl-18">제목</div>
-        <div>태그</div>
-        <div>재생 횟수</div>
-        <div>시간</div>
-        <div />
-      </div>
-
-      <div className="flex flex-col pt-1.5">
-        {sorted.map((track) => {
-          const isCurrentTrack = track.id === currentTrackId;
-          return (
-            <div
-              key={track.id}
-              onClick={() => navigate(`/music/${track.id}`)}
-              className="grid cursor-pointer items-center gap-4 rounded-[11px] px-3.5 py-2.25 hover:bg-neu-row-hover"
-              style={{
-                gridTemplateColumns: trackRowGridColumns,
-                ...currentTrackRowStyle(isCurrentTrack),
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <TrackRowInfo track={track} isCurrentTrack={isCurrentTrack} />
-              </div>
-              <MarqueeText
-                text={track.tags.map((tag) => `#${tag}`).join("  ")}
-                className="text-xs text-neu-muted"
-              />
-              <div className="font-neu-mono text-[12.5px] text-neu-muted">
-                {track.play_count.toLocaleString()}
-              </div>
-              <span className="font-neu-mono text-[12.5px] text-neu-muted">
-                {formatDuration(track.duration)}
-              </span>
-              <IconCircleButton
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  playQueue([track], 0);
-                }}
-                aria-label={`${track.title} 재생`}
-                className="justify-self-end text-neu-hi shadow-neu-raised-sm"
-              >
-                <PlayIcon className="ml-0.5" />
-              </IconCircleButton>
-            </div>
-          );
-        })}
-      </div>
+      <LibraryTrackList tracks={sorted} />
 
       {(sorted.length === 0 || isLoading || isError) && (
         <InfoBox className="mt-3.5">

@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { PauseIcon, PlayIcon } from "@/shared/components/icons";
+import { PauseIcon, PlayIcon, SpinnerIcon } from "@/shared/components/icons";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 
 // PlayerPanel.tsx에서 분리한 순수 프리젠테이션 조각입니다(그라디언트 스택·허브·
@@ -14,6 +14,7 @@ export default function CdDisc({
   discRef,
   onPointerDown,
   isPlaying,
+  isLoading,
   hasTrack,
   videoId,
   onTogglePlayClick,
@@ -21,6 +22,9 @@ export default function CdDisc({
   discRef: RefObject<HTMLDivElement | null>;
   onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
   isPlaying: boolean;
+  // 재생을 눌렀지만 아직 실제 재생 전(버퍼링 포함) — 가운데 버튼에 스피너를 보여줍니다
+  // (lib/playback-display.ts selectIsLoading). 대시보드·랜딩 둘 다 반드시 넘깁니다.
+  isLoading: boolean;
   hasTrack: boolean;
   videoId?: string;
   onTogglePlayClick: () => void;
@@ -76,11 +80,17 @@ export default function CdDisc({
           type="button"
           onClick={onTogglePlayClick}
           disabled={!hasTrack}
-          aria-label={isPlaying ? "일시정지" : "재생"}
+          aria-label={isPlaying || isLoading ? "일시정지" : "재생"}
           className="grid h-9.5 w-9.5 place-items-center rounded-full bg-neu-surface text-neu-hi transition-shadow hover:text-(--neu-accent-hover) active:shadow-neu-sunken disabled:opacity-40"
           style={{ boxShadow: "var(--neu-shadow-disc-play)" }}
         >
-          {isPlaying ? <PauseIcon /> : <PlayIcon className="ml-0.5" />}
+          {isLoading ? (
+            <SpinnerIcon className="animate-spin" />
+          ) : isPlaying ? (
+            <PauseIcon />
+          ) : (
+            <PlayIcon className="ml-0.5" />
+          )}
         </button>
       </div>
     </div>

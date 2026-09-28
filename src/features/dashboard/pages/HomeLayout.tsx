@@ -10,6 +10,7 @@ import YouTubePlayer from "@/features/player/components/YouTubePlayer";
 import { VideoSlotProvider } from "@/features/player/VideoSlotProvider";
 import { SearchGlyphIcon } from "@/shared/components/icons";
 import SearchFieldInput from "@/shared/components/SearchFieldInput";
+import Toast from "@/shared/components/Toast";
 import SearchResultsView from "@/features/library/components/SearchResultsView";
 import {
   segmentTabClass,
@@ -80,7 +81,11 @@ export default function HomeLayout() {
           {/* 헤더와 본문을 하나의 카드로 묶습니다 — 각자 shadow-neu-raised를 따로 두면
               둘 사이 좁은 간격에서 한쪽 그림자의 어두운 번짐과 다른 쪽의 밝은 하이라이트가
               충돌해 윤곽선처럼 보이는 문제가 있었습니다. */}
-          <div className="flex h-full w-full flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
+          {/* relative: 재생목록 상세의 선택 액션 바(SelectionActionBar)가 이 패널을
+              기준으로 absolute 배치됩니다 — main은 positioned가 아니라서 액션 바가 main의
+              스크롤에 딸려 움직이지 않고 패널 하단에 떠 있습니다. main에 relative 등을
+              주면 이 동작이 깨지니 주의하세요. */}
+          <div className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
             <header
               className="flex items-center gap-3.5 px-5.5 py-3.5"
               style={{ borderBottom: "1px solid var(--neu-divider)" }}
@@ -148,6 +153,7 @@ export default function HomeLayout() {
           </div>
         </div>
       </div>
+      <Toast />
     </VideoSlotProvider>
   );
 }

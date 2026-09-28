@@ -9,16 +9,33 @@ import { TICK_ON, TICK_OFF } from "../components/VolumeKnob";
 // 드래그 중 값(회전각·노브 각도 등)은 절대 React 상태로 만들지 않습니다 — 매 프레임
 // 바뀌는 값을 setState하면 리렌더 폭주가 나므로, ref로 들고 있다가 discRef/knobRef가
 // 가리키는 DOM을 직접 조작합니다. 실제로 재생 상태(currentTime/volume 등)가 바뀌는
-// 순간에만 onSeek/onVolumeChange/onSetPlaying으로 커밋합니다.
+// 순간에만 onSeek/onVolumeChange로 커밋합니다.
+//
+// 시간 이동(CD 스크럽·재생바 드래그)은 old-src(Player.js의 Slider onChange/
+// onChangeCommitted)와 같은 원칙입니다: 손을 움직이는 동안엔 onPreviewTime으로 화면
+// 표시만 바꾸고, 손을 놓을 때 onSeek를 딱 한 번 보냅니다. 재생 상태(일시정지/재개)도
+// 건드리지 않습니다 — 이 훅은 재생 상태를 알지 못하고, 드래그 중 이동 요청을 여러 번
+// 보내거나 멈췄다 재개하던 예전 방식은 YouTube의 비동기 ENDED와 경쟁해 곡 끝까지
+// 빠르게 끌고 놓으면 처음부터 다시 재생되는 문제가 있었습니다(useYouTubePlayback 참고).
 interface UseCdPlayerPhysicsOptions {
   hasTrack: boolean;
-  isPlaying: boolean;
+  // 지금 곡을 구분하는 값(videoId). 드래그/스크럽 도중 이 값이 바뀌면(예: 재생목록에서
+  // 곡 끝까지 스크럽해 다음 곡으로 넘어감) 그 제스처에서는 더 이상 이동 요청을 보내지
+  // 않습니다 — 옛 곡 기준 시간을 새 곡에 적용하면 새 곡이 곧바로 끝 근처로 튀었습니다.
+  trackKey: string | undefined;
+  // CD가 실제로 돌지 여부 — 호출부가 selectIsAudible(lib/playback-display.ts)을
+  // 넘깁니다(불러오는/버퍼링 중엔 멈춤).
+  isSpinning: boolean;
   currentTime: number;
   duration: number;
   volume: number; // 0-100
-  onSetPlaying: (playing: boolean) => void;
   onSeek: (time: number) => void;
   onVolumeChange: (volume: number) => void;
+  // 드래그/스크럽 시작·끝 알림 — useYouTubePlayback.setScrubbing으로 이어져, 그동안
+  // 폴링 값이 화면 표시(손 위치)를 덮어쓰지 않게 합니다.
+  onScrubbingChange: (scrubbing: boolean) => void;
+  // YouTube 이동 요청 없이 화면의 재생 시간만 옮기기(드래그/스크럽 도중 매 움직임).
+  onPreviewTime: (time: number) => void;
 }
 
 // 디스크 한 바퀴(360°)를 30초로 스크럽하는 시안 스펙 — 12°당 1초.
@@ -30,26 +47,29 @@ const KNOB_VERTICAL_FALLOFF_RADIUS = 30;
 
 export function useCdPlayerPhysics({
   hasTrack,
-  isPlaying,
+  trackKey,
+  isSpinning,
   currentTime,
   duration,
   volume,
-  onSetPlaying,
   onSeek,
   onVolumeChange,
+  onScrubbingChange,
+  onPreviewTime,
 }: UseCdPlayerPhysicsOptions) {
   const discRef = useRef<HTMLDivElement | null>(null);
   const knobRef = useRef<HTMLDivElement | null>(null);
 
   // 롱리빙 리스너(rAF 루프, pointermove 클로저)가 최신 값을 읽을 수 있도록 매 렌더
   // 동기화하는 ref들 — 클로저에 갇힌 stale 값 문제를 피합니다.
-  const isPlayingRef = useRef(isPlaying);
+  const isSpinningRef = useRef(isSpinning);
   const currentTimeRef = useRef(currentTime);
   const durationRef = useRef(duration);
   const volumeRef = useRef(volume);
+  const trackKeyRef = useRef(trackKey);
   useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
+    isSpinningRef.current = isSpinning;
+  }, [isSpinning]);
   useEffect(() => {
     currentTimeRef.current = currentTime;
   }, [currentTime]);
@@ -59,6 +79,9 @@ export function useCdPlayerPhysics({
   useEffect(() => {
     volumeRef.current = volume;
   }, [volume]);
+  useEffect(() => {
+    trackKeyRef.current = trackKey;
+  }, [trackKey]);
 
   // 디스크 회전 누적값과 관성 속도 — React 상태가 아니라 프레임마다 바뀌는 순수
   // ref입니다. 드래그 중엔 pointermove가, 아닐 땐 rAF 루프가 이 값을 갱신합니다.
@@ -72,9 +95,9 @@ export function useCdPlayerPhysics({
     let frameId: number;
     const spin = () => {
       if (!cdDraggingRef.current) {
-        const target = isPlayingRef.current ? 0.28 : 0;
+        const target = isSpinningRef.current ? 0.28 : 0;
         cdVelRef.current +=
-          (target - cdVelRef.current) * (isPlayingRef.current ? 0.035 : 0.06);
+          (target - cdVelRef.current) * (isSpinningRef.current ? 0.035 : 0.06);
         rotationDegRef.current += cdVelRef.current;
         if (discRef.current) {
           discRef.current.style.transform = `rotate(${rotationDegRef.current}deg)`;
@@ -91,8 +114,7 @@ export function useCdPlayerPhysics({
     const el = e.currentTarget;
     el.setPointerCapture(e.pointerId);
     cdDraggingRef.current = true;
-    const wasPlaying = isPlayingRef.current;
-    if (wasPlaying) onSetPlaying(false);
+    onScrubbingChange(true);
 
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
@@ -100,10 +122,18 @@ export function useCdPlayerPhysics({
     const angleAt = (clientX: number, clientY: number) =>
       Math.atan2(clientX - cx, -(clientY - cy)) * (180 / Math.PI);
 
+    const gestureTrackKey = trackKeyRef.current;
+    const trackChanged = () => trackKeyRef.current !== gestureTrackKey;
+
     let lastAngle = angleAt(e.clientX, e.clientY);
-    let scrubAccum = 0;
-    let totalSeconds = 0;
+    let totalDegrees = 0;
     const startTime = currentTimeRef.current;
+    const clampTime = (t: number) => {
+      const dur = durationRef.current;
+      return Math.max(0, dur ? Math.min(t, dur) : t);
+    };
+    // 화면에 보이는 위치 — 놓을 때 이 값으로 이동 요청을 한 번 보냅니다.
+    let previewedTime = startTime;
 
     const handleMove = (ev: PointerEvent) => {
       const angle = angleAt(ev.clientX, ev.clientY);
@@ -116,26 +146,23 @@ export function useCdPlayerPhysics({
       if (discRef.current) {
         discRef.current.style.transform = `rotate(${rotationDegRef.current}deg)`;
       }
+      // 곡이 바뀐 뒤엔 디스크만 돌고 시간은 건드리지 않습니다(trackKey 주석 참고).
+      if (trackChanged()) return;
 
-      scrubAccum += delta * SCRUB_SECONDS_PER_DEGREE;
-      const wholeSeconds = Math.trunc(scrubAccum);
-      if (wholeSeconds !== 0) {
-        scrubAccum -= wholeSeconds;
-        totalSeconds += wholeSeconds;
-        const dur = durationRef.current;
-        const next = Math.max(
-          0,
-          dur ? Math.min(startTime + totalSeconds, dur) : startTime + totalSeconds,
-        );
-        onSeek(next);
-      }
+      // 화면 표시만 옮깁니다(YouTube 이동 요청은 놓을 때 한 번).
+      totalDegrees += delta;
+      previewedTime = clampTime(
+        startTime + totalDegrees * SCRUB_SECONDS_PER_DEGREE,
+      );
+      onPreviewTime(previewedTime);
     };
 
     const handleUp = () => {
       el.removeEventListener("pointermove", handleMove);
       el.removeEventListener("pointerup", handleUp);
       cdDraggingRef.current = false;
-      if (wasPlaying) onSetPlaying(true);
+      if (!trackChanged() && previewedTime !== startTime) onSeek(previewedTime);
+      onScrubbingChange(false);
     };
 
     el.addEventListener("pointermove", handleMove);
@@ -232,13 +259,19 @@ export function useCdPlayerPhysics({
     if (!durationRef.current) return;
     const el = e.currentTarget;
     el.setPointerCapture(e.pointerId);
-    const wasPlaying = isPlayingRef.current;
-    if (wasPlaying) onSetPlaying(false);
+    onScrubbingChange(true);
     const rect = el.getBoundingClientRect();
+    const gestureTrackKey = trackKeyRef.current;
+    const trackChanged = () => trackKeyRef.current !== gestureTrackKey;
+    let previewedTime = currentTimeRef.current;
 
+    // 화면 표시만 옮깁니다(YouTube 이동 요청은 놓을 때 한 번).
     const update = (clientX: number) => {
+      // 드래그 도중 곡이 바뀌었으면 새 곡의 표시는 건드리지 않습니다.
+      if (trackChanged()) return;
       const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-      onSeek(ratio * durationRef.current);
+      previewedTime = ratio * durationRef.current;
+      onPreviewTime(previewedTime);
     };
     update(e.clientX);
 
@@ -246,7 +279,8 @@ export function useCdPlayerPhysics({
     const handleUp = () => {
       el.removeEventListener("pointermove", handleMove);
       el.removeEventListener("pointerup", handleUp);
-      if (wasPlaying) onSetPlaying(true);
+      if (!trackChanged()) onSeek(previewedTime);
+      onScrubbingChange(false);
     };
 
     el.addEventListener("pointermove", handleMove);

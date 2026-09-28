@@ -8,9 +8,12 @@ import {
   playlistMembershipQueryKey,
   playlistTracksQueryKey,
   playlistsQueryKey,
+  removeTrackFromPlaylist,
 } from "@/features/playlist/lib/playlists";
+import { usePlayerStore } from "../lib/usePlayerStore";
 import type { Track } from "@/features/library/lib/tracks";
 import { CheckIcon, QueueIcon } from "@/shared/components/icons";
+import { useToastStore } from "@/shared/lib/useToastStore";
 import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
 import CheckBox from "@/shared/components/CheckBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
@@ -21,15 +24,23 @@ import ModalCtaButton from "@/shared/components/ModalCtaButton";
 // MusicInfoPage(곡 상세)가 이 흐름을 그대로 씁니다(PlayerPanel은 이 자리에 "음악
 // 정보" 버튼을 대신 두고 곡 상세 페이지로 이동시킵니다 — 재생목록 추가는 그 상세
 // 페이지에서 하면 됩니다). docs/design/수정본2.zip부터 드롭다운이 아니라 화면
-// 중앙 모달로 바뀌었고, 여러 재생목록을 체크한 뒤 "추가" 버튼으로 한 번에 커밋하는
-// 방식입니다(이미 들어있는 재생목록은 체크된 채로 비활성 표시 — 여기서 빼는 기능은
-// 없고, 빼는 건 PlaylistInfoPage의 트랙 행에서 합니다). 트리거는 시안대로 44px
-// 원형 아이콘 하나뿐입니다.
+// 중앙 모달로 바뀌었고, 재생목록을 체크/해제한 뒤 "적용" 버튼으로 한 번에 커밋하는
+// 방식입니다 — 모달을 열 때 이미 들어있는 재생목록이 체크된 상태로 시작하고, 새로
+// 체크한 곳엔 추가, 체크를 푼 곳에선 제거합니다. 트리거는 시안대로 44px 원형 아이콘
+// 하나뿐입니다.
 export default function AddToPlaylistButton({ track }: { track: Track }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const playingPlaylistId = usePlayerStore((s) => s.playingPlaylistId);
+  const currentTrackId = usePlayerStore((s) =>
+    s.currentIndex >= 0 ? s.queue[s.currentIndex]?.id : undefined,
+  );
+  const detachCurrentFromPlaylist = usePlayerStore(
+    (s) => s.detachCurrentFromPlaylist,
+  );
+  const showToast = useToastStore((s) => s.show);
 
   const { data: playlists = [] } = useQuery({
     queryKey: playlistsQueryKey(user?.id),
@@ -45,31 +56,40 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
   const memberSet = new Set(memberPlaylistIds);
   const isQueued = memberSet.size > 0;
 
-  const addMutation = useMutation({
-    mutationFn: (playlistIds: string[]) =>
-      Promise.all(playlistIds.map((id) => addTrackToPlaylist(id, track.id))),
-    onSuccess: (_data, playlistIds) => {
+  const applyMutation = useMutation({
+    mutationFn: ({
+      addIds,
+      removeIds,
+    }: {
+      addIds: string[];
+      removeIds: string[];
+    }) =>
+      Promise.all([
+        ...addIds.map((id) => addTrackToPlaylist(id, track.id)),
+        ...removeIds.map((id) => removeTrackFromPlaylist(id, track.id)),
+      ]),
+    onSuccess: (_data, { addIds, removeIds }) => {
       queryClient.invalidateQueries({
         queryKey: playlistMembershipQueryKey(track.id),
       });
       queryClient.invalidateQueries({ queryKey: playlistsQueryKey(user?.id) });
-      playlistIds.forEach((id) =>
+      [...addIds, ...removeIds].forEach((id) =>
         queryClient.invalidateQueries({
           queryKey: playlistTracksQueryKey(id),
         }),
       );
       setOpen(false);
+      showToast("재생목록에 반영했습니다.");
     },
   });
 
   function openModal() {
-    addMutation.reset();
+    applyMutation.reset();
     setSelectedIds(new Set(memberSet));
     setOpen(true);
   }
 
   function toggle(playlistId: string) {
-    if (memberSet.has(playlistId)) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(playlistId)) next.delete(playlistId);
@@ -79,12 +99,23 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
   }
 
   function commit() {
-    const newIds = Array.from(selectedIds).filter((id) => !memberSet.has(id));
-    if (newIds.length === 0) {
+    const addIds = Array.from(selectedIds).filter((id) => !memberSet.has(id));
+    const removeIds = memberPlaylistIds.filter((id) => !selectedIds.has(id));
+    if (addIds.length === 0 && removeIds.length === 0) {
       setOpen(false);
       return;
     }
-    addMutation.mutate(newIds);
+    // PlaylistInfoPage의 handleRemoveTrack과 같은 이유 — 지금 재생 중인 이 곡을
+    // 그 곡이 재생 중인 재생목록에서 빼는 경우, 제거 전에 먼저 단독 재생으로
+    // 떼어내야 큐가 DB에서 빠진 순서를 계속 참조하지 않습니다.
+    if (
+      currentTrackId === track.id &&
+      playingPlaylistId !== null &&
+      removeIds.includes(playingPlaylistId)
+    ) {
+      detachCurrentFromPlaylist();
+    }
+    applyMutation.mutate({ addIds, removeIds });
   }
 
   return (
@@ -99,12 +130,6 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
       >
         <QueueIcon />
       </IconCircleButton>
-      {addMutation.isSuccess && (
-        <span className="ml-2 text-[12px] font-semibold text-neu-hi">
-          추가했습니다
-        </span>
-      )}
-
       <Modal
         open={open}
         onClose={() => setOpen(false)}
@@ -126,15 +151,13 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
             </p>
           ) : (
             playlists.map((playlist) => {
-              const isMember = memberSet.has(playlist.id);
-              const isChecked = isMember || selectedIds.has(playlist.id);
+              const isChecked = selectedIds.has(playlist.id);
               return (
                 <button
                   key={playlist.id}
                   type="button"
-                  disabled={isMember}
                   onClick={() => toggle(playlist.id)}
-                  className="flex items-center gap-2.75 rounded-[11px] px-3 py-2.5 text-left select-none hover:bg-neu-accent-tint disabled:cursor-default"
+                  className="flex items-center gap-2.75 rounded-[11px] px-3 py-2.5 text-left select-none hover:bg-neu-accent-tint"
                 >
                   <CheckBox checked={isChecked}>
                     <CheckIcon className="text-white" />
@@ -161,8 +184,8 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
           >
             취소
           </button>
-          <ModalCtaButton onClick={commit} disabled={addMutation.isPending}>
-            추가
+          <ModalCtaButton onClick={commit} disabled={applyMutation.isPending}>
+            적용
           </ModalCtaButton>
         </div>
       </Modal>

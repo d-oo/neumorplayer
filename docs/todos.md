@@ -55,13 +55,3 @@
       [PrivacyPolicyModal.tsx](src/features/landing/components/PrivacyPolicyModal.tsx)에
       이미 작성해뒀으니, 라우트를 만들 땐 이 본문을 옮기고 모달은 그 라우트로 링크만
       하도록 바꾼다(이용약관 본문은 아직 없음 — 같이 작성 필요).
-- [ ] **재생을 직접 트리거하는 썸네일이 최소 크기(120×70px) 미달(YouTube API 정책 위반
-      대응)**: Required Minimum Functionality는 "재생을 시작시키는 YouTube 썸네일은
-      최소 120×70px이어야 한다"고 요구하는데, [ThumbBox.tsx](src/shared/components/ThumbBox.tsx#L7-L11)의
-      `queue`(56×32px)·`row`(60×34px) 크기가 둘 다 미달이다. 이 크기가 클릭 시 곧바로
-      재생을 트리거하는 자리 — `QueueCard.tsx`의 "재생 트랙" 목록 행(105-116줄,
-      `jumpTo()` 호출)과 `PlaylistInfoPage.tsx`의 `SortableTrackRow`(130-135줄,
-      `onPlay` → `playQueue()`) — 에서 썸네일을 키우거나, 재생 트리거를 썸네일이 아닌
-      별도 작은 아이콘 버튼으로 분리해야 한다(`LibraryPage.tsx`의 같은 크기 `row`
-      썸네일은 클릭 시 재생이 아니라 상세 페이지로 이동만 하므로 이 규칙 대상이 아님 —
-      그대로 둬도 됨).

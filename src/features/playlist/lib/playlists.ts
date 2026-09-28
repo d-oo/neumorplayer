@@ -31,6 +31,11 @@ export function playlistMembershipQueryKey(trackId: string | undefined) {
   return ["playlist-membership", trackId] as const;
 }
 
+// 재생목록 삭제처럼 여러 트랙의 소속이 한꺼번에 바뀔 때, 트랙별 키를 몰라도 전부
+// 무효화할 수 있도록 쓰는 prefix 키입니다.
+export const allPlaylistMembershipsQueryKey = ["playlist-membership"] as const;
+export const allPlaylistTracksQueryKey = ["playlist-tracks"] as const;
+
 // QueueCard의 "재생목록" 탭 + 재생목록 추가 드롭다운(AddToPlaylistButton) + 커버
 // 콜라주가 공유하는 목록 조회. playlist_tracks(count)는 PostgREST의 임베디드 카운트
 // 문법으로, 각 행마다 [{ count: N }] 형태로 내려옵니다.
@@ -128,19 +133,58 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
   if (error) throw error;
 }
 
-// 새로 추가되는 트랙은 항상 맨 뒤에 붙습니다(현재 트랙 개수를 다음 position으로 사용).
+// 새로 추가되는 트랙은 항상 맨 뒤에 붙습니다(addTracksToPlaylist 참고). 곡 상세의
+// "재생목록에 추가" 모달은 아직 이 곡이 없는 재생목록에만 이걸 부릅니다.
 export async function addTrackToPlaylist(
   playlistId: string,
   trackId: string,
 ): Promise<void> {
-  const { count, error: countError } = await supabase
+  await addTracksToPlaylist(playlistId, [trackId]);
+}
+
+// 재생목록 상세의 선택 곡 일괄 추가(AddTracksToPlaylistModal). 대상 재생목록에 이미
+// 있는 곡은 건너뛰고(PK가 (playlist_id, track_id)라 넣을 수도 없음), 나머지를 넘겨받은
+// 순서 그대로 맨 뒤에 이어 붙입니다. 실제로 추가된 곡 수를 돌려줍니다.
+//
+// 다음 position은 곡 개수가 아니라 "현재 최대 position + 1"입니다 — 곡을 빼도
+// position을 다시 매기지 않아서(removeTracksFromPlaylist 참고) 중간이 빈 재생목록
+// (예: 1, 2만 남음)에서 개수(2)를 쓰면 기존 곡과 position이 겹칩니다.
+export async function addTracksToPlaylist(
+  playlistId: string,
+  trackIds: string[],
+): Promise<number> {
+  const { data: existing, error: existingError } = await supabase
     .from("playlist_tracks")
-    .select("*", { count: "exact", head: true })
+    .select("track_id, position")
     .eq("playlist_id", playlistId);
-  if (countError) throw countError;
+  if (existingError) throw existingError;
+  const existingIds = new Set(existing.map((row) => row.track_id));
+  const newIds = trackIds.filter((id) => !existingIds.has(id));
+  if (newIds.length === 0) return 0;
+  const nextPosition =
+    existing.reduce((max, row) => Math.max(max, row.position), -1) + 1;
+  const { error } = await supabase.from("playlist_tracks").insert(
+    newIds.map((trackId, i) => ({
+      playlist_id: playlistId,
+      track_id: trackId,
+      position: nextPosition + i,
+    })),
+  );
+  if (error) throw error;
+  return newIds.length;
+}
+
+// 재생목록 상세의 선택 곡 일괄 삭제(선택 액션 바). 빠진 자리의 position은 다시
+// 매기지 않습니다 — 단건 제거와 마찬가지로 정렬(order by position)엔 문제가 없습니다.
+export async function removeTracksFromPlaylist(
+  playlistId: string,
+  trackIds: string[],
+): Promise<void> {
   const { error } = await supabase
     .from("playlist_tracks")
-    .insert({ playlist_id: playlistId, track_id: trackId, position: count ?? 0 });
+    .delete()
+    .eq("playlist_id", playlistId)
+    .in("track_id", trackIds);
   if (error) throw error;
 }
 

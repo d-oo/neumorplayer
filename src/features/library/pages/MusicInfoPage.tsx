@@ -10,11 +10,16 @@ import {
   trackQueryKey,
   tracksQueryKey,
 } from "../lib/tracks";
+import {
+  allPlaylistTracksQueryKey,
+  playlistsQueryKey,
+} from "@/features/playlist/lib/playlists";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { formatDuration } from "@/shared/lib/format-time";
 import { secondaryCircleButtonClass } from "@/shared/styles/secondary-button-class";
 import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButton";
 import PlayPauseButton from "@/features/player/components/PlayPauseButton";
+import EqualizerBars from "@/features/player/components/EqualizerBars";
 import ConfirmModal from "@/shared/components/ConfirmModal";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import MutedNote from "@/shared/components/MutedNote";
@@ -50,8 +55,6 @@ export default function MusicInfoPage() {
   const playQueue = usePlayerStore((s) => s.playQueue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const queue = usePlayerStore((s) => s.queue);
-  const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
 
   const {
     data: track,
@@ -85,14 +88,17 @@ export default function MusicInfoPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tracksQueryKey(user?.id) });
+      // playlist_tracks가 on delete cascade라 이 곡이 담겨 있던 재생목록의 곡 수·
+      // 커버·트랙 목록도 같이 바뀝니다(어느 재생목록인지 몰라서 전부 무효화).
+      queryClient.invalidateQueries({ queryKey: playlistsQueryKey(user?.id) });
+      queryClient.invalidateQueries({ queryKey: allPlaylistTracksQueryKey });
       navigate("/");
     },
   });
 
   function handlePlayClick() {
     if (!track) return;
-    if (isThisTrackPlaying) setIsPlaying(!isPlaying);
-    else playQueue([track], 0);
+    playQueue([track], 0);
   }
 
   if (isLoading) {
@@ -166,10 +172,22 @@ export default function MusicInfoPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <PlayPauseButton
-              playing={isThisTrackPlaying && isPlaying}
-              onClick={handlePlayClick}
-            />
+            {/* 현재 곡이면(재생 중이든 일시정지든) 재생 버튼 자리에 비주얼라이저를
+                대신 보여줍니다 — 목록들의 재생시간 칸과 같은 규칙(사용자 요청).
+                일시정지/재개는 사이드바 CD 플레이어나 유튜브 플레이어로 합니다.
+                size-11(44px)로 버튼과 같은 칸을 차지해 옆 버튼들 위치가 변하지
+                않습니다. */}
+            {isThisTrackPlaying ? (
+              <span
+                role="img"
+                aria-label="재생 중"
+                className="grid size-11 flex-none place-items-center"
+              >
+                <EqualizerBars size="lg" />
+              </span>
+            ) : (
+              <PlayPauseButton playing={false} onClick={handlePlayClick} />
+            )}
             <AddToPlaylistButton track={track} />
             <IconCircleButton
               size="xl"

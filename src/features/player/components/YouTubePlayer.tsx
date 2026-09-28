@@ -1,16 +1,13 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import YouTubeIframe, {
-  type YouTubeEvent,
-  type YouTubePlayer as YouTubePlayerInstance,
-  type YouTubeProps,
-} from "react-youtube";
+import YouTubeIframe, { type YouTubeProps } from "react-youtube";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { supabase } from "@/shared/lib/supabase";
 import { trackQueryKey, tracksQueryKey } from "@/features/library/lib/tracks";
 import { useVideoSlot } from "../hooks/useVideoSlot";
+import { useYouTubePlayback } from "../hooks/useYouTubePlayback";
 
 const opts: YouTubeProps["opts"] = {
   width: "100%",
@@ -41,7 +38,6 @@ export default function YouTubePlayer() {
   const { anchorEl } = useVideoSlot();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const anchorElRef = useRef<HTMLDivElement | null>(anchorEl);
   const wasDockedRef = useRef<boolean | null>(null);
@@ -53,14 +49,35 @@ export default function YouTubePlayer() {
   const volume = usePlayerStore((s) => s.volume);
   const muted = usePlayerStore((s) => s.muted);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
+  const setIsVideoPlaying = usePlayerStore((s) => s.setIsVideoPlaying);
   const playNext = usePlayerStore((s) => s.playNext);
   const setProgress = usePlayerStore((s) => s.setProgress);
   const pendingSeek = usePlayerStore((s) => s.pendingSeek);
   const clearPendingSeek = usePlayerStore((s) => s.clearPendingSeek);
+  const isScrubbing = usePlayerStore((s) => s.isScrubbing);
 
   const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
   const currentTrackId = currentTrack?.id;
-  const prevTrackIdRef = useRef<string | undefined>(undefined);
+
+  // 재생/일시정지 명령·볼륨·진행 시간 폴링·이동·상태 이벤트·끝남 처리는 랜딩
+  // (useGuestPlayer)과 공유하는 useYouTubePlayback이 담당합니다.
+  const playback = useYouTubePlayback({
+    videoId: currentTrack?.video_id,
+    isPlaying,
+    volume,
+    muted,
+    onPlayingChange: setIsPlaying,
+    onVideoPlayingChange: setIsVideoPlaying,
+    onProgress: setProgress,
+    onEnd: playNext,
+  });
+  const { seek, setScrubbing } = playback;
+
+  // PlayerPanel(물리 훅)이 스토어에 남긴 스크럽 시작/끝을 재생 훅에 전달합니다 —
+  // 스크럽 중엔 재생 훅이 폴링 값을 무시합니다.
+  useEffect(() => {
+    setScrubbing(isScrubbing);
+  }, [isScrubbing, setScrubbing]);
 
   useEffect(() => {
     anchorElRef.current = anchorEl;
@@ -130,36 +147,13 @@ export default function YouTubePlayer() {
     };
   }, [currentTrackId]);
 
-  useEffect(() => {
-    const player = playerRef.current;
-    const trackChanged = prevTrackIdRef.current !== currentTrackId;
-    prevTrackIdRef.current = currentTrackId;
-    if (!player) return;
-    if (isPlaying) {
-      void player.playVideo();
-    } else if (!trackChanged) {
-      // 트랙이 바뀌는 시점의 isPlaying:false는 "아직 실제 재생 전"이라는 뜻이지
-      // "일시정지하라"는 뜻이 아닙니다(usePlayerStore.playQueue/jumpTo 참고) — 여기서
-      // pauseVideo를 부르면 막 자동재생을 시작한 영상을 바로 멈춰버립니다. 같은
-      // 트랙에서 사용자가 실제로 일시정지를 눌렀을 때만(trackChanged가 false) 멈춥니다.
-      void player.pauseVideo();
-    }
-  }, [isPlaying, currentTrackId]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player) return;
-    void player.setVolume(volume);
-    if (muted) void player.mute();
-    else void player.unMute();
-  }, [volume, muted]);
-
+  // PlayerPanel의 드래그/CD 스크럽이 스토어에 남긴 이동 요청을 YouTube로 보냅니다
+  // (화면의 currentTime은 requestSeek가 이미 옮겨 둠).
   useEffect(() => {
     if (pendingSeek === null) return;
-    const player = playerRef.current;
-    if (player) void player.seekTo(pendingSeek, true);
+    seek(pendingSeek);
     clearPendingSeek();
-  }, [pendingSeek, clearPendingSeek]);
+  }, [pendingSeek, clearPendingSeek, seek]);
 
   // old-src(Home.js)가 재생 중인 곡이 바뀔 때마다 IndexedDB의 playCount/recentPlay를
   // 갱신하던 것과 같은 지점 — 큐에서 재생 대상이 바뀔 때마다(재생목록 자동 다음곡
@@ -192,33 +186,7 @@ export default function YouTubePlayer() {
     };
   }, [currentTrackId, queryClient, user?.id]);
 
-  useEffect(() => {
-    if (!currentTrackId) return;
-    // playerRef는 컴포넌트가 처음 마운트될 때 한 번(onReady)만 채워지고, 곡이
-    // 바뀌어도 같은 인스턴스가 재사용되므로 매 tick마다 다시 읽어야 합니다
-    // (effect 설정 시점엔 아직 준비 전일 수 있음).
-    const interval = window.setInterval(() => {
-      const player = playerRef.current;
-      if (!player) return;
-      Promise.all([player.getCurrentTime(), player.getDuration()]).then(
-        ([currentTime, duration]) => setProgress(currentTime, duration),
-      );
-    }, 500);
-    return () => window.clearInterval(interval);
-  }, [currentTrackId, setProgress]);
-
   if (!currentTrack) return null;
-
-  const handleReady = (event: YouTubeEvent) => {
-    playerRef.current = event.target;
-    void event.target.setVolume(volume);
-    if (muted) void event.target.mute();
-  };
-
-  const handleStateChange = (event: YouTubeEvent<number>) => {
-    if (event.data === YouTubeIframe.PlayerState.PLAYING) setIsPlaying(true);
-    if (event.data === YouTubeIframe.PlayerState.PAUSED) setIsPlaying(false);
-  };
 
   return createPortal(
     <div
@@ -231,9 +199,9 @@ export default function YouTubePlayer() {
         opts={opts}
         className="h-full w-full"
         iframeClassName="h-full w-full"
-        onReady={handleReady}
-        onStateChange={handleStateChange}
-        onEnd={() => playNext()}
+        onReady={playback.handleReady}
+        onStateChange={playback.handleStateChange}
+        onEnd={playback.handleEnd}
       />
     </div>,
     document.body,

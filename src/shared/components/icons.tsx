@@ -38,6 +38,37 @@ export function PauseIcon({ className }: IconProps) {
   );
 }
 
+// 재생 버튼의 "불러오는 중" 표시(재생을 눌렀지만 YouTube가 아직 실제 재생을 알리기
+// 전 — 버퍼링 포함). 재생/일시정지 아이콘과 비슷한 크기(12px)의 링으로, 회전은
+// 호출부가 animate-spin으로 줍니다.
+export function SpinnerIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9.5"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        opacity="0.25"
+      />
+      <path
+        d="M12 2.5a9.5 9.5 0 0 1 9.5 9.5"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function PrevIcon({ className }: IconProps) {
   return (
     <svg

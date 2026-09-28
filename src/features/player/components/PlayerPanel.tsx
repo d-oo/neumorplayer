@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../lib/usePlayerStore";
+import { selectIsAudible, selectIsLoading } from "../lib/playback-display";
 import { useCdPlayerPhysics } from "../hooks/useCdPlayerPhysics";
 import CdDisc from "./CdDisc";
 import NowPlayingTitle from "./NowPlayingTitle";
@@ -25,6 +26,10 @@ export default function PlayerPanel() {
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
+  // 재생 버튼 아이콘·CD 회전은 selectIsAudible/selectIsLoading으로만 그립니다
+  // (lib/playback-display.ts의 세 가지 표시 상태 참고).
+  const isAudible = usePlayerStore(selectIsAudible);
+  const isLoading = usePlayerStore(selectIsLoading);
   const shuffle = usePlayerStore((s) => s.shuffle);
   const loopQueue = usePlayerStore((s) => s.loopQueue);
   const volume = usePlayerStore((s) => s.volume);
@@ -37,18 +42,32 @@ export default function PlayerPanel() {
   const toggleLoopQueue = usePlayerStore((s) => s.toggleLoopQueue);
   const setVolume = usePlayerStore((s) => s.setVolume);
   const requestSeek = usePlayerStore((s) => s.requestSeek);
+  const previewTime = usePlayerStore((s) => s.previewTime);
+  const setIsScrubbing = usePlayerStore((s) => s.setIsScrubbing);
 
   const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
+  // old-src(Player.js disablePrev/disableNext)처럼 반복이 꺼져 있으면 앞/뒤 곡이 없을 때
+  // 버튼을 끕니다. 반복이 켜져 있으면 처음↔끝으로 돌아가므로 켜 두되, 큐에 곡이
+  // 하나뿐이면(단일 곡 재생) "이전/다음 곡" 자체가 없어서 반복과 상관없이 끕니다.
+  const hasMultipleTracks = queue.length > 1;
+  const disablePrev =
+    !currentTrack || !hasMultipleTracks || (!loopQueue && currentIndex === 0);
+  const disableNext =
+    !currentTrack ||
+    !hasMultipleTracks ||
+    (!loopQueue && currentIndex === queue.length - 1);
 
   const physics = useCdPlayerPhysics({
     hasTrack: !!currentTrack,
-    isPlaying,
+    trackKey: currentTrack?.video_id,
+    isSpinning: isAudible,
     currentTime,
     duration,
     volume,
-    onSetPlaying: setIsPlaying,
     onSeek: requestSeek,
     onVolumeChange: setVolume,
+    onScrubbingChange: setIsScrubbing,
+    onPreviewTime: previewTime,
   });
 
   const toggleButtonClass =
@@ -60,7 +79,8 @@ export default function PlayerPanel() {
         <CdDisc
           discRef={physics.discRef}
           onPointerDown={physics.onDiscPointerDown}
-          isPlaying={isPlaying}
+          isPlaying={isAudible}
+          isLoading={isLoading}
           hasTrack={!!currentTrack}
           videoId={currentTrack?.video_id}
           onTogglePlayClick={() => setIsPlaying(!isPlaying)}
@@ -72,7 +92,7 @@ export default function PlayerPanel() {
             <IconCircleButton
               size="lg"
               onClick={playPrev}
-              disabled={!currentTrack}
+              disabled={disablePrev}
               aria-label="이전 곡"
               className={`${toggleButtonClass} text-(--neu-ink-34)`}
             >
@@ -81,7 +101,7 @@ export default function PlayerPanel() {
             <IconCircleButton
               size="lg"
               onClick={playNext}
-              disabled={!currentTrack}
+              disabled={disableNext}
               aria-label="다음 곡"
               className={`${toggleButtonClass} text-(--neu-ink-34)`}
             >

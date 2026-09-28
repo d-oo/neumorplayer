@@ -1,33 +1,21 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { countTagUsage, fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
-import { formatDuration } from "@/shared/lib/format-time";
-import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
-import TrackThumbnail from "@/shared/components/TrackThumbnail";
-import ThumbBox from "@/shared/components/ThumbBox";
-import IconCircleButton from "@/shared/components/IconCircleButton";
 import MutedNote from "@/shared/components/MutedNote";
-import { PlayIcon } from "@/shared/components/icons";
+import LibraryTrackList from "./LibraryTrackList";
 
 // docs/design/ 시안의 "검색 결과" 화면 — 헤더의 "라이브러리 내 검색"에 뭔가 입력하면
 // 지금 보고 있던 탭(라이브러리/탐색) 대신 이 화면이 뜹니다(HomeLayout에서 Outlet 대신
 // 이 컴포넌트를 조건부로 렌더링). "태그"/"아티스트" 섹션은 시안에도 클릭 기능이 없어서
 // 여기서도 장식(호버 테두리만)이고, 검색어와 무관하게 라이브러리 전체 기준 집계입니다.
 // "아티스트" 카드는 시안엔 "이번 달 재생 횟수"지만 스키마에 월별 집계가 없어서
-// 대신 전체 기간 재생 횟수 합계를 보여줍니다. "노래" 행은 라이브러리 탭과 같은
-// 규칙으로 클릭=정보 페이지 이동, 재생은 별도 버튼입니다(원본은 행 클릭=재생이지만,
-// 이건 "라이브러리 내 검색 결과"이므로 라이브러리 탭과 같은 규칙을 따릅니다).
+// 대신 전체 기간 재생 횟수 합계를 보여줍니다. "노래"는 라이브러리 탭과 모습·규칙이
+// 완전히 같도록(사용자 요청) 같은 LibraryTrackList(열 제목 헤더 + 트랙 행)를
+// 씁니다 — 클릭=정보 페이지 이동, 재생은 hover 때 재생시간 자리의 버튼(원본은 행
+// 클릭=재생이지만, 이건 "라이브러리 내 검색 결과"이므로 라이브러리 탭 규칙을 따름).
 export default function SearchResultsView({ query }: { query: string }) {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const playQueue = usePlayerStore((s) => s.playQueue);
-  const queue = usePlayerStore((s) => s.queue);
-  const currentIndex = usePlayerStore((s) => s.currentIndex);
-  const currentTrackId =
-    currentIndex >= 0 ? queue[currentIndex]?.id : undefined;
 
   const { data: tracks = [] } = useQuery({
     queryKey: tracksQueryKey(user?.id),
@@ -77,58 +65,10 @@ export default function SearchResultsView({ query }: { query: string }) {
         <div className="mb-3 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
           노래
         </div>
-        <div className="flex flex-col gap-0.5">
-          {results.map((track) => {
-            const isCurrentTrack = track.id === currentTrackId;
-            return (
-              <div
-                key={track.id}
-                onClick={() => navigate(`/music/${track.id}`)}
-                className="flex cursor-pointer items-center gap-3.25 rounded-[11px] px-3 py-2.25 hover:bg-neu-row-hover"
-                style={currentTrackRowStyle(isCurrentTrack)}
-              >
-                <ThumbBox size="rowLg">
-                  <TrackThumbnail
-                    videoId={track.video_id}
-                    className="h-full w-full"
-                  />
-                </ThumbBox>
-                <div className="min-w-0 flex-1">
-                  <p
-                    className="truncate text-sm font-semibold"
-                    style={{
-                      color: isCurrentTrack ? "var(--neu-hi)" : "var(--neu-ink)",
-                    }}
-                  >
-                    {track.title}
-                  </p>
-                  <p className="mt-0.75 text-[12.5px] text-neu-muted">
-                    {track.artist.join(", ")}
-                  </p>
-                </div>
-                <span className="font-neu-mono text-[12.5px] text-neu-muted">
-                  {formatDuration(track.duration)}
-                </span>
-                <IconCircleButton
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    playQueue([track], 0);
-                  }}
-                  aria-label={`${track.title} 재생`}
-                  className="flex-none text-neu-hi shadow-neu-raised-sm"
-                >
-                  <PlayIcon className="ml-0.5" />
-                </IconCircleButton>
-              </div>
-            );
-          })}
-          {results.length === 0 && (
-            <MutedNote className="px-3 py-2.25">
-              일치하는 곡이 없습니다.
-            </MutedNote>
-          )}
-        </div>
+        <LibraryTrackList tracks={results} />
+        {results.length === 0 && (
+          <MutedNote className="px-3.5 py-2.25">일치하는 곡이 없습니다.</MutedNote>
+        )}
       </div>
 
       <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
