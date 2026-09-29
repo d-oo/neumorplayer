@@ -6,15 +6,6 @@
       아티스트·태그(또는 재생목록 제목)를 고치는 폼(react-hook-form + zod 추천)은 아직
       없다. docs/design/수정본2.zip 반영으로 두 화면 모두에 "수정" 원형 버튼이 생겼지만
       `onClick`이 비어있는 자리 표시자다 — 실제 폼을 만들면 여기에 연결한다.
-- [ ] **YouTube API 데이터 30일 갱신 배치 작업**: `tracks.duration`은 YouTube Data API에서
-      가져온 값을 만료·재조회 로직 없이 영구 저장 중이다(Developer Policies — API 데이터는
-      30일 넘게 저장할 수 없고 최신 상태로 유지해야 한다는 조항, 그리고 30일마다 영상이
-      삭제되지 않았는지 검증할 것을 요구하는 조항 모두 해당). Vercel Cron Job으로 하루 1회
-      도는 서버리스 함수(`api/cron/...`)를 새로 만들어 `duration_synced_at`(신설 컬럼)이
-      30일 지난 트랙을 골라 `videos.list`(최대 50개씩 배치)로 `duration`을 다시 조회·
-      갱신하고, 응답에 항목이 빠져 있으면(영상 삭제/비공개 전환) 그 트랙을 사용자에게 어떻게
-      보여줄지도 함께 정해야 한다. 여러 사용자의 `tracks`를 한꺼번에 다뤄야 해서 RLS를
-      우회하는 service role key를 서버 전용으로 새로 들여와야 한다(클라이언트 노출 금지).
 - [ ] **"YouTube 대체 서비스" 금지 조항 검토**: YouTube API Developer Policies는 YouTube의
       핵심 사용자 경험을 대체하거나 상당히 유사한 서비스를 만드는 것을 금지하고,
       "significant independent value or functionality"를 추가하는 경우만 예외로 둔다.

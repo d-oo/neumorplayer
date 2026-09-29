@@ -1,4 +1,4 @@
-import MarqueeText from "@/features/player/components/MarqueeText";
+import MarqueeText from "@/shared/components/MarqueeText";
 import ThumbBox from "@/shared/components/ThumbBox";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import type { Track } from "../lib/tracks";

@@ -72,36 +72,42 @@ export type Database = {
         Row: {
           artist: string[]
           created_at: string
-          duration: number
+          duration: number | null
+          duration_synced_at: string
           id: string
           play_count: number
           recent_play: string | null
           tags: string[]
           title: string
+          unavailable_at: string | null
           user_id: string
           video_id: string
         }
         Insert: {
           artist?: string[]
           created_at?: string
-          duration: number
+          duration?: number | null
+          duration_synced_at?: string
           id?: string
           play_count?: number
           recent_play?: string | null
           tags?: string[]
           title: string
+          unavailable_at?: string | null
           user_id: string
           video_id: string
         }
         Update: {
           artist?: string[]
           created_at?: string
-          duration?: number
+          duration?: number | null
+          duration_synced_at?: string
           id?: string
           play_count?: number
           recent_play?: string | null
           tags?: string[]
           title?: string
+          unavailable_at?: string | null
           user_id?: string
           video_id?: string
         }
@@ -127,6 +133,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      refresh_youtube_tracks: {
+        Args: { missing: string[]; refreshed: Json }
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }

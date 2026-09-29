@@ -9,8 +9,8 @@ import {
   playlistTracksQueryKey,
   playlistsQueryKey,
   removeTrackFromPlaylist,
-} from "@/features/playlist/lib/playlists";
-import { usePlayerStore } from "../lib/usePlayerStore";
+} from "../lib/playlists";
+import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import type { Track } from "@/features/library/lib/tracks";
 import { CheckIcon, QueueIcon } from "@/shared/components/icons";
 import { useToastStore } from "@/shared/lib/useToastStore";

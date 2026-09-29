@@ -10,6 +10,19 @@ import YouTubeIframe, {
 const SEEK_SETTLE_MS = 600;
 const PROGRESS_POLL_MS = 500;
 
+// YouTube 영상 ID 형식(영문·숫자·-·_ 11자). 형식이 틀린 ID(예: 12자)는 YouTube IFrame
+// API가 플레이어를 만드는 순간 "Invalid video id" 예외를 던지고 onReady도 onError도
+// 보내지 않습니다(직접 실험으로 확인). 그러면 react-youtube 안의 youtube-player가
+// destroy()를 포함한 모든 명령을 ready 뒤로 미뤄 둔 채 영원히 기다리고, react-youtube는
+// 옛 플레이어의 destroy가 끝나야 새 플레이어를 만들기 때문에 다음 곡부터는 새로고침
+// 전까지 아무것도 재생되지 않습니다(실제로 겪음). 그래서 형식이 틀린 ID는 <YouTubeIframe>
+// 에 넘기지 않고(호출부가 isVideoIdValid로 렌더를 막음) 곧바로 재생 오류로 처리합니다.
+// 앱에서 추가한 곡의 video_id는 항상 YouTube API가 준 값이라, DB를 직접 고친 경우에만
+// 생기는 방어입니다. 형식은 맞지만 없는 영상은 YouTube가 onError(150 등)를 보냅니다.
+const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
+// IFrame API onError의 "잘못된 매개변수"(11자가 아닌 ID 등) 코드.
+const INVALID_PARAM_ERROR_CODE = 2;
+
 interface UseYouTubePlaybackOptions {
   // 지금 <YouTubeIframe videoId>에 넘기는 값과 반드시 같은 videoId. react-youtube는
   // videoId가 바뀌면 기존 플레이어를 파괴하고 새로 만들기 때문에(shouldResetPlayer),
@@ -25,6 +38,10 @@ interface UseYouTubePlaybackOptions {
   onProgress: (currentTime: number, duration: number) => void;
   // 영상이 끝까지 재생됐을 때(다음 곡/반복/정지는 호출부가 정함).
   onEnd: () => void;
+  // YouTube가 재생 오류를 알려왔을 때(삭제·비공개 영상 100, 퍼가기 금지 101/150 등 —
+  // 코드는 IFrame API의 onError 문서 참고). 이 영상은 더 재생할 수 없으니 다음 곡으로
+  // 넘길지 멈출지는 호출부가 정합니다. 호출부마다 반드시 처리하도록 필수로 둡니다.
+  onError: (code: number) => void;
 }
 
 // 플레이어 명령은 전부 이걸 거칩니다. YouTube IFrame API는 이미 파괴된 플레이어에
@@ -83,6 +100,7 @@ export function useYouTubePlayback({
   onVideoPlayingChange,
   onProgress,
   onEnd,
+  onError,
 }: UseYouTubePlaybackOptions) {
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const prevVideoIdRef = useRef<string | undefined>(undefined);
@@ -104,6 +122,25 @@ export function useYouTubePlayback({
   useEffect(() => {
     onProgressRef.current = onProgress;
   }, [onProgress]);
+
+  // 아래 "형식이 틀린 ID" effect가 videoId가 바뀔 때만 돌도록 콜백은 ref로 읽습니다.
+  const onErrorRef = useRef(onError);
+  const onVideoPlayingChangeRef = useRef(onVideoPlayingChange);
+  useEffect(() => {
+    onErrorRef.current = onError;
+    onVideoPlayingChangeRef.current = onVideoPlayingChange;
+  }, [onError, onVideoPlayingChange]);
+
+  const isVideoIdValid =
+    videoId === undefined || VIDEO_ID_PATTERN.test(videoId);
+
+  // 형식이 틀린 ID로 바뀌면 YouTube 오류가 온 것처럼 호출부에 알립니다(파일 위
+  // VIDEO_ID_PATTERN 주석 참고).
+  useEffect(() => {
+    if (videoId === undefined || VIDEO_ID_PATTERN.test(videoId)) return;
+    onVideoPlayingChangeRef.current(false);
+    onErrorRef.current(INVALID_PARAM_ERROR_CODE);
+  }, [videoId]);
 
   useEffect(() => {
     const trackChanged = prevVideoIdRef.current !== videoId;
@@ -229,12 +266,22 @@ export function useYouTubePlayback({
     onEnd();
   };
 
+  // 오류가 난 영상은 PLAYING이 오지 않으므로 "실제 재생 중" 표시를 확실히 내린 뒤
+  // 호출부에 넘깁니다.
+  const handleError = (event: YouTubeEvent<number>) => {
+    onVideoPlayingChange(false);
+    onError(event.data);
+  };
+
   return {
+    // false면 호출부는 <YouTubeIframe>을 렌더링하지 않아야 합니다.
+    isVideoIdValid,
     seek,
     setScrubbing,
     replay,
     handleReady,
     handleStateChange,
     handleEnd,
+    handleError,
   };
 }

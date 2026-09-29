@@ -24,6 +24,11 @@ import EqualizerBars from "./EqualizerBars";
 // 재생시간 글자의 pointer-events-none은 지우면 안 됩니다: hover 때 글자가
 // opacity-0이 되면 opacity < 1이라 stacking context가 생겨 일반 요소인 버튼보다
 // 위에 그려지고, 투명해도 클릭은 받으므로 버튼 클릭을 전부 가로챕니다(실제로 겪음).
+//
+// duration이 null이면 재생 불가 곡(YouTube에서 삭제·비공개 — library/lib/tracks.ts의
+// isTrackPlayable)입니다. 재생시간 대신 "재생 불가"를 보여주고 hover해도 재생 버튼을
+// 두지 않습니다. 현재 곡 표시(isCurrent)가 우선입니다 — 재생을 시작한 뒤에 재생
+// 불가로 바뀐 곡이 큐에 남아 있는 경우.
 export default function DurationPlayButton({
   duration,
   onPlay,
@@ -32,7 +37,7 @@ export default function DurationPlayButton({
   textClassName,
   isCurrent = false,
 }: {
-  duration: number;
+  duration: number | null;
   onPlay: () => void;
   label: string;
   // 재생시간 글자와 버튼을 칸의 어느 쪽에 붙일지 — 기존 재생시간 정렬을 그대로 따릅니다.
@@ -49,6 +54,14 @@ export default function DurationPlayButton({
     onPlay();
   }
 
+  if (duration === null && !isCurrent) {
+    return (
+      <div className={`grid min-w-7 items-center ${justify}`}>
+        <span className={`whitespace-nowrap ${textClassName}`}>재생 불가</span>
+      </div>
+    );
+  }
+
   return (
     <div className={`grid min-w-7 items-center ${justify}`}>
       <span
@@ -58,7 +71,7 @@ export default function DurationPlayButton({
             : "group-hover/track:opacity-0 group-has-focus-visible/track:opacity-0"
         } ${textClassName}`}
       >
-        {formatDuration(duration)}
+        {formatDuration(duration ?? 0)}
       </span>
       {isCurrent ? (
         <EqualizerBars className="col-start-1 row-start-1" />

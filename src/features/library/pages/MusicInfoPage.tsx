@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
   deleteTrack,
   fetchTrack,
+  isTrackPlayable,
   trackQueryKey,
   tracksQueryKey,
 } from "../lib/tracks";
@@ -17,7 +18,7 @@ import {
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { formatDuration } from "@/shared/lib/format-time";
 import { secondaryCircleButtonClass } from "@/shared/styles/secondary-button-class";
-import AddToPlaylistButton from "@/features/player/components/AddToPlaylistButton";
+import AddToPlaylistButton from "@/features/playlist/components/AddToPlaylistButton";
 import PlayPauseButton from "@/features/player/components/PlayPauseButton";
 import EqualizerBars from "@/features/player/components/EqualizerBars";
 import ConfirmModal from "@/shared/components/ConfirmModal";
@@ -25,7 +26,7 @@ import IconCircleButton from "@/shared/components/IconCircleButton";
 import MutedNote from "@/shared/components/MutedNote";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import { PencilIcon, TrashIcon } from "@/shared/components/icons";
-import MarqueeText from "@/features/player/components/MarqueeText";
+import MarqueeText from "@/shared/components/MarqueeText";
 
 const statBoxStyle = {
   background: "var(--neu-surface)",
@@ -166,7 +167,9 @@ export default function MusicInfoPage() {
                 재생 시간
               </p>
               <p className="mt-0.75 font-neu-mono text-sm font-medium text-neu-ink">
-                {formatDuration(track.duration)}
+                {track.duration === null
+                  ? "재생 불가"
+                  : formatDuration(track.duration)}
               </p>
             </div>
           </div>
@@ -186,7 +189,12 @@ export default function MusicInfoPage() {
                 <EqualizerBars size="lg" />
               </span>
             ) : (
-              <PlayPauseButton playing={false} onClick={handlePlayClick} />
+              <PlayPauseButton
+                playing={false}
+                onClick={handlePlayClick}
+                disabled={!isTrackPlayable(track)}
+                disabledTooltip="YouTube에서 삭제되었거나 비공개로 바뀐 영상입니다"
+              />
             )}
             <AddToPlaylistButton track={track} />
             <IconCircleButton

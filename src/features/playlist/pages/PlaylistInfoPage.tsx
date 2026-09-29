@@ -34,7 +34,7 @@ import {
   removeTracksFromPlaylist,
   reorderPlaylistTracks,
 } from "../lib/playlists";
-import type { Track } from "@/features/library/lib/tracks";
+import { isTrackPlayable, type Track } from "@/features/library/lib/tracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { useToastStore } from "@/shared/lib/useToastStore";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
@@ -46,9 +46,9 @@ import {
   TrashIcon,
 } from "@/shared/components/icons";
 import { secondaryCircleButtonClass } from "@/shared/styles/secondary-button-class";
-import PlaylistCoverGrid from "@/features/player/components/PlaylistCoverGrid";
+import PlaylistCoverGrid from "../components/PlaylistCoverGrid";
 import PlayPauseButton from "@/features/player/components/PlayPauseButton";
-import MarqueeText from "@/features/player/components/MarqueeText";
+import MarqueeText from "@/shared/components/MarqueeText";
 import DurationPlayButton from "@/features/player/components/DurationPlayButton";
 import TrackRowInfo from "@/features/library/components/TrackRowInfo";
 import AddTracksToPlaylistModal from "../components/AddTracksToPlaylistModal";
@@ -250,7 +250,10 @@ export default function PlaylistInfoPage() {
 
   useDocumentTitle(playlist ? `재생목록 - ${playlist.title}` : "NeumorPlayer");
 
-  const totalSeconds = tracks.reduce((sum, t) => sum + t.duration, 0);
+  // 재생 불가 곡은 duration이 비어 있어 총 시간에서 빠집니다.
+  const totalSeconds = tracks.reduce((sum, t) => sum + (t.duration ?? 0), 0);
+  // "전체 재생"/셔플은 첫 번째 재생 가능한 곡부터 시작합니다 — 재생 불가 곡만 있으면 막음.
+  const firstPlayableIndex = tracks.findIndex(isTrackPlayable);
   const isThisPlaylistPlaying =
     playlistId !== undefined && playingPlaylistId === playlistId;
   const currentTrackId =
@@ -340,11 +343,12 @@ export default function PlaylistInfoPage() {
 
   function handlePlayClick() {
     if (isThisPlaylistPlaying) setIsPlaying(!isPlaying);
-    else if (playlistId) playQueue(tracks, 0, playlistId);
+    else if (playlistId) playQueue(tracks, firstPlayableIndex, playlistId);
   }
 
   function handleShuffleClick() {
-    if (!isThisPlaylistPlaying && playlistId) playQueue(tracks, 0, playlistId);
+    if (!isThisPlaylistPlaying && playlistId)
+      playQueue(tracks, firstPlayableIndex, playlistId);
     toggleShuffle();
   }
 
@@ -398,14 +402,14 @@ export default function PlaylistInfoPage() {
               playing={isThisPlaylistPlaying && isAudible}
               loading={isThisPlaylistPlaying && isLoading}
               onClick={handlePlayClick}
-              disabled={tracks.length === 0}
+              disabled={firstPlayableIndex === -1}
               playLabel="전체 재생"
             />
             <IconCircleButton
               size="xl"
               tooltip="셔플"
               onClick={handleShuffleClick}
-              disabled={tracks.length === 0}
+              disabled={firstPlayableIndex === -1}
               aria-label="셔플"
               className={`${secondaryCircleButtonClass} text-(--neu-ink-34) hover:text-neu-hi`}
             >

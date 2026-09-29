@@ -11,6 +11,7 @@ export default function PlayPauseButton({
   loading = false,
   onClick,
   disabled,
+  disabledTooltip,
   playLabel = "재생",
 }: {
   playing: boolean;
@@ -18,6 +19,8 @@ export default function PlayPauseButton({
   loading?: boolean;
   onClick: () => void;
   disabled?: boolean;
+  // 비활성화된 이유를 툴팁으로 알려줄 때(트랙 상세의 재생 불가 곡). 없으면 평소 라벨.
+  disabledTooltip?: string;
   playLabel?: string;
 }) {
   const label = playing || loading ? "일시정지" : playLabel;
@@ -25,7 +28,7 @@ export default function PlayPauseButton({
   return (
     <IconCircleButton
       size="xl"
-      tooltip={label}
+      tooltip={disabled && disabledTooltip ? disabledTooltip : label}
       onClick={onClick}
       disabled={disabled}
       aria-label={label}

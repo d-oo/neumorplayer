@@ -7,6 +7,14 @@ export type Track = Database["public"]["Tables"]["tracks"]["Row"];
 // 공유해서 쓰므로 여기 한 곳에 모아둡니다. RLS가 이미 auth.uid() = user_id로 행을
 // 제한하므로 .eq("user_id", ...) 필터는 따로 붙이지 않습니다 — user?.id는 쿼리 키를
 // 로그아웃/재로그인 시 캐시가 섞이지 않게 구분하는 용도로만 씁니다.
+// YouTube에서 삭제·비공개로 바뀐 영상인지 — 매일 도는 cron(api/cron/refresh-youtube-data.ts)이
+// videos.list 응답에서 빠진 영상에 unavailable_at을 채우고 duration을 비웁니다(다시
+// 공개되면 되돌림). 재생 불가 곡은 재생 버튼이 막히고, 큐를 순서대로 재생할 때
+// 건너뜁니다(features/player/lib/queue-navigation.ts).
+export function isTrackPlayable(track: Track): boolean {
+  return track.unavailable_at === null;
+}
+
 export function tracksQueryKey(userId: string | undefined) {
   return ["tracks", userId] as const;
 }

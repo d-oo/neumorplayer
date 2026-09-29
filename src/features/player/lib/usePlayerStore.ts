@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Database } from "@/shared/lib/database.types";
+import { findPlayableIndex } from "./queue-navigation";
 
 type Track = Database["public"]["Tables"]["tracks"]["Row"];
 
@@ -29,6 +30,11 @@ interface PlayerState {
   // 실제 재생 시간으로 currentTime을 덮어쓰지 않습니다(손을 따라가던 재생바가 뒤로
   // 튀거나 0.5초 단위로 끊기지 않게).
   isScrubbing: boolean;
+  // 마지막으로 곡을 옮긴 방향 — 이전 곡(playPrev)이면 -1, 그 외(다음 곡·곡이 끝남·
+  // 목록에서 재생)는 1. 옮겨 간 곡이 재생 오류를 내면 YouTubePlayer가 같은 방향으로
+  // 계속 건너뜁니다(이전 곡을 눌렀는데 오류 곡을 건너뛰느라 다시 원래 곡으로 돌아오지
+  // 않도록).
+  navDirection: 1 | -1;
 
   playQueue: (tracks: Track[], startIndex: number, playlistId?: string) => void;
   playTrackFrom: (tracks: Track[], index: number, playlistId?: string) => void;
@@ -69,6 +75,7 @@ export const usePlayerStore = create<PlayerState>()(
       duration: 0,
       pendingSeek: null,
       isScrubbing: false,
+      navDirection: 1,
 
       // isPlaying을 여기서 미리 true로 만들지 않습니다 — 유튜브 영상은 로드에
       // 잠깐(약 1초) 시간이 걸리는데, 미리 true로 두면 아직 실제로는 재생되지
@@ -87,6 +94,7 @@ export const usePlayerStore = create<PlayerState>()(
           loopTrack: false,
           currentTime: 0,
           duration: 0,
+          navDirection: 1,
         }),
 
       // 트랙 목록 행의 재생 버튼(라이브러리/검색 결과/재생목록 상세)이 공유하는 규칙.
@@ -119,13 +127,19 @@ export const usePlayerStore = create<PlayerState>()(
       // PAUSED 이벤트를 보내지 않아서 isPlaying도 여기서 직접 false로 내립니다. 다시
       // 재생을 누르면 끝난 영상이 처음부터 재생됩니다. 다음 곡 버튼은 이 경우
       // 비활성화되어 있어서(PlayerPanel) 이 분기는 사실상 곡이 끝났을 때만 탑니다.
+      // 재생 불가 곡(YouTube에서 삭제·비공개)은 건너뛰므로, 뒤에 재생 가능한 곡이
+      // 하나도 없으면 역시 이 "끝" 분기로 갑니다(lib/queue-navigation.ts).
       playNext: () => {
         const { queue, currentIndex, loopQueue } = get();
         if (queue.length === 0) return;
-        if (currentIndex < queue.length - 1) {
-          set({ currentIndex: currentIndex + 1, currentTime: 0, duration: 0 });
-        } else if (loopQueue) {
-          set({ currentIndex: 0, currentTime: 0, duration: 0 });
+        const next = findPlayableIndex(queue, currentIndex, 1, loopQueue);
+        if (next !== -1) {
+          set({
+            currentIndex: next,
+            currentTime: 0,
+            duration: 0,
+            navDirection: 1,
+          });
         } else {
           set({
             queue: [queue[currentIndex]],
@@ -139,10 +153,14 @@ export const usePlayerStore = create<PlayerState>()(
       playPrev: () => {
         const { queue, currentIndex, loopQueue } = get();
         if (queue.length === 0) return;
-        if (currentIndex > 0) {
-          set({ currentIndex: currentIndex - 1, currentTime: 0, duration: 0 });
-        } else if (loopQueue) {
-          set({ currentIndex: queue.length - 1, currentTime: 0, duration: 0 });
+        const prev = findPlayableIndex(queue, currentIndex, -1, loopQueue);
+        if (prev !== -1) {
+          set({
+            currentIndex: prev,
+            currentTime: 0,
+            duration: 0,
+            navDirection: -1,
+          });
         }
       },
 
@@ -158,6 +176,7 @@ export const usePlayerStore = create<PlayerState>()(
           isPlaying: false,
           currentTime: 0,
           duration: 0,
+          navDirection: 1,
         });
       },
 

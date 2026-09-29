@@ -53,6 +53,14 @@ export function useGuestPlayer() {
     }
   }
 
+  // 재생 오류(퍼가기 금지 영상 등)가 나면 멈춤 상태로 둡니다. 큐가 없어 넘어갈 다음
+  // 곡이 없고(handleEnd와 같은 이유), 오류 문구는 YouTube 플레이어가 영상 자리에 직접
+  // 보여줍니다. 재생 의도를 내려 두지 않으면 재생을 눌렀을 때 PLAYING이 영영 오지 않아
+  // 스피너가 계속 돕니다.
+  function handleError() {
+    setIsPlaying(false);
+  }
+
   const playback = useYouTubePlayback({
     videoId: track?.videoId,
     isPlaying,
@@ -62,6 +70,7 @@ export function useGuestPlayer() {
     onVideoPlayingChange: setIsVideoPlaying,
     onProgress: setProgress,
     onEnd: handleEnd,
+    onError: handleError,
   });
 
   // 대시보드의 requestSeek와 같이 화면의 재생 시간도 바로 옮깁니다.
@@ -96,5 +105,7 @@ export function useGuestPlayer() {
     onPlayerReady: playback.handleReady,
     onPlayerStateChange: playback.handleStateChange,
     onPlayerEnd: playback.handleEnd,
+    onPlayerError: playback.handleError,
+    isVideoIdValid: playback.isVideoIdValid,
   };
 }

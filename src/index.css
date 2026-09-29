@@ -609,7 +609,7 @@ button:not(:disabled) {
   }
 }
 
-/* MarqueeText.tsx(features/player) 전용 — 폭을 넘치는 제목을 좌우로 끊기지 않게
+/* MarqueeText.tsx(shared/components) 전용 — 폭을 넘치는 제목을 좌우로 끊기지 않게
    흘려보냅니다. 콘텐츠를 두 번 이어붙인 뒤 정확히 절반(-50%)만큼 옮기면 두 번째
    사본이 첫 번째가 시작한 자리에 그대로 겹쳐 루프가 끊기지 않습니다. */
 @keyframes neu-marquee {

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../lib/usePlayerStore";
 import { selectIsAudible, selectIsLoading } from "../lib/playback-display";
+import { findPlayableIndex } from "../lib/queue-navigation";
 import { useCdPlayerPhysics } from "../hooks/useCdPlayerPhysics";
 import CdDisc from "./CdDisc";
 import NowPlayingTitle from "./NowPlayingTitle";
@@ -49,13 +50,15 @@ export default function PlayerPanel() {
   // old-src(Player.js disablePrev/disableNext)처럼 반복이 꺼져 있으면 앞/뒤 곡이 없을 때
   // 버튼을 끕니다. 반복이 켜져 있으면 처음↔끝으로 돌아가므로 켜 두되, 큐에 곡이
   // 하나뿐이면(단일 곡 재생) "이전/다음 곡" 자체가 없어서 반복과 상관없이 끕니다.
-  const hasMultipleTracks = queue.length > 1;
+  // 재생 불가 곡은 건너뛰고 세므로(playNext/playPrev와 같은 findPlayableIndex), 앞/뒤에
+  // 재생 불가 곡만 남았으면 역시 끕니다. 반복 중 한 바퀴 돌아 현재 곡으로 돌아오는
+  // 경우(재생 가능한 곡이 현재 곡뿐)도 "다른 곡이 없음"으로 봅니다.
+  const prevIndex = findPlayableIndex(queue, currentIndex, -1, loopQueue);
+  const nextIndex = findPlayableIndex(queue, currentIndex, 1, loopQueue);
   const disablePrev =
-    !currentTrack || !hasMultipleTracks || (!loopQueue && currentIndex === 0);
+    !currentTrack || prevIndex === -1 || prevIndex === currentIndex;
   const disableNext =
-    !currentTrack ||
-    !hasMultipleTracks ||
-    (!loopQueue && currentIndex === queue.length - 1);
+    !currentTrack || nextIndex === -1 || nextIndex === currentIndex;
 
   const physics = useCdPlayerPhysics({
     hasTrack: !!currentTrack,

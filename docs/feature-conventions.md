@@ -9,12 +9,13 @@
 
 ## 현재 feature 목록
 
-- `auth` — 로그인/회원가입
+- `auth` — 로그인/회원가입 + 계정(프로필 메뉴, 설정 모달, 테마 설정, 회원탈퇴)
 - `player` — 미니 플레이어 + 유튜브 iframe + 재생 상태
 - `dashboard` — 사이드바+헤더 셸
 - `explore` — YouTube 검색으로 곡 추가
 - `library` — 트랙 도메인
 - `playlist` — 재생목록 도메인
+- `landing` — 비로그인 사용자가 `/`에서 보는 랜딩(게스트 검색·CD 플레이어, 개인정보 고지)
 
 예: `features/auth/`는 `pages/`(`LoginPage.tsx`/`SignupPage.tsx`), `components/`
 (`AuthLayout.tsx`/`AuthForm.tsx`/`icons.tsx`), `hooks/`(`useAuth.ts`/`auth-context.ts`)로
@@ -34,17 +35,20 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
 `shared/`는 네 갈래입니다:
 
 - **`shared/lib/`** — 어떤 feature도 도메인으로 소유하지 않는 진짜 인프라/범용 유틸
-  (`database.types.ts`, `format-time.ts`, `queryClient.ts`, `supabase.ts`,
-  `useDocumentTitle.ts`, `useOutsideClick.ts`, `youtube-thumbnail.ts`). 클라이언트 상태
-  스토어도 그 상태를 소유하는 feature의 `lib/`에 둡니다(`usePlayerStore.ts`는
-  `features/player/lib/`) — 별도 `stores/`는 없습니다.
+  (`database.types.ts`, `darkify.ts`, `format-time.ts`, `queryClient.ts`,
+  `supabase.ts`, `theme.ts`, `useDocumentTitle.ts`, `useOutsideClick.ts`,
+  `useToastStore.ts`, `youtube-thumbnail.ts`). 도메인이 있는 클라이언트 상태 스토어는
+  그 상태를 소유하는 feature의 `lib/`에 둡니다(`usePlayerStore.ts`는
+  `features/player/lib/`) — 별도 `stores/`는 없습니다. 테마·토스트 스토어처럼 어떤
+  도메인에도 속하지 않는 스토어만 여기 둡니다.
 - **`shared/components/`** — 어떤 feature의 도메인도 대표하지 않는 순수 UI 프리미티브
-  (`icons.tsx`, `TrackThumbnail.tsx`, `ThumbBox.tsx`, `IconCircleButton.tsx`,
-  `InfoBox.tsx`, `Modal.tsx`, `CloseButton.tsx`, `ActionButton.tsx`,
-  `ModalCtaButton.tsx`). `auth`엔 `AuthForm.tsx` 전용의 별도
-  `features/auth/components/icons.tsx`가 있으니 혼동하지 마세요. 반대로
-  `PlaylistCoverGrid.tsx`는 "재생목록 커버"라는 playlist 도메인 개념을 대표하므로
-  `features/player/components/`에 그대로 둡니다 — UI가 재사용 가능하다고 전부
+  (`icons.tsx`, `ActionButton.tsx`, `BrandWordmark.tsx`, `CheckBox.tsx`,
+  `CloseButton.tsx`, `ConfirmModal.tsx`, `IconCircleButton.tsx`, `InfoBox.tsx`,
+  `MarqueeText.tsx`, `Modal.tsx`, `ModalCtaButton.tsx`, `MutedNote.tsx`,
+  `SearchFieldInput.tsx`, `ThumbBox.tsx`, `Toast.tsx`, `TrackThumbnail.tsx`). `auth`엔
+  `AuthForm.tsx` 전용의 별도 `features/auth/components/icons.tsx`가 있으니 혼동하지
+  마세요. 반대로 `PlaylistCoverGrid.tsx`는 "재생목록 커버"라는 playlist 도메인 개념을
+  대표하므로 `features/playlist/components/`에 둡니다 — UI가 재사용 가능하다고 전부
   `shared/`로 보내는 게 아니라, 그 컴포넌트가 특정 도메인을 표현하는지를 봅니다.
   같은 기준으로 `ActionButton`(알약 CTA)은 탐색 도메인을 대표하지 않아
   `features/explore/`에서 여기로 옮겼고, 트랙 행의 `TrackRowInfo`는 "트랙"이라는
@@ -53,7 +57,7 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
   없고 계산된 style 값(또는 클래스 문자열 상수)만 완전히 동일할 때
   (`segment-tab-style.ts`, `sunken-panel-style.ts`, `current-track-row-style.ts`,
   `thumbnail-placeholder-style.ts`, `field-box-style.ts`,
-  `secondary-circle-button-class.ts`). **판단 기준**: 마크업(태그 종류, 자식 구조,
+  `secondary-button-class.ts`). **판단 기준**: 마크업(태그 종류, 자식 구조,
   동작)까지 동일하면 `shared/components/`의 컴포넌트로, 마크업은 다르고 계산된 값만
   동일하면 `shared/styles/`의 함수/상수로 — 억지로 하나로 합치면 "버튼도 되고 링크도
   되는" 애매한 API가 됩니다. 클래스 문자열을 공유할 땐 **어느 호출부도 덮어쓰지 않는

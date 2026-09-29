@@ -1,4 +1,4 @@
-import MarqueeText from "./MarqueeText";
+import MarqueeText from "@/shared/components/MarqueeText";
 
 // CD 플레이어 카드(대시보드 PlayerPanel / 랜딩 LandingCdPlayer)의 곡 제목 + 부제.
 // 부제만 소유자가 달라서(대시보드는 아티스트, 랜딩은 채널명) prop으로 받습니다.

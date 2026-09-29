@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
-import MarqueeText from "@/features/player/components/MarqueeText";
+import MarqueeText from "@/shared/components/MarqueeText";
 import DurationPlayButton from "@/features/player/components/DurationPlayButton";
 import TrackRowInfo from "./TrackRowInfo";
 import type { Track } from "../lib/tracks";

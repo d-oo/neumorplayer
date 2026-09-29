@@ -15,8 +15,8 @@ import {
   playlistsQueryKey,
 } from "@/features/playlist/lib/playlists";
 import { PlusIcon } from "@/shared/components/icons";
-import PlaylistCoverGrid from "./PlaylistCoverGrid";
-import MarqueeText from "./MarqueeText";
+import PlaylistCoverGrid from "@/features/playlist/components/PlaylistCoverGrid";
+import MarqueeText from "@/shared/components/MarqueeText";
 import DurationPlayButton from "./DurationPlayButton";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";

@@ -3,8 +3,10 @@ import { createPortal } from "react-dom";
 import YouTubeIframe, { type YouTubeProps } from "react-youtube";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePlayerStore } from "../lib/usePlayerStore";
+import { findPlayableIndex } from "../lib/queue-navigation";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { supabase } from "@/shared/lib/supabase";
+import { useToastStore } from "@/shared/lib/useToastStore";
 import { trackQueryKey, tracksQueryKey } from "@/features/library/lib/tracks";
 import { useVideoSlot } from "../hooks/useVideoSlot";
 import { useYouTubePlayback } from "../hooks/useYouTubePlayback";
@@ -51,25 +53,77 @@ export default function YouTubePlayer() {
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
   const setIsVideoPlaying = usePlayerStore((s) => s.setIsVideoPlaying);
   const playNext = usePlayerStore((s) => s.playNext);
+  const playPrev = usePlayerStore((s) => s.playPrev);
   const setProgress = usePlayerStore((s) => s.setProgress);
   const pendingSeek = usePlayerStore((s) => s.pendingSeek);
   const clearPendingSeek = usePlayerStore((s) => s.clearPendingSeek);
   const isScrubbing = usePlayerStore((s) => s.isScrubbing);
 
+  const showToast = useToastStore((s) => s.show);
+
   const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
   const currentTrackId = currentTrack?.id;
 
-  // 재생/일시정지 명령·볼륨·진행 시간 폴링·이동·상태 이벤트·끝남 처리는 랜딩
+  // 재생 오류로 연달아 건너뛴 곡 수. 실제로 재생이 시작되면(PLAYING) 0으로 돌아갑니다.
+  // 반복 재생 중 큐의 곡이 전부 오류를 내면(예: 네트워크 문제로 모든 영상이 실패)
+  // 다음 곡 → 오류 → 다음 곡이 끝없이 돌지 않도록, 큐 길이만큼 연달아 실패하면 멈춥니다.
+  const consecutiveErrorsRef = useRef(0);
+
+  function handlePlayingChange(playing: boolean) {
+    if (playing) consecutiveErrorsRef.current = 0;
+    setIsPlaying(playing);
+  }
+
+  // YouTube가 재생 오류를 알려오면(DB에서 아직 재생 불가로 표시되기 전에 삭제·비공개된
+  // 영상, 퍼가기 금지 영상 등) 이 곡으로 올 때의 방향(navDirection)으로 계속 건너뜁니다 —
+  // 다음 곡/곡이 끝나서 왔으면 다음 곡으로, 이전 곡 버튼으로 왔으면 그 앞 곡으로
+  // (usePlayerStore.playNext/playPrev와 같은 findPlayableIndex 규칙). 그 방향에 넘어갈
+  // 곡이 없으면 그 자리에서 멈춥니다. 어느 쪽이든 토스트로 알려서 곡이 말없이 바뀌지
+  // 않게 합니다.
+  function handlePlaybackError() {
+    // 렌더 시점 값이 아니라 오류가 온 시점의 최신 큐를 봅니다.
+    const state = usePlayerStore.getState();
+    const failed = state.queue[state.currentIndex];
+    if (!failed) return;
+    consecutiveErrorsRef.current += 1;
+    const step = state.navDirection;
+    const target = findPlayableIndex(
+      state.queue,
+      state.currentIndex,
+      step,
+      state.loopQueue,
+    );
+    const canSkip =
+      target !== -1 &&
+      target !== state.currentIndex &&
+      consecutiveErrorsRef.current < state.queue.length;
+    if (canSkip) {
+      showToast(
+        `"${failed.title}"을(를) 재생할 수 없어 ${
+          step === 1 ? "다음" : "이전"
+        } 곡으로 넘어갑니다.`,
+      );
+      if (step === 1) playNext();
+      else playPrev();
+    } else {
+      consecutiveErrorsRef.current = 0;
+      setIsPlaying(false);
+      showToast(`"${failed.title}"을(를) 재생할 수 없습니다.`);
+    }
+  }
+
+  // 재생/일시정지 명령·볼륨·진행 시간 폴링·이동·상태 이벤트·끝남·오류 처리는 랜딩
   // (useGuestPlayer)과 공유하는 useYouTubePlayback이 담당합니다.
   const playback = useYouTubePlayback({
     videoId: currentTrack?.video_id,
     isPlaying,
     volume,
     muted,
-    onPlayingChange: setIsPlaying,
+    onPlayingChange: handlePlayingChange,
     onVideoPlayingChange: setIsVideoPlaying,
     onProgress: setProgress,
     onEnd: playNext,
+    onError: handlePlaybackError,
   });
   const { seek, setScrubbing } = playback;
 
@@ -186,7 +240,10 @@ export default function YouTubePlayer() {
     };
   }, [currentTrackId, queryClient, user?.id]);
 
-  if (!currentTrack) return null;
+  // 형식이 틀린 video_id면 플레이어를 아예 만들지 않습니다 — 만들면 그 뒤 곡들까지
+  // 재생이 멈춥니다(useYouTubePlayback의 VIDEO_ID_PATTERN 주석). 오류 처리(다음 곡으로
+  // 넘기기/멈춤)는 훅이 handlePlaybackError로 알려줍니다.
+  if (!currentTrack || !playback.isVideoIdValid) return null;
 
   return createPortal(
     <div
@@ -202,6 +259,7 @@ export default function YouTubePlayer() {
         onReady={playback.handleReady}
         onStateChange={playback.handleStateChange}
         onEnd={playback.handleEnd}
+        onError={playback.handleError}
       />
     </div>,
     document.body,

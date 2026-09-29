@@ -18,9 +18,12 @@ export default function LandingVideoArea({
 }: {
   guestPlayer: ReturnType<typeof useGuestPlayer>;
 }) {
-  const { track } = guestPlayer;
+  const { track, isVideoIdValid } = guestPlayer;
 
-  if (track) {
+  // 형식이 틀린 video_id면 플레이어를 만들지 않고 플레이스홀더를 그대로 둡니다
+  // (useYouTubePlayback의 VIDEO_ID_PATTERN 주석 — 만들면 이후 곡도 재생이 멈춤).
+  // 검색 결과의 ID라 실제로는 생기지 않지만 대시보드와 같은 방어를 둡니다.
+  if (track && isVideoIdValid) {
     return (
       <div className="h-74.25 w-132 flex-1 overflow-hidden rounded-[20px] border border-(--neu-border-70)">
         <YouTubeIframe
@@ -31,6 +34,7 @@ export default function LandingVideoArea({
           onReady={guestPlayer.onPlayerReady}
           onStateChange={guestPlayer.onPlayerStateChange}
           onEnd={guestPlayer.onPlayerEnd}
+          onError={guestPlayer.onPlayerError}
         />
       </div>
     );
