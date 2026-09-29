@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { CaretIcon, LogoutIcon, SettingsIcon } from "@/shared/components/icons";
+import {
+  CaretIcon,
+  LogoutIcon,
+  SettingsIcon,
+  UserIcon,
+} from "@/shared/components/icons";
 import { useOutsideClick } from "@/shared/lib/useOutsideClick";
 import SettingsModal from "./SettingsModal";
 
@@ -28,10 +33,14 @@ export default function ProfileDropdown() {
             : "var(--neu-shadow-tint-pill)",
         }}
       >
+        {/* 안쪽 그림자로 파인 원(칩) 안에 accent 색 실루엣을 반투명하게 올려서, 칩의
+            음영이 실루엣 위로도 비쳐 같이 파여 있는 것처럼 보이게 합니다. */}
         <div
-          className="h-6 w-6 rounded-full border border-(--neu-border-85) bg-neu-accent-tint"
+          className="h-6 w-6 overflow-hidden rounded-full border border-(--neu-border-85) bg-neu-accent-tint"
           style={{ boxShadow: "var(--neu-shadow-avatar-chip)" }}
-        />
+        >
+          <UserIcon className="block text-neu-accent opacity-55" />
+        </div>
         <CaretIcon open={open} className="flex-none text-(--neu-ink-50-a)" />
       </button>
 

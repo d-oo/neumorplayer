@@ -6,13 +6,13 @@
       아티스트·태그(또는 재생목록 제목)를 고치는 폼(react-hook-form + zod 추천)은 아직
       없다. docs/design/수정본2.zip 반영으로 두 화면 모두에 "수정" 원형 버튼이 생겼지만
       `onClick`이 비어있는 자리 표시자다 — 실제 폼을 만들면 여기에 연결한다.
-- [ ] **"YouTube 대체 서비스" 금지 조항 검토**: YouTube API Developer Policies는 YouTube의
-      핵심 사용자 경험을 대체하거나 상당히 유사한 서비스를 만드는 것을 금지하고,
-      "significant independent value or functionality"를 추가하는 경우만 예외로 둔다.
-      이 앱의 탐색→라이브러리→재생목록→재생 흐름은 YouTube(Music)의 핵심 흐름과 매우
-      유사해서 코드 한 곳을 고쳐서 해결되는 문제가 아니라 제품 방향 판단이 필요하다 —
-      지금의 뉴모피즘 UI·개인 태그 분류 같은 것이 "독립적 가치"로 인정될지는 불확실하니,
-      진지하게 서비스를 키울 계획이라면 한 번 짚고 넘어가야 한다.
+- [ ] **포지셔닝 조정("대체 서비스" 리스크 축소)**: 랜딩 문구 수정 —
+      [LandingFeatureCards.tsx](src/features/landing/components/LandingFeatureCards.tsx)의
+      "YouTube 전곡 연결"과 "고른 카드가 곧바로 재생됩니다",
+      [LandingHero.tsx](src/features/landing/components/LandingHero.tsx) 본문의 "음악을
+      다룹니다 … 그 자리에서 재생합니다"처럼 YouTube 콘텐츠를 음악 재생 서비스로 내세우는
+      표현을 빼고, 태그 분류·직접 붙이는 제목/아티스트 같은 라이브러리 정리 기능을
+      앞세운다. 문구가 바뀌는 디자인 변경이라 승인을 받고 진행한다.
 - [ ] **"Developed with YouTube" 배지 위치 수정(YouTube API 정책 위반 대응)**: 지금은
       `AuthLayout.tsx`(로그인/회원가입 화면)에만 배지가 있는데, 정작 그 화면엔 YouTube
       콘텐츠가 안 나온다. Branding Guidelines는 "YouTube API가 존재하는 모든 페이지"마다

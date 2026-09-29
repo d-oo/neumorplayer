@@ -22,7 +22,7 @@ export default function LandingCdPlayer({
 }: {
   guestPlayer: ReturnType<typeof useGuestPlayer>;
 }) {
-  const { track, isPlaying, currentTime, duration, volume, repeat } =
+  const { track, isPlaying, currentTime, duration, volume, muted, repeat } =
     guestPlayer;
   const isAudible = selectIsAudible(guestPlayer);
   const isLoading = selectIsLoading(guestPlayer);
@@ -34,8 +34,10 @@ export default function LandingCdPlayer({
     currentTime,
     duration,
     volume,
+    muted,
     onSeek: guestPlayer.seek,
     onVolumeChange: guestPlayer.setVolume,
+    onMutedChange: guestPlayer.setMuted,
     onScrubbingChange: guestPlayer.setScrubbing,
     onPreviewTime: guestPlayer.previewTime,
   });
@@ -57,14 +59,16 @@ export default function LandingCdPlayer({
             knobRef={physics.knobRef}
             onPointerDown={physics.onKnobPointerDown}
             volume={volume}
+            dialVolume={physics.dialVolume}
+            muted={muted}
           />
         </div>
       </div>
 
       <div className="flex items-center gap-3.5">
         <NowPlayingTitle
-          title={track?.title ?? "재생 중인 곡 없음"}
-          subtitle={track?.channelTitle ?? "-"}
+          title={track?.title}
+          subtitle={track?.channelTitle}
         />
         <IconCircleButton
           size="lg"

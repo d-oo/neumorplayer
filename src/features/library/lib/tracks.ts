@@ -50,9 +50,8 @@ export async function deleteTrack(id: string): Promise<void> {
   if (error) throw error;
 }
 
-// 라이브러리에서 실제로 쓰인 태그를 곡수 내림차순으로 셉니다. 탐색 화면의 태그 제안
-// (useTagSelection)과 헤더 검색 결과의 태그 카드(SearchResultsView)가 같은 집계를
-// 각자 구현하고 있어서 여기로 모았습니다 — 상위 N개만 쓸지는 호출부가 정합니다.
+// 라이브러리에서 실제로 쓰인 태그를 곡수 내림차순으로 셉니다(탐색 화면의 태그 제안,
+// useTagSelection) — 상위 N개만 쓸지는 호출부가 정합니다.
 export function countTagUsage(tracks: Track[]): { tag: string; count: number }[] {
   const counts = new Map<string, number>();
   tracks.forEach((t) =>

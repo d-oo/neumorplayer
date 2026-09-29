@@ -23,6 +23,8 @@ export function useGuestPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(50);
+  // 볼륨 노브 가운데 클릭으로 토글(useCdPlayerPhysics). 랜딩은 새로고침하면 초기화됩니다.
+  const [muted, setMuted] = useState(false);
   const [repeat, setRepeat] = useState(false);
 
   // isPlaying을 여기서 true로 미리 만들지 않습니다 — 영상 로드에 잠깐 걸리는 시간
@@ -65,7 +67,7 @@ export function useGuestPlayer() {
     videoId: track?.videoId,
     isPlaying,
     volume,
-    muted: false,
+    muted,
     onPlayingChange: setIsPlaying,
     onVideoPlayingChange: setIsVideoPlaying,
     onProgress: setProgress,
@@ -94,6 +96,7 @@ export function useGuestPlayer() {
     currentTime,
     duration,
     volume,
+    muted,
     repeat,
     playTrack,
     setPlaying: setIsPlaying,
@@ -101,6 +104,7 @@ export function useGuestPlayer() {
     previewTime: setCurrentTime,
     setScrubbing: playback.setScrubbing,
     setVolume,
+    setMuted,
     toggleRepeat,
     onPlayerReady: playback.handleReady,
     onPlayerStateChange: playback.handleStateChange,

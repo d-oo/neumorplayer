@@ -2,7 +2,8 @@
 
 `docs/migrations/0001_init.sql`, `docs/migrations/0002_user_settings.sql`,
 `docs/migrations/0003_user_settings_drop_updated_at.sql`,
-`docs/migrations/0004_tracks_youtube_refresh.sql`이 스키마의 소스 오브 트루스입니다.
+`docs/migrations/0004_tracks_youtube_refresh.sql`,
+`docs/migrations/0005_tracks_service_role_grant.sql`이 스키마의 소스 오브 트루스입니다.
 
 ## 테이블
 
@@ -54,7 +55,9 @@ YouTube API Developer Policies III.E.4.d에 따르면 사용자 OAuth 동의 없
   `duration`은 nullable — `unavailable_at`이 있으면 `duration`은 항상 `null`). 곡 row와
   사용자가 입력한 값·재생목록 소속은 그대로 두고, 영상이 다시 공개되면 다음 실행 때
   복구합니다. RLS를 우회해야 해서 이 함수는 `service_role`(서버 전용 `SUPABASE_SECRET_KEY`)
-  만 실행할 수 있습니다.
+  만 실행할 수 있습니다. `service_role`은 RLS는 우회하지만 테이블 GRANT는 따로 필요해서,
+  `tracks`에 `select`/`update`만 줬습니다(0005) — 새 서버 전용 작업이 다른 테이블에
+  접근해야 하면 같은 식으로 GRANT를 추가해야 하고, 없으면 "permission denied"가 납니다.
 - 화면에선 재생 불가 곡의 재생시간 자리에 "재생 불가"를 보여주고 재생 버튼을 막으며,
   큐를 순서대로 재생할 때(곡이 끝나 자동으로 넘어갈 때와 이전/다음 곡 버튼) 건너뜁니다
   (`features/library/lib/tracks.ts`의 `isTrackPlayable`,

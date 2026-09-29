@@ -122,7 +122,7 @@
      박아 쓰고 있어서 값은 그대로 두고 이름만 붙였습니다. */
   --neu-divider: rgba(142, 128, 166, 0.28);
   --neu-row-hover: rgba(120, 100, 145, 0.09);
-  /* 태그 칩(탐색 화면 TagPicker, 헤더 검색 결과)이 공유하는 raised 그림자 —
+  /* 태그 칩(탐색 화면 TagPicker)의 raised 그림자 —
      라이브러리 태그 칩은 값이 미묘하게 달라서(--neu-shadow-tint-pill) 별개입니다. */
   --neu-shadow-chip-raised: 5px 5px 12px rgba(142, 128, 166, 0.4),
     -4px -4px 10px rgba(255, 255, 255, 0.9);
@@ -172,6 +172,9 @@
   --neu-shc-146-35: rgba(146, 132, 170, 0.35);
   --neu-shc-142-26: rgba(142, 128, 166, 0.26);
   --neu-tick-off: rgba(126, 110, 156, 0.3);
+  /* 음소거 중 볼륨 노브의 "켜진" 눈금 — 켜진 색(--neu-hi)을 연하게 섞은 값이라 다크모드
+     에서도 --neu-hi를 따라갑니다(그래서 다크 블록에 따로 두지 않음). */
+  --neu-tick-muted: color-mix(in oklch, var(--neu-hi) 45%, transparent);
   --neu-knob-texture: conic-gradient(
     from 210deg,
     oklch(0.93 0.012 315),
@@ -225,14 +228,6 @@
     inset -2px -2px 5px rgba(255, 255, 255, 0.7);
   --neu-shadow-avatar: 2px 2px 6px rgba(150, 136, 175, 0.4),
     -2px -2px 5px rgba(255, 255, 255, 0.9);
-  --neu-thumb-placeholder-bg-lg: repeating-linear-gradient(
-      135deg,
-      rgba(118, 100, 145, 0.16) 0 6px,
-      rgba(118, 100, 145, 0.05) 6px 12px
-    ),
-    var(--neu-accent-tint);
-  --neu-shadow-artist-avatar: 3px 3px 8px rgba(150, 136, 175, 0.42),
-    -2px -2px 6px rgba(255, 255, 255, 0.92);
   --neu-shadow-field-row: inset 3px 3px 7px rgba(150, 136, 175, 0.38),
     inset -3px -3px 6px rgba(255, 255, 255, 0.88);
   --neu-shadow-eye-btn: 3px 3px 8px rgba(146, 132, 170, 0.45),
@@ -275,7 +270,7 @@
     -3px -3px 8px rgba(255, 255, 255, 0.95);
   --neu-shadow-seekbar: inset 3px 3px 6px rgba(150, 136, 175, 0.6),
     inset -2px -2px 5px rgba(255, 255, 255, 0.95);
-  /* 셔플/반복이 켜졌을 때 아이콘 색 — VolumeKnob.tsx의 TICK_ON(--neu-hi와 같은
+  /* 셔플/반복이 켜졌을 때 아이콘 색 — lib/volume-tick-style.ts의 TICK_ON(--neu-hi와 같은
      #6d1a9f)과는 다른 진보라(#7b1fb0)라 darkify()의 두 번째 hex 매핑을 그대로 씁니다. */
   --neu-tick-on-active: #7b1fb0;
   --neu-shadow-knob-hub: 6px 6px 14px rgba(146, 132, 170, 0.55),
@@ -462,14 +457,6 @@
     inset -2px -2px 5px rgba(255, 255, 255, 0.052);
   --neu-shadow-avatar: 2px 2px 6px rgba(6, 3, 12, 0.54),
     -2px -2px 5px rgba(255, 255, 255, 0.068);
-  --neu-thumb-placeholder-bg-lg: repeating-linear-gradient(
-      135deg,
-      rgba(200, 180, 235, 0.088) 0 6px,
-      rgba(200, 180, 235, 0.028) 6px 12px
-    ),
-    var(--neu-accent-tint);
-  --neu-shadow-artist-avatar: 3px 3px 8px rgba(6, 3, 12, 0.567),
-    -2px -2px 6px rgba(255, 255, 255, 0.069);
   --neu-shadow-field-row: inset 3px 3px 7px rgba(6, 3, 12, 0.513),
     inset -3px -3px 6px rgba(255, 255, 255, 0.066);
   --neu-shadow-eye-btn: 3px 3px 8px rgba(6, 3, 12, 0.608),

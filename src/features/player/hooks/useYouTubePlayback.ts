@@ -174,12 +174,30 @@ export function useYouTubePlayback({
     }
   }, [isPlaying, videoId]);
 
+  // 볼륨이 바뀌면 setVolume만 보냅니다. 음소거 중에 보내도 음소거는 풀리지 않습니다
+  // (IFrame API로 직접 실험해 확인).
+  const volumeRef = useRef(volume);
   useEffect(() => {
+    volumeRef.current = volume;
     const player = playerRef.current;
     if (!player) return;
     safely(() => player.setVolume(volume));
-    safely(() => (muted ? player.mute() : player.unMute()));
-  }, [volume, muted]);
+  }, [volume]);
+
+  // mute()/unMute()는 음소거 상태가 실제로 바뀔 때만 보냅니다. YouTube의 unMute()는
+  // 볼륨이 5보다 낮으면 5로 끌어올려서(직접 실험해 확인 — 예전엔 볼륨이 바뀔 때마다
+  // setVolume 뒤에 unMute()를 불러 0%인데도 5%로 소리가 났음), 음소거를 푼 직후엔 지금
+  // 볼륨을 다시 넣어 0~4%를 지킵니다.
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (muted) {
+      safely(() => player.mute());
+    } else {
+      safely(() => player.unMute());
+      safely(() => player.setVolume(volumeRef.current));
+    }
+  }, [muted]);
 
   useEffect(() => {
     if (!videoId) return;
@@ -241,8 +259,10 @@ export function useYouTubePlayback({
 
   const handleReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
-    safely(() => event.target.setVolume(volume));
+    // 새 플레이어는 음소거가 아닌 상태로 시작하므로 음소거 중일 때만 mute()를 보냅니다
+    // (unMute()를 부르지 않으니 0~4% 볼륨이 5%로 올라가지 않음 — 위 음소거 effect 참고).
     if (muted) safely(() => event.target.mute());
+    safely(() => event.target.setVolume(volume));
   };
 
   const handleStateChange = (event: YouTubeEvent<number>) => {

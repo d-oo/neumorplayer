@@ -1,17 +1,58 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { countTagUsage, fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
+import { fetchLibraryTracks, tracksQueryKey, type Track } from "../lib/tracks";
 import MutedNote from "@/shared/components/MutedNote";
 import LibraryTrackList from "./LibraryTrackList";
 
+// 검색어가 들어간 값(아티스트명/태그)이 같은 곡끼리 모이도록 정렬해서 돌려줍니다.
+// 그룹 순서는 그 값의 곡이 원래 목록(추가순)에 처음 나온 순서, 그룹 안은 원래 순서
+// 그대로입니다. 한 곡에 검색어가 들어간 값이 여럿이면(예: 아티스트 두 명이 모두
+// 검색어 포함) 섹션 안에서 중복되지 않도록 첫 번째 값의 그룹에만 넣습니다. 대소문자만
+// 다른 값("Dean"/"dean")은 같은 그룹으로 봅니다.
+function matchGroupedByValue(
+  tracks: Track[],
+  getValues: (t: Track) => string[],
+  q: string,
+): Track[] {
+  const groupOrder = new Map<string, number>();
+  const matched: { track: Track; group: number }[] = [];
+  tracks.forEach((track) => {
+    const value = getValues(track).find((v) => v.toLowerCase().includes(q));
+    if (value === undefined) return;
+    const key = value.toLowerCase();
+    let group = groupOrder.get(key);
+    if (group === undefined) {
+      group = groupOrder.size;
+      groupOrder.set(key, group);
+    }
+    matched.push({ track, group });
+  });
+  // Array.prototype.sort는 안정 정렬이라 같은 그룹 안에서는 원래 순서가 유지됩니다.
+  return matched.sort((a, b) => a.group - b.group).map((m) => m.track);
+}
+
+function ResultSection({ label, tracks }: { label: string; tracks: Track[] }) {
+  return (
+    <div className="mb-7.5">
+      <div className="mb-3 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
+        {label}
+      </div>
+      <LibraryTrackList tracks={tracks} />
+      {tracks.length === 0 && (
+        <MutedNote className="px-3.5 py-2.25">일치하는 곡이 없습니다.</MutedNote>
+      )}
+    </div>
+  );
+}
+
 // docs/design/ 시안의 "검색 결과" 화면 — 헤더의 "라이브러리 내 검색"에 뭔가 입력하면
 // 지금 보고 있던 탭(라이브러리/탐색) 대신 이 화면이 뜹니다(HomeLayout에서 Outlet 대신
-// 이 컴포넌트를 조건부로 렌더링). "태그"/"아티스트" 섹션은 시안에도 클릭 기능이 없어서
-// 여기서도 장식(호버 테두리만)이고, 검색어와 무관하게 라이브러리 전체 기준 집계입니다.
-// "아티스트" 카드는 시안엔 "이번 달 재생 횟수"지만 스키마에 월별 집계가 없어서
-// 대신 전체 기간 재생 횟수 합계를 보여줍니다. "노래"는 라이브러리 탭과 모습·규칙이
-// 완전히 같도록(사용자 요청) 같은 LibraryTrackList(열 제목 헤더 + 트랙 행)를
+// 이 컴포넌트를 조건부로 렌더링). 시안의 "노래/태그/아티스트"(태그 칩·아티스트 카드는
+// 검색어와 무관한 라이브러리 전체 집계) 구성 대신, 사용자 요청으로 "제목/아티스트/태그"
+// 세 섹션 모두 해당 필드에 검색어가 들어간 곡 목록을 보여줍니다(예: "d" → 제목엔
+// dangerously, 아티스트엔 dean의 곡들, 태그엔 #drive 곡들). 한 곡이 여러 섹션에 걸리면
+// 섹션마다 다 보여주고, 개수 제한 없이 전부 보여줍니다. 세 섹션 모두 라이브러리 탭과
+// 모습·규칙이 완전히 같도록(사용자 요청) 같은 LibraryTrackList(열 제목 헤더 + 트랙 행)를
 // 씁니다 — 클릭=정보 페이지 이동, 재생은 hover 때 재생시간 자리의 버튼(원본은 행
 // 클릭=재생이지만, 이건 "라이브러리 내 검색 결과"이므로 라이브러리 탭 규칙을 따름).
 export default function SearchResultsView({ query }: { query: string }) {
@@ -23,32 +64,10 @@ export default function SearchResultsView({ query }: { query: string }) {
     enabled: !!user,
   });
 
-  const suggestedTags = useMemo(
-    () => countTagUsage(tracks).slice(0, 8),
-    [tracks],
-  );
-
-  const topArtists = useMemo(() => {
-    const totals = new Map<string, number>();
-    tracks.forEach((t) =>
-      t.artist.forEach((a) =>
-        totals.set(a, (totals.get(a) ?? 0) + t.play_count),
-      ),
-    );
-    return Array.from(totals.entries())
-      .map(([name, totalPlays]) => ({ name, totalPlays }))
-      .sort((a, b) => b.totalPlays - a.totalPlays)
-      .slice(0, 4);
-  }, [tracks]);
-
   const q = query.trim().toLowerCase();
-  const results = tracks
-    .filter(
-      (t) =>
-        t.title.toLowerCase().includes(q) ||
-        t.artist.some((a) => a.toLowerCase().includes(q)),
-    )
-    .slice(0, 4);
+  const titleResults = tracks.filter((t) => t.title.toLowerCase().includes(q));
+  const artistResults = matchGroupedByValue(tracks, (t) => t.artist, q);
+  const tagResults = matchGroupedByValue(tracks, (t) => t.tags, q);
 
   return (
     <div>
@@ -57,72 +76,13 @@ export default function SearchResultsView({ query }: { query: string }) {
           검색 결과
         </h1>
         <span className="text-[13px] font-semibold text-neu-muted">
-          &ldquo;{query}&rdquo; · {results.length}건
+          &ldquo;{query}&rdquo;
         </span>
       </div>
 
-      <div className="mb-7.5">
-        <div className="mb-3 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-          노래
-        </div>
-        <LibraryTrackList tracks={results} />
-        {results.length === 0 && (
-          <MutedNote className="px-3.5 py-2.25">일치하는 곡이 없습니다.</MutedNote>
-        )}
-      </div>
-
-      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-        태그
-      </div>
-      <div className="mb-7 flex flex-wrap gap-2.25">
-        {suggestedTags.map((tg) => (
-          <div
-            key={tg.tag}
-            className="flex cursor-pointer items-baseline gap-2 rounded-full border border-(--neu-border-80) px-3.75 py-2.25 transition-colors hover:border-neu-accent-light"
-            style={{
-              background: "var(--neu-surface)",
-              boxShadow: "var(--neu-shadow-chip-raised)",
-            }}
-          >
-            <span className="text-[13.5px] font-bold text-neu-ink">
-              #{tg.tag}
-            </span>
-            <span className="text-xs text-neu-ink opacity-68">
-              {tg.count}곡
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-3.5 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-        아티스트
-      </div>
-      <div className="grid grid-cols-4 gap-3.5">
-        {topArtists.map((a) => (
-          <div
-            key={a.name}
-            className="cursor-pointer rounded-[14px] border border-(--neu-border-80) p-4 transition-colors hover:border-neu-accent-light"
-            style={{
-              background: "var(--neu-surface)",
-              boxShadow: "var(--neu-shadow-card-raised)",
-            }}
-          >
-            <div
-              className="mb-3 h-17 w-17 rounded-full border border-(--neu-border-70)"
-              style={{
-                background: "var(--neu-thumb-placeholder-bg-lg)",
-                boxShadow: "var(--neu-shadow-artist-avatar)",
-              }}
-            />
-            <p className="truncate text-[13.5px] font-semibold text-neu-ink">
-              {a.name}
-            </p>
-            <p className="mt-1 text-xs text-neu-muted">
-              {a.totalPlays.toLocaleString()}회 재생
-            </p>
-          </div>
-        ))}
-      </div>
+      <ResultSection label="제목" tracks={titleResults} />
+      <ResultSection label="아티스트" tracks={artistResults} />
+      <ResultSection label="태그" tracks={tagResults} />
     </div>
   );
 }

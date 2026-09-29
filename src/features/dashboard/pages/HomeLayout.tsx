@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { useLibrarySearchQuery } from "../lib/useLibrarySearchQuery";
 import { useThemeSync } from "@/features/auth/hooks/useThemeSync";
 import ProfileDropdown from "@/features/auth/components/ProfileDropdown";
@@ -90,7 +90,9 @@ export default function HomeLayout() {
               className="flex items-center gap-3.5 px-5.5 py-3.5"
               style={{ borderBottom: "1px solid var(--neu-divider)" }}
             >
-              <div className="flex flex-none items-center gap-2.25">
+              {/* 로고+워드마크를 누르면 "/"(라이브러리)로 갑니다. ?q=가 빠진 주소라
+                  검색 결과 화면을 보던 중이면 검색도 같이 닫힙니다(라이브러리 탭과 동일). */}
+              <Link to="/" className="flex flex-none items-center gap-2.25">
                 <img
                   src="/favicon.png"
                   alt=""
@@ -98,7 +100,7 @@ export default function HomeLayout() {
                   style={{ boxShadow: "var(--neu-shadow-logo)" }}
                 />
                 <BrandWordmark />
-              </div>
+              </Link>
 
               <nav
                 className="ml-1.5 flex flex-none gap-0.75 rounded-xl border border-(--neu-border-70) p-1"

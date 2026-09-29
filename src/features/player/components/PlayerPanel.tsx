@@ -34,6 +34,7 @@ export default function PlayerPanel() {
   const shuffle = usePlayerStore((s) => s.shuffle);
   const loopQueue = usePlayerStore((s) => s.loopQueue);
   const volume = usePlayerStore((s) => s.volume);
+  const muted = usePlayerStore((s) => s.muted);
   const currentTime = usePlayerStore((s) => s.currentTime);
   const duration = usePlayerStore((s) => s.duration);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
@@ -42,6 +43,7 @@ export default function PlayerPanel() {
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const toggleLoopQueue = usePlayerStore((s) => s.toggleLoopQueue);
   const setVolume = usePlayerStore((s) => s.setVolume);
+  const setMuted = usePlayerStore((s) => s.setMuted);
   const requestSeek = usePlayerStore((s) => s.requestSeek);
   const previewTime = usePlayerStore((s) => s.previewTime);
   const setIsScrubbing = usePlayerStore((s) => s.setIsScrubbing);
@@ -67,8 +69,10 @@ export default function PlayerPanel() {
     currentTime,
     duration,
     volume,
+    muted,
     onSeek: requestSeek,
     onVolumeChange: setVolume,
+    onMutedChange: setMuted,
     onScrubbingChange: setIsScrubbing,
     onPreviewTime: previewTime,
   });
@@ -142,14 +146,16 @@ export default function PlayerPanel() {
             knobRef={physics.knobRef}
             onPointerDown={physics.onKnobPointerDown}
             volume={volume}
+            dialVolume={physics.dialVolume}
+            muted={muted}
           />
         </div>
       </div>
 
       <div className="flex items-center gap-3.5">
         <NowPlayingTitle
-          title={currentTrack?.title ?? "재생 중인 곡 없음"}
-          subtitle={currentTrack?.artist.join(", ") ?? "-"}
+          title={currentTrack?.title}
+          subtitle={currentTrack?.artist.join(", ")}
         />
         <IconCircleButton
           size="lg"

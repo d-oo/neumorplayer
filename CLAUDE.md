@@ -102,7 +102,8 @@ rewrite를 건드리거나 지우면 루트(`/`) 말고 다른 경로에서 새�
 (`docs/todos.md` 참고) 새 공개 라우트를 추가할 땐 그 페이지를 해당 feature의 `pages/`
 아래에 두고, `src/router/AppRoutes.tsx`에서 `RequireAuth` 밖에 둬야 합니다.
 `src/router/RequireAuth.tsx`는
-로그아웃 상태면 `<Navigate to="/login" />`으로 리다이렉트하고, 반대로
+로그아웃 상태면 리다이렉트하는데, 로그인해 있다가 로그아웃된 경우는 랜딩(`/`)으로,
+처음부터 로그인 안 한 채 보호된 주소로 들어온 경우는 `/login`으로 보내고, 반대로
 `src/router/GuestOnly.tsx`는 로그인된 사용자가 `/login`·`/signup`에 들어오면 `/`로
 돌려보냅니다 — 새 인증 관련 라우트를 추가할 때 이 두 가드 중 맞는 쪽으로 감싸세요.
 

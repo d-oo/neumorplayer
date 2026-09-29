@@ -401,6 +401,27 @@ export function SettingsIcon({ className }: IconProps) {
   );
 }
 
+// 프로필 아바타 칩(24px 원, 1px 테두리 → 안쪽 22px)을 꽉 채우는 사람 실루엣(머리 +
+// 어깨). 어깨는 일부러 viewBox 아래로 넘치게 그려서, 칩의 overflow-hidden 원에 잘려
+// 흉상처럼 보이게 합니다 — 호출부 컨테이너가 overflow-hidden이어야 합니다.
+export function UserIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="11" cy="8.6" r="3.9" fill="currentColor" />
+      <path
+        d="M3.2 23c0-4.9 3.5-8.4 7.8-8.4s7.8 3.5 7.8 8.4z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function LogoutIcon({ className }: IconProps) {
   return (
     <svg

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { TICK_ON, TICK_OFF } from "../components/VolumeKnob";
+import { useEffect, useRef, useState } from "react";
+import { tickStyle } from "../lib/volume-tick-style";
 
 // docs/design/랜딩 페이지.zip의 CD 플레이어 물리(디스크 관성 스크럽, 각도/수직
 // 듀얼모드 볼륨 노브, 드래그 시크바)를 대시보드(PlayerPanel, usePlayerStore 연결)와
@@ -9,7 +9,8 @@ import { TICK_ON, TICK_OFF } from "../components/VolumeKnob";
 // 드래그 중 값(회전각·노브 각도 등)은 절대 React 상태로 만들지 않습니다 — 매 프레임
 // 바뀌는 값을 setState하면 리렌더 폭주가 나므로, ref로 들고 있다가 discRef/knobRef가
 // 가리키는 DOM을 직접 조작합니다. 실제로 재생 상태(currentTime/volume 등)가 바뀌는
-// 순간에만 onSeek/onVolumeChange로 커밋합니다.
+// 순간에만 onSeek/onVolumeChange로 커밋합니다(볼륨은 드래그 중에도 정수 %가 바뀔
+// 때마다 커밋 — onKnobPointerDown 참고).
 //
 // 시간 이동(CD 스크럽·재생바 드래그)은 old-src(Player.js의 Slider onChange/
 // onChangeCommitted)와 같은 원칙입니다: 손을 움직이는 동안엔 onPreviewTime으로 화면
@@ -29,8 +30,12 @@ interface UseCdPlayerPhysicsOptions {
   currentTime: number;
   duration: number;
   volume: number; // 0-100
+  // 음소거 — 가운데 다이얼을 움직이지 않고 클릭하면 토글하고, 노브로 볼륨을 바꾸면
+  // 풀립니다(old-src 볼륨 Slider의 onChange와 같음).
+  muted: boolean;
   onSeek: (time: number) => void;
   onVolumeChange: (volume: number) => void;
+  onMutedChange: (muted: boolean) => void;
   // 드래그/스크럽 시작·끝 알림 — useYouTubePlayback.setScrubbing으로 이어져, 그동안
   // 폴링 값이 화면 표시(손 위치)를 덮어쓰지 않게 합니다.
   onScrubbingChange: (scrubbing: boolean) => void;
@@ -44,6 +49,10 @@ const SCRUB_SECONDS_PER_DEGREE = 1 / 12;
 const KNOB_MODE_RADIUS = 18;
 // 노브 수직 모드가 볼륨 0으로 취급하는 반경(이 밖에서는 수직 이동 민감도가 0에 가까워짐).
 const KNOB_VERTICAL_FALLOFF_RADIUS = 30;
+// 가운데 다이얼(수직 모드 영역)을 누른 뒤 이만큼 움직이기 전까지는 "클릭"으로 보고
+// 볼륨을 바꾸지 않습니다 — 중심 근처는 1px만 흔들려도 각도가 크게 바뀌어, 그대로 두면
+// 클릭만 해도 볼륨이 튀었습니다.
+const KNOB_CLICK_SLOP_PX = 4;
 
 export function useCdPlayerPhysics({
   hasTrack,
@@ -52,13 +61,19 @@ export function useCdPlayerPhysics({
   currentTime,
   duration,
   volume,
+  muted,
   onSeek,
   onVolumeChange,
+  onMutedChange,
   onScrubbingChange,
   onPreviewTime,
 }: UseCdPlayerPhysicsOptions) {
   const discRef = useRef<HTMLDivElement | null>(null);
   const knobRef = useRef<HTMLDivElement | null>(null);
+  // 볼륨 노브를 드래그하는 동안의 시작 볼륨(드래그 중이 아니면 null) — 아래 dialVolume 참고.
+  const [knobDragStartVolume, setKnobDragStartVolume] = useState<
+    number | null
+  >(null);
 
   // 롱리빙 리스너(rAF 루프, pointermove 클로저)가 최신 값을 읽을 수 있도록 매 렌더
   // 동기화하는 ref들 — 클로저에 갇힌 stale 값 문제를 피합니다.
@@ -66,6 +81,7 @@ export function useCdPlayerPhysics({
   const currentTimeRef = useRef(currentTime);
   const durationRef = useRef(duration);
   const volumeRef = useRef(volume);
+  const mutedRef = useRef(muted);
   const trackKeyRef = useRef(trackKey);
   useEffect(() => {
     isSpinningRef.current = isSpinning;
@@ -79,6 +95,9 @@ export function useCdPlayerPhysics({
   useEffect(() => {
     volumeRef.current = volume;
   }, [volume]);
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
   useEffect(() => {
     trackKeyRef.current = trackKey;
   }, [trackKey]);
@@ -176,8 +195,9 @@ export function useCdPlayerPhysics({
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
 
+    // % 글자(data-vol-label)는 여기서 그리지 않습니다 — 실제 볼륨이 정수 %마다 바로
+    // 커밋되니 React가 그 값으로 그립니다(VolumeKnob 주석).
     const dialEl = el.querySelector<HTMLElement>("[data-dial]");
-    const labelEl = el.querySelector<HTMLElement>("[data-vol-label]");
     const tickEls = el.querySelectorAll<HTMLElement>("[data-tick]");
 
     const angleAt = (clientX: number, clientY: number) =>
@@ -190,14 +210,16 @@ export function useCdPlayerPhysics({
       if (dialEl) {
         dialEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
       }
-      if (labelEl) labelEl.textContent = `${Math.round(vol100)}%`;
       const litCount = vol100 / 100;
       tickEls.forEach((tick, i) => {
         const lit = i / 24 <= litCount + 0.001;
-        tick.style.background = lit ? TICK_ON : TICK_OFF;
-        tick.style.boxShadow = lit ? `0 0 9px ${TICK_ON}` : "none";
+        const { background, boxShadow } = tickStyle(lit, mutedRef.current);
+        tick.style.background = background;
+        tick.style.boxShadow = boxShadow;
       });
     };
+
+    setKnobDragStartVolume(volumeRef.current);
 
     const startAngle = angleAt(e.clientX, e.clientY);
     const startRadius = radiusAt(e.clientX, e.clientY);
@@ -210,22 +232,74 @@ export function useCdPlayerPhysics({
     // 바닥을 지나는 순간 반대쪽 극값으로 튀어버립니다(atan2가 ±180에서 부호가
     // 뒤집히는 지점이라 "경계 넘김"이 생김).
     let lastValidAngle = (vol100 / 100) * 270 - 135;
+    let wasInValidRange = startAngle >= -135 && startAngle <= 135;
+    // 멈춤 구간에 들어온 쪽의 끝 각도(-135 또는 135) — handleMove 참고.
+    let deadZoneEdge: number | null = null;
     if (mode === "angle") {
-      if (startAngle >= -135 && startAngle <= 135) lastValidAngle = startAngle;
+      if (wasInValidRange) lastValidAngle = startAngle;
       vol100 = ((lastValidAngle + 135) / 270) * 100;
     }
 
     let lastY = e.clientY;
     let lastAngleForVertical = startAngle;
+    // 가운데 다이얼(수직 모드)은 KNOB_CLICK_SLOP_PX를 넘게 움직여야 드래그가 시작되고,
+    // 그 전에 손을 떼면 클릭(음소거 토글)입니다. 바깥 링(각도 모드)은 누르는 즉시 그
+    // 각도로 볼륨을 정하는 기존 동작 그대로라 처음부터 드래그로 봅니다.
+    let dragStarted = mode === "angle";
+
+    // old-src(Player.js 볼륨 Slider의 onChange)처럼 드래그하는 동안에도 실제 볼륨을
+    // 바로 바꿔서, 돌리면서 소리 크기를 들으며 맞출 수 있게 합니다. 정수(%)가 바뀔
+    // 때만 보내서 pointermove마다 커밋하지 않습니다 — 시간 이동과 달리 볼륨은 YouTube의
+    // 비동기 이벤트와 경쟁할 일이 없어 매번 보내도 안전합니다.
+    // 노브로 볼륨을 실제로 바꾸면 음소거도 풉니다(old-src 볼륨 Slider의 onChange와 같음).
+    let committedVolume = Math.round(volumeRef.current);
+    const commitVolume = () => {
+      const rounded = Math.round(vol100);
+      if (rounded === committedVolume) return;
+      committedVolume = rounded;
+      onVolumeChange(rounded);
+      if (mutedRef.current) {
+        mutedRef.current = false;
+        onMutedChange(false);
+      }
+    };
 
     paint(vol100);
+    commitVolume();
 
     const handleMove = (ev: PointerEvent) => {
       if (mode === "angle") {
         const rawAngle = angleAt(ev.clientX, ev.clientY);
-        if (rawAngle >= -135 && rawAngle <= 135) lastValidAngle = rawAngle;
+        // 유효 구간에서 멈춤 구간으로 들어가면 값을 그대로 두지 않고 들어온 쪽의 끝
+        // (0% 또는 100%)에 붙입니다 — 그대로 두면 손을 빨리 움직여 끝을 지나칠 때 직전
+        // 값(예: 1~2%)에 남아 0%까지 내려가지 않았습니다(실제로 겪음). 들어온 쪽을 멈춤
+        // 구간을 벗어날 때까지 기억하므로, 바닥을 가로질러도 반대쪽 끝으로 튀지 않습니다.
+        // 처음부터 멈춤 구간에서 잡았으면 들어온 쪽이 없으니 예전처럼 값을 유지합니다.
+        if (rawAngle >= -135 && rawAngle <= 135) {
+          lastValidAngle = rawAngle;
+          deadZoneEdge = null;
+          wasInValidRange = true;
+        } else {
+          if (wasInValidRange) deadZoneEdge = lastValidAngle < 0 ? -135 : 135;
+          if (deadZoneEdge !== null) lastValidAngle = deadZoneEdge;
+          wasInValidRange = false;
+        }
         vol100 = Math.max(0, Math.min(100, ((lastValidAngle + 135) / 270) * 100));
       } else {
+        if (!dragStarted) {
+          if (
+            Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) <
+            KNOB_CLICK_SLOP_PX
+          ) {
+            return;
+          }
+          // 여기서부터 드래그 — 기준점을 지금 위치로 옮겨, 클릭 여유 거리만큼 움직인
+          // 양이 한꺼번에 반영돼 볼륨이 튀지 않게 합니다.
+          dragStarted = true;
+          lastY = ev.clientY;
+          lastAngleForVertical = angleAt(ev.clientX, ev.clientY);
+          return;
+        }
         const r = radiusAt(ev.clientX, ev.clientY);
         const verticalDelta =
           (lastY - ev.clientY) *
@@ -242,17 +316,31 @@ export function useCdPlayerPhysics({
           Math.min(100, vol100 + verticalDelta + (angleDelta / 270) * 100),
         );
       }
+      // 커밋이 먼저 — 이 움직임으로 음소거가 풀리면 눈금을 바로 일반 색으로 칠합니다.
+      commitVolume();
       paint(vol100);
     };
 
-    const handleUp = () => {
+    // pointercancel(터치 스크롤 전환 등)도 같이 받습니다 — 드래그 중엔 다이얼 표시값을
+    // 고정해 두므로(dialVolume), 끝나는 이벤트를 놓치면 다이얼이 계속 멈춰 보입니다.
+    // 취소된 제스처는 클릭으로 치지 않습니다(음소거를 토글하지 않음).
+    const finish = (cancelled: boolean) => {
       el.removeEventListener("pointermove", handleMove);
       el.removeEventListener("pointerup", handleUp);
-      onVolumeChange(Math.round(vol100));
+      el.removeEventListener("pointercancel", handleCancel);
+      if (!dragStarted && !cancelled) {
+        onMutedChange(!mutedRef.current);
+      } else {
+        commitVolume();
+      }
+      setKnobDragStartVolume(null);
     };
+    const handleUp = () => finish(false);
+    const handleCancel = () => finish(true);
 
     el.addEventListener("pointermove", handleMove);
     el.addEventListener("pointerup", handleUp);
+    el.addEventListener("pointercancel", handleCancel);
   }
 
   function onSeekPointerDown(e: React.PointerEvent<HTMLDivElement>) {
@@ -287,5 +375,19 @@ export function useCdPlayerPhysics({
     el.addEventListener("pointerup", handleUp);
   }
 
-  return { discRef, onDiscPointerDown, knobRef, onKnobPointerDown, onSeekPointerDown };
+  // VolumeKnob의 다이얼·눈금을 그릴 값(dialVolume prop). 드래그 중엔 실제 볼륨이 정수
+  // %마다 바뀌지만, 그 값으로 다이얼이 다시 그려지면 pointermove가 소수점 각도로 부드럽게
+  // 그려 둔 노브를 정수 각도로 덮어써 뚝뚝 끊겨 보였습니다(실제로 겪음). 그래서 드래그
+  // 중엔 드래그 시작 값에 고정해 React가 다이얼 DOM을 건드리지 않게 하고, 손을 놓으면
+  // 실제 볼륨으로 돌아갑니다.
+  const dialVolume = knobDragStartVolume ?? volume;
+
+  return {
+    discRef,
+    onDiscPointerDown,
+    knobRef,
+    onKnobPointerDown,
+    dialVolume,
+    onSeekPointerDown,
+  };
 }

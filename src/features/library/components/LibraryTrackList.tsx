@@ -9,7 +9,7 @@ import type { Track } from "../lib/tracks";
 // 헤더 행과 각 트랙 행이 같은 컬럼 폭을 써야 해서 한 곳에 둡니다.
 const trackRowGridColumns = "minmax(0,1fr) 190px 74px 60px";
 
-// 라이브러리 목록(LibraryPage)과 헤더 검색 결과의 "노래"(SearchResultsView)가 똑같은
+// 라이브러리 목록(LibraryPage)과 헤더 검색 결과의 각 섹션(SearchResultsView)이 똑같은
 // 모습이어야 해서(사용자 요청) 열 제목 헤더 행 + 트랙 행을 통째로 공유합니다. 정렬·
 // 필터·빈 상태 안내는 화면마다 달라서 호출부가 담당하고, 여기엔 이미 걸러진 목록만
 // 넘깁니다.
