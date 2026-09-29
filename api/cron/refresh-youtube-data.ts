@@ -26,19 +26,37 @@ interface VideoItem {
   contentDetails?: { duration: string };
 }
 
+// 실패 응답을 보내면서 같은 내용을 함수 로그에도 남깁니다. cron은 Vercel이 호출해
+// 응답 본문을 볼 곳이 없고, Vercel 로그엔 console 출력만 남기 때문입니다(환경변수가
+// 빠져 500이 났을 때 로그에 요청 한 줄뿐이라 원인을 알 수 없었음). 비밀값은 넣지 마세요.
+function fail(
+  res: VercelResponse,
+  status: number,
+  body: { error: string } & Record<string, unknown>,
+) {
+  console.error(`[refresh-youtube-data] ${status}`, JSON.stringify(body));
+  return res.status(status).json(body);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return res.status(500).json({ error: "CRON_SECRET 환경변수가 설정되지 않았습니다." });
+    return fail(res, 500, { error: "CRON_SECRET 환경변수가 설정되지 않았습니다." });
   }
   if (req.headers.authorization !== `Bearer ${cronSecret}`) {
-    return res.status(401).json({ error: "인증되지 않은 호출입니다." });
+    return fail(res, 401, { error: "인증되지 않은 호출입니다." });
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const secretKey = process.env.SUPABASE_SECRET_KEY;
   if (!supabaseUrl || !secretKey) {
-    return res.status(500).json({ error: "서버 환경변수가 설정되지 않았습니다." });
+    const missing = [
+      !supabaseUrl && "VITE_SUPABASE_URL",
+      !secretKey && "SUPABASE_SECRET_KEY",
+    ].filter(Boolean);
+    return fail(res, 500, {
+      error: `서버 환경변수가 설정되지 않았습니다: ${missing.join(", ")}`,
+    });
   }
   // secret key는 RLS를 우회합니다 — 여러 사용자의 tracks를 한꺼번에 다뤄야 해서 필요.
   const supabaseAdmin = createClient(supabaseUrl, secretKey);
@@ -82,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // 해석하면 멀쩡한 곡들이 전부 재생 불가로 표시됩니다. 처리 못 한 곡은 다음
       // 실행 때 다시 대상이 됩니다.
       if (!videosRes.ok) {
-        return res.status(502).json({
+        return fail(res, 502, {
           error: "YouTube videos.list 호출 실패",
           detail: videosData,
           refreshed: refreshedCount,
@@ -117,8 +135,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       missing: missingCount,
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ error: err instanceof Error ? err.message : "unknown error" });
+    // supabase-js 쿼리가 돌려주는 error(위에서 그대로 throw)는 Error 인스턴스가 아니라
+    // message를 가진 일반 객체라, instanceof만 보면 "unknown error"로 뭉개져 원인을
+    // 잃습니다.
+    const message =
+      err instanceof Error
+        ? err.message
+        : typeof err === "object" && err !== null && "message" in err
+          ? String(err.message)
+          : "unknown error";
+    return fail(res, 500, { error: message });
   }
 }
