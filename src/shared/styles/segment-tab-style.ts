@@ -1,7 +1,7 @@
-// 세그먼트 탭(HomeLayout의 라이브러리/탐색, LibraryPage의 정렬 옵션, QueueCard의
-// 재생트랙/재생목록, SettingsModal의 라이트/다크)이 공유하는 active/inactive 배경과
-// 클래스. 렌더링하는 요소(NavLink/button)와 동작(라우팅/정렬토글/단순토글)이 서로
-// 달라 컴포넌트로는 묶지 않고, 모든 호출부가 똑같이 쓰던 값만 함수로 뽑았습니다.
+// 세그먼트 탭(HomeLayout의 라이브러리/탐색, LibraryPage의 정렬 옵션, SearchResultsView의
+// 제목/아티스트/태그, QueueCard의 재생트랙/재생목록, SettingsModal의 라이트/다크)이
+// 공유하는 active/inactive 배경과 클래스. 렌더링하는 요소(NavLink/button)와
+// 동작(라우팅/정렬토글/단순토글)이 서로 달라 컴포넌트로는 묶지 않고, 모든 호출부가 똑같이 쓰던 값만 함수로 뽑았습니다.
 // 패딩·글자 크기·flex 여부는 자리마다 실제로 달라서 호출부에 그대로 둡니다 — 그래서
 // segmentTabClass에는 어느 호출부도 덮어쓰지 않는 것만 들어 있습니다.
 //

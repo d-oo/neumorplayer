@@ -6,6 +6,13 @@
       아티스트·태그(또는 재생목록 제목)를 고치는 폼(react-hook-form + zod 추천)은 아직
       없다. docs/design/수정본2.zip 반영으로 두 화면 모두에 "수정" 원형 버튼이 생겼지만
       `onClick`이 비어있는 자리 표시자다 — 실제 폼을 만들면 여기에 연결한다.
+- [ ] **검색 결과 탭 기억하기(뒤로가기 정책 정립 후)**: 헤더 검색 결과 화면
+      ([SearchResultsView.tsx](src/features/library/components/SearchResultsView.tsx))의
+      제목/아티스트/태그 탭은 지금 컴포넌트 상태라, 곡을 눌러 정보 페이지로 갔다가
+      뒤로 오면 항상 "제목" 탭으로 돌아간다. 보고 있던 탭으로 돌아오게 하고 싶지만, 앱
+      전체의 뒤로가기 동작을 아직 정하지 않아서 보류했다 — 그걸 정한 뒤 탭을 URL(예:
+      `?q=`와 나란히 `?tab=`)에 두는 식으로 구현한다. 새로 검색하거나 검색어를 바꿔 다시
+      검색하면 "제목"으로 돌아가는 지금 규칙은 유지해야 한다.
 - [ ] **포지셔닝 조정("대체 서비스" 리스크 축소)**: 랜딩 문구 수정 —
       [LandingFeatureCards.tsx](src/features/landing/components/LandingFeatureCards.tsx)의
       "YouTube 전곡 연결"과 "고른 카드가 곧바로 재생됩니다",
