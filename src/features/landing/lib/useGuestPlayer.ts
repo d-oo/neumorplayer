@@ -106,10 +106,7 @@ export function useGuestPlayer() {
     setVolume,
     setMuted,
     toggleRepeat,
-    onPlayerReady: playback.handleReady,
-    onPlayerStateChange: playback.handleStateChange,
-    onPlayerEnd: playback.handleEnd,
-    onPlayerError: playback.handleError,
+    iframeHandlers: playback.iframeHandlers,
     isVideoIdValid: playback.isVideoIdValid,
   };
 }

@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
-import { PauseIcon, PlayIcon, SpinnerIcon } from "@/shared/components/icons";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
+import PlaybackIcon from "./PlaybackIcon";
 
 // PlayerPanel.tsx에서 분리한 순수 프리젠테이션 조각입니다(그라디언트 스택·허브·
 // 재생버튼 마크업은 그대로, 상태 없음). 회전 자체는 useCdPlayerPhysics가 discRef의
@@ -30,7 +30,7 @@ export default function CdDisc({
   onTogglePlayClick: () => void;
 }) {
   return (
-    <div className="relative h-41.5 w-41.5 flex-none">
+    <div className="relative h-39 w-39 flex-none">
       <div
         ref={discRef}
         onPointerDown={onPointerDown}
@@ -60,7 +60,7 @@ export default function CdDisc({
           }}
         />
         <div
-          className="absolute left-1/2 top-1/2 h-25.5 w-25.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{ boxShadow: "var(--neu-shadow-disc-inset)" }}
         />
         <div
@@ -84,13 +84,7 @@ export default function CdDisc({
           className="grid h-9.5 w-9.5 place-items-center rounded-full bg-neu-surface text-neu-hi transition-shadow hover:text-(--neu-accent-hover) active:shadow-neu-sunken disabled:opacity-40"
           style={{ boxShadow: "var(--neu-shadow-disc-play)" }}
         >
-          {isLoading ? (
-            <SpinnerIcon className="animate-spin" />
-          ) : isPlaying ? (
-            <PauseIcon />
-          ) : (
-            <PlayIcon className="ml-0.5" />
-          )}
+          <PlaybackIcon playing={isPlaying} loading={isLoading} />
         </button>
       </div>
     </div>

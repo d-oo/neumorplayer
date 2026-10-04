@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { tickStyle } from "../lib/volume-tick-style";
+import {
+  isTickLit,
+  knobAngleToVolume,
+  volumeToKnobAngle,
+  wrapAngleDelta,
+} from "../lib/dial-geometry";
 
 // docs/design/랜딩 페이지.zip의 CD 플레이어 물리(디스크 관성 스크럽, 각도/수직
 // 듀얼모드 볼륨 노브, 드래그 시크바)를 대시보드(PlayerPanel, usePlayerStore 연결)와
@@ -156,9 +162,7 @@ export function useCdPlayerPhysics({
 
     const handleMove = (ev: PointerEvent) => {
       const angle = angleAt(ev.clientX, ev.clientY);
-      let delta = angle - lastAngle;
-      if (delta > 180) delta -= 360;
-      if (delta < -180) delta += 360;
+      const delta = wrapAngleDelta(angle - lastAngle);
       lastAngle = angle;
 
       rotationDegRef.current += delta;
@@ -206,13 +210,12 @@ export function useCdPlayerPhysics({
       Math.hypot(clientX - cx, clientY - cy);
 
     const paint = (vol100: number) => {
-      const angle = (vol100 / 100) * 270 - 135;
+      const angle = volumeToKnobAngle(vol100);
       if (dialEl) {
         dialEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
       }
-      const litCount = vol100 / 100;
       tickEls.forEach((tick, i) => {
-        const lit = i / 24 <= litCount + 0.001;
+        const lit = isTickLit(i, vol100);
         const { background, boxShadow } = tickStyle(lit, mutedRef.current);
         tick.style.background = background;
         tick.style.boxShadow = boxShadow;
@@ -231,13 +234,13 @@ export function useCdPlayerPhysics({
     // 실제 손잡이처럼 멈춤 구간이 있어 그 안에서는 값을 갱신하지 않습니다 — 안 그러면
     // 바닥을 지나는 순간 반대쪽 극값으로 튀어버립니다(atan2가 ±180에서 부호가
     // 뒤집히는 지점이라 "경계 넘김"이 생김).
-    let lastValidAngle = (vol100 / 100) * 270 - 135;
+    let lastValidAngle = volumeToKnobAngle(vol100);
     let wasInValidRange = startAngle >= -135 && startAngle <= 135;
     // 멈춤 구간에 들어온 쪽의 끝 각도(-135 또는 135) — handleMove 참고.
     let deadZoneEdge: number | null = null;
     if (mode === "angle") {
       if (wasInValidRange) lastValidAngle = startAngle;
-      vol100 = ((lastValidAngle + 135) / 270) * 100;
+      vol100 = knobAngleToVolume(lastValidAngle);
     }
 
     let lastY = e.clientY;
@@ -284,7 +287,7 @@ export function useCdPlayerPhysics({
           if (deadZoneEdge !== null) lastValidAngle = deadZoneEdge;
           wasInValidRange = false;
         }
-        vol100 = Math.max(0, Math.min(100, ((lastValidAngle + 135) / 270) * 100));
+        vol100 = Math.max(0, Math.min(100, knobAngleToVolume(lastValidAngle)));
       } else {
         if (!dragStarted) {
           if (
@@ -306,9 +309,7 @@ export function useCdPlayerPhysics({
           1.6 *
           Math.max(0, 1 - r / KNOB_VERTICAL_FALLOFF_RADIUS);
         const angleNow = angleAt(ev.clientX, ev.clientY);
-        let angleDelta = angleNow - lastAngleForVertical;
-        if (angleDelta > 180) angleDelta -= 360;
-        if (angleDelta < -180) angleDelta += 360;
+        const angleDelta = wrapAngleDelta(angleNow - lastAngleForVertical);
         lastY = ev.clientY;
         lastAngleForVertical = angleNow;
         vol100 = Math.max(

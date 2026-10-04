@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore } from "../lib/usePlayerStore";
+import { selectCurrentTrack, usePlayerStore } from "../lib/usePlayerStore";
 import { selectIsAudible, selectIsLoading } from "../lib/playback-display";
 import { findPlayableIndex } from "../lib/queue-navigation";
 import { useCdPlayerPhysics } from "../hooks/useCdPlayerPhysics";
@@ -48,7 +48,7 @@ export default function PlayerPanel() {
   const previewTime = usePlayerStore((s) => s.previewTime);
   const setIsScrubbing = usePlayerStore((s) => s.setIsScrubbing);
 
-  const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
+  const currentTrack = selectCurrentTrack({ queue, currentIndex });
   // old-src(Player.js disablePrev/disableNext)처럼 반복이 꺼져 있으면 앞/뒤 곡이 없을 때
   // 버튼을 끕니다. 반복이 켜져 있으면 처음↔끝으로 돌아가므로 켜 두되, 큐에 곡이
   // 하나뿐이면(단일 곡 재생) "이전/다음 곡" 자체가 없어서 반복과 상관없이 끕니다.
@@ -81,7 +81,7 @@ export default function PlayerPanel() {
     "shadow-neu-raised-sm hover:text-neu-hi active:shadow-neu-sunken";
 
   return (
-    <section className="flex flex-col gap-3.75 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-4.5 shadow-neu-raised">
+    <section className="flex flex-col gap-3.75 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-6 shadow-neu-raised">
       <div className="flex w-full items-center gap-3.5">
         <CdDisc
           discRef={physics.discRef}
@@ -94,7 +94,7 @@ export default function PlayerPanel() {
         />
 
         {/* 컨트롤 + 볼륨 노브 */}
-        <div className="flex min-w-0 flex-1 flex-col items-center gap-3.5">
+        <div className="flex min-w-0 flex-1 flex-col items-end gap-3.5">
           <div className="grid grid-cols-2 gap-2.5">
             <IconCircleButton
               size="lg"

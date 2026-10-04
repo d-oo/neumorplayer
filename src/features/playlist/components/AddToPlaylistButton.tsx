@@ -2,22 +2,23 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
-  addTrackToPlaylist,
+  addTracksToPlaylist,
   fetchPlaylistIdsForTrack,
-  fetchPlaylists,
+  invalidatePlaylistMembership,
   playlistMembershipQueryKey,
-  playlistTracksQueryKey,
-  playlistsQueryKey,
-  removeTrackFromPlaylist,
+  removeTracksFromPlaylist,
 } from "../lib/playlists";
+import { usePlaylists } from "../hooks/usePlaylists";
 import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
 import type { Track } from "@/features/library/lib/tracks";
 import { CheckIcon, QueueIcon } from "@/shared/components/icons";
 import { useToastStore } from "@/shared/lib/useToastStore";
-import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
+import { toggleInSet } from "@/shared/lib/toggle-in-set";
 import CheckBox from "@/shared/components/CheckBox";
 import IconCircleButton from "@/shared/components/IconCircleButton";
 import Modal from "@/shared/components/Modal";
+import ModalHeader from "@/shared/components/ModalHeader";
+import ModalCancelButton from "@/shared/components/ModalCancelButton";
 import ModalCtaButton from "@/shared/components/ModalCtaButton";
 
 // old-src/src/components/MusicInfo.js의 "playlist_add" 흐름을 이어받습니다.
@@ -33,20 +34,12 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const playingPlaylistId = usePlayerStore((s) => s.playingPlaylistId);
-  const currentTrackId = usePlayerStore((s) =>
-    s.currentIndex >= 0 ? s.queue[s.currentIndex]?.id : undefined,
-  );
-  const detachCurrentFromPlaylist = usePlayerStore(
-    (s) => s.detachCurrentFromPlaylist,
+  const detachCurrentIfRemoved = usePlayerStore(
+    (s) => s.detachCurrentIfRemoved,
   );
   const showToast = useToastStore((s) => s.show);
 
-  const { data: playlists = [] } = useQuery({
-    queryKey: playlistsQueryKey(user?.id),
-    queryFn: fetchPlaylists,
-    enabled: !!user,
-  });
+  const { data: playlists = [] } = usePlaylists();
 
   const { data: memberPlaylistIds = [] } = useQuery({
     queryKey: playlistMembershipQueryKey(track.id),
@@ -65,19 +58,14 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
       removeIds: string[];
     }) =>
       Promise.all([
-        ...addIds.map((id) => addTrackToPlaylist(id, track.id)),
-        ...removeIds.map((id) => removeTrackFromPlaylist(id, track.id)),
+        ...addIds.map((id) => addTracksToPlaylist(id, [track.id])),
+        ...removeIds.map((id) => removeTracksFromPlaylist(id, [track.id])),
       ]),
     onSuccess: (_data, { addIds, removeIds }) => {
-      queryClient.invalidateQueries({
-        queryKey: playlistMembershipQueryKey(track.id),
+      invalidatePlaylistMembership(queryClient, user?.id, {
+        playlistIds: [...addIds, ...removeIds],
+        trackIds: [track.id],
       });
-      queryClient.invalidateQueries({ queryKey: playlistsQueryKey(user?.id) });
-      [...addIds, ...removeIds].forEach((id) =>
-        queryClient.invalidateQueries({
-          queryKey: playlistTracksQueryKey(id),
-        }),
-      );
       setOpen(false);
       showToast("재생목록에 반영했습니다.");
     },
@@ -90,12 +78,7 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
   }
 
   function toggle(playlistId: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(playlistId)) next.delete(playlistId);
-      else next.add(playlistId);
-      return next;
-    });
+    setSelectedIds((prev) => toggleInSet(prev, playlistId));
   }
 
   function commit() {
@@ -105,16 +88,9 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
       setOpen(false);
       return;
     }
-    // PlaylistInfoPage의 handleRemoveTrack과 같은 이유 — 지금 재생 중인 이 곡을
-    // 그 곡이 재생 중인 재생목록에서 빼는 경우, 제거 전에 먼저 단독 재생으로
-    // 떼어내야 큐가 DB에서 빠진 순서를 계속 참조하지 않습니다.
-    if (
-      currentTrackId === track.id &&
-      playingPlaylistId !== null &&
-      removeIds.includes(playingPlaylistId)
-    ) {
-      detachCurrentFromPlaylist();
-    }
+    // 지금 재생 중인 이 곡을 그 곡이 재생 중인 재생목록에서 빼는 경우, 제거 전에
+    // 먼저 단독 재생으로 떼어냅니다(usePlayerStore.detachCurrentIfRemoved 참고).
+    detachCurrentIfRemoved(removeIds, [track.id]);
     applyMutation.mutate({ addIds, removeIds });
   }
 
@@ -135,14 +111,10 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
         onClose={() => setOpen(false)}
         className="w-93 px-5.5 pt-5.5 pb-5"
       >
-        <div>
-          <p className="text-base font-extrabold tracking-[-0.02em]">
-            재생목록에 추가
-          </p>
-          <p className="mt-1.25 text-[12.5px] text-neu-muted">
-            {track.title} · {track.artist.join(", ")}
-          </p>
-        </div>
+        <ModalHeader
+          title="재생목록에 추가"
+          subtitle={`${track.title} · ${track.artist.join(", ")}`}
+        />
 
         <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
           {playlists.length === 0 ? (
@@ -177,13 +149,7 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
         <div className="h-px bg-neu-divider" />
 
         <div className="flex items-center justify-end gap-2.5">
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className={`px-4.5 py-2.25 text-[13px] text-(--neu-ink-40) hover:text-(--neu-ink-24) ${secondaryPillButtonClass}`}
-          >
-            취소
-          </button>
+          <ModalCancelButton onClick={() => setOpen(false)} />
           <ModalCtaButton onClick={commit} disabled={applyMutation.isPending}>
             적용
           </ModalCtaButton>

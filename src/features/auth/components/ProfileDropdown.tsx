@@ -9,6 +9,9 @@ import {
 import { useOutsideClick } from "@/shared/lib/useOutsideClick";
 import SettingsModal from "./SettingsModal";
 
+const menuItemClass =
+  "flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-(--neu-ink-32) transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight";
+
 // docs/design/수정사항.zip(03) — 헤더 우측 상단의 프로필 아바타를 드롭다운 버튼으로
 // 바꾼 것. 로그아웃 버튼은 화면(HomeLayout)이 다르더라도 여전히 auth가 소유하는
 // 기능이라(docs/feature-conventions.md) 이 컴포넌트도 auth에 둡니다.
@@ -61,7 +64,7 @@ export default function ProfileDropdown() {
               setOpen(false);
               setSettingsOpen(true);
             }}
-            className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-(--neu-ink-32) transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
+            className={menuItemClass}
           >
             <SettingsIcon className="flex-none" />
             설정
@@ -69,7 +72,7 @@ export default function ProfileDropdown() {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="flex w-full items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-left text-[13.5px] font-semibold text-(--neu-ink-32) transition-[background,box-shadow] duration-150 hover:bg-neu-highlight hover:text-neu-hi hover:shadow-neu-highlight"
+            className={menuItemClass}
           >
             <LogoutIcon className="flex-none" />
             로그아웃

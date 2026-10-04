@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { YOUTUBE_API_BASE, getApiKeyOrThrow } from "./_youtube.js";
+import {
+  YOUTUBE_API_BASE,
+  buildVideosUrl,
+  getApiKeyOrThrow,
+} from "./_youtube.js";
 
 // 검색 결과로 돌려줄 영상 개수.
 const RESULT_COUNT = 6;
@@ -52,14 +56,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiKey = getApiKeyOrThrow();
 
     if (typeof id === "string" && id.trim() !== "") {
-      const videoUrl = new URL(`${YOUTUBE_API_BASE}/videos`);
-      videoUrl.searchParams.set("part", "snippet,contentDetails,statistics,status");
-      videoUrl.searchParams.set(
-        "fields",
+      const videoUrl = buildVideosUrl(
+        apiKey,
+        [id.trim()],
+        "snippet,contentDetails,statistics,status",
         "items(id,snippet(thumbnails,title,channelTitle),contentDetails/duration,statistics/viewCount,status/madeForKids)"
       );
-      videoUrl.searchParams.set("id", id.trim());
-      videoUrl.searchParams.set("key", apiKey);
 
       const videoRes = await fetch(videoUrl);
       const videoData = (await videoRes.json()) as {
@@ -117,14 +119,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 화면에서 실제로 쓰는 값만 받습니다 — 제목/썸네일/채널명은 위 search 결과에
     // 이미 있으므로 여기선 snippet을 요청하지 않습니다.
-    const videosUrl = new URL(`${YOUTUBE_API_BASE}/videos`);
-    videosUrl.searchParams.set("part", "contentDetails,statistics,status");
-    videosUrl.searchParams.set(
-      "fields",
+    const videosUrl = buildVideosUrl(
+      apiKey,
+      ids,
+      "contentDetails,statistics,status",
       "items(id,contentDetails/duration,statistics/viewCount,status/madeForKids)"
     );
-    videosUrl.searchParams.set("id", ids.join(","));
-    videosUrl.searchParams.set("key", apiKey);
 
     const videosRes = await fetch(videosUrl);
     const videosData = (await videosRes.json()) as { items?: unknown[] };

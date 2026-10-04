@@ -4,8 +4,9 @@ import { useLibrarySearchQuery } from "../lib/useLibrarySearchQuery";
 import { useThemeSync } from "@/features/auth/hooks/useThemeSync";
 import ProfileDropdown from "@/features/auth/components/ProfileDropdown";
 import BrandWordmark from "@/shared/components/BrandWordmark";
+import PoweredByYouTube from "@/shared/components/PoweredByYouTube";
 import PlayerPanel from "@/features/player/components/PlayerPanel";
-import QueueCard from "@/features/player/components/QueueCard";
+import QueueCard from "../components/QueueCard";
 import YouTubePlayer from "@/features/player/components/YouTubePlayer";
 import { VideoSlotProvider } from "@/features/player/VideoSlotProvider";
 import { SearchGlyphIcon } from "@/shared/components/icons";
@@ -18,6 +19,7 @@ import {
 } from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 import { fieldBoxStyle } from "@/shared/styles/field-box-style";
+import { grooveLineStyle } from "@/shared/styles/groove-line-style";
 
 // docs/design/ 시안(헤더)의 라이브러리/탐색 세그먼트 탭 — 배경(segmentTabStyle)과
 // 공통 클래스(segmentTabClass)를 LibraryPage 정렬 탭·QueueCard 토글·SettingsModal
@@ -86,21 +88,27 @@ export default function HomeLayout() {
               스크롤에 딸려 움직이지 않고 패널 하단에 떠 있습니다. main에 relative 등을
               주면 이 동작이 깨지니 주의하세요. */}
           <div className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
-            <header
-              className="flex items-center gap-3.5 px-5.5 py-3.5"
-              style={{ borderBottom: "1px solid var(--neu-divider)" }}
-            >
+            <header className="flex items-center gap-3.5 px-5.5 py-3.5">
               {/* 로고+워드마크를 누르면 "/"(라이브러리)로 갑니다. ?q=가 빠진 주소라
                   검색 결과 화면을 보던 중이면 검색도 같이 닫힙니다(라이브러리 탭과 동일). */}
-              <Link to="/" className="flex flex-none items-center gap-2.25">
-                <img
-                  src="/favicon.png"
-                  alt=""
-                  className="h-5.5 w-5.5 rounded-full object-cover"
-                  style={{ boxShadow: "var(--neu-shadow-logo)" }}
-                />
-                <BrandWordmark />
-              </Link>
+              {/* 워드마크 옆의 YouTube 표기(YouTube API Branding Guidelines 대응)는
+                  가이드라인상 "YouTube와 함께 동작한다"는 설명 문구라 앱 이름 옆에 둬도
+                  되지만, 이름의 일부처럼 읽히지 않도록 크기·서체·색을 워드마크와 확실히
+                  다르게 유지하고 "/" 링크에도 넣지 않습니다(로고+워드마크만 링크).
+                  YouTube 로고 이미지는 앱 이름과 함께 쓰는 게 금지라 여기엔 절대 넣지
+                  마세요. */}
+              <div className="flex flex-none items-center gap-2.5">
+                <Link to="/" className="flex flex-none items-center gap-2.25">
+                  <img
+                    src="/favicon.png"
+                    alt=""
+                    className="h-5.5 w-5.5 rounded-full object-cover"
+                    style={{ boxShadow: "var(--neu-shadow-logo)" }}
+                  />
+                  <BrandWordmark />
+                </Link>
+                <PoweredByYouTube size="sm" />
+              </div>
 
               <nav
                 className="ml-1.5 flex flex-none gap-0.75 rounded-xl border border-(--neu-border-70) p-1"
@@ -125,7 +133,7 @@ export default function HomeLayout() {
                       commitQuery(inputValue);
                     }
                   }}
-                  placeholder="라이브러리 내 검색(제목, 아티스트, 태그 검색)"
+                  placeholder="라이브러리 내 검색"
                   className="placeholder:text-(--neu-ink-63)"
                 />
                 <button
@@ -140,6 +148,15 @@ export default function HomeLayout() {
 
               <ProfileDropdown />
             </header>
+
+            {/* 헤더/본문 구분선 — 평평한 1px 회색 border 대신 로그인 화면 "또는"
+                구분선과 같은 음각 홈(grooveLineStyle)입니다. 카드 끝까지 긋지 않고 헤더
+                좌우 여백(px-5.5)만큼 안쪽에서 둥글게 끝내서 카드 표면에 파인 홈처럼
+                보이게 합니다. */}
+            <div
+              className="mx-5.5 h-0.5 flex-none rounded-xs"
+              style={grooveLineStyle}
+            />
 
             {/* 시안대로 본문은 px-6.5/py-6(24px 26px) 안에 max-w-195(780px) 중앙
                 정렬 래퍼를 한 번 더 둡니다 — 모든 탭이 같은 축·같은 폭을 씁니다. */}

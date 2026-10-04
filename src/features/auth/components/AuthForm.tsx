@@ -6,6 +6,7 @@ import {
 } from "react";
 import { CheckIcon, EmailIcon, EyeIcon, LockIcon } from "./icons";
 import CheckBox from "@/shared/components/CheckBox";
+import { grooveLineStyle } from "@/shared/styles/groove-line-style";
 
 // LoginPage/SignupPage가 공유하는 폼 조각들. docs/design/의 "데스크탑 로그인 및
 // 회원가입 화면" 시안을 그대로 옮겼습니다 — 인증 화면을 더 추가할 땐 AuthLayout과
@@ -25,6 +26,31 @@ const fieldInputClass =
 const fieldLabelClass =
   "font-neu-mono text-[10px] tracking-[0.14em] text-(--neu-ink-50-a)";
 
+// Field/PasswordField가 공유하는 겉모양(라벨 + 함몰된 입력 줄). 줄 안쪽 좌우 여백만
+// 두 입력이 달라서(비밀번호는 오른쪽 눈 버튼 때문에 pr-2) rowPaddingClass로 받습니다.
+function FieldShell({
+  id,
+  label,
+  rowPaddingClass,
+  children,
+}: {
+  id: string;
+  label: string;
+  rowPaddingClass: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.75">
+      <label htmlFor={id} className={fieldLabelClass}>
+        {label}
+      </label>
+      <div className={`${fieldRowClass} ${rowPaddingClass}`} style={fieldRowStyle}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // 지금은 이메일 입력에만 쓰이지만 아이콘만 바꾸면 다른 입력에도 그대로 쓸 수 있어서
 // icon을 prop으로 받습니다(기본값은 기존 그대로 이메일 아이콘).
 export function Field({
@@ -38,15 +64,10 @@ export function Field({
   icon?: ReactNode;
 } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="flex flex-col gap-1.75">
-      <label htmlFor={id} className={fieldLabelClass}>
-        {label}
-      </label>
-      <div className={`${fieldRowClass} px-3.5`} style={fieldRowStyle}>
-        {icon}
-        <input id={id} className={fieldInputClass} {...inputProps} />
-      </div>
-    </div>
+    <FieldShell id={id} label={label} rowPaddingClass="px-3.5">
+      {icon}
+      <input id={id} className={fieldInputClass} {...inputProps} />
+    </FieldShell>
   );
 }
 
@@ -61,36 +82,31 @@ export function PasswordField({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="flex flex-col gap-1.75">
-      <label htmlFor={id} className={fieldLabelClass}>
-        {label}
-      </label>
-      <div className={`${fieldRowClass} pr-2 pl-3.5`} style={fieldRowStyle}>
-        <LockIcon className="flex-none text-(--neu-ink-55)" />
-        <input
-          id={id}
-          type={visible ? "text" : "password"}
-          className={fieldInputClass}
-          {...inputProps}
-        />
-        <button
-          type="button"
-          onClick={() => setVisible((v) => !v)}
-          title="비밀번호 표시"
-          aria-label="비밀번호 표시"
-          className="grid size-8.5 flex-none place-items-center rounded-full"
-          style={{
-            color: visible ? "var(--neu-hi)" : "var(--neu-ink-52)",
-            background: "var(--neu-surface)",
-            boxShadow: visible
-              ? "var(--neu-shadow-google-active)"
-              : "var(--neu-shadow-eye-btn)",
-          }}
-        >
-          <EyeIcon hidden={!visible} />
-        </button>
-      </div>
-    </div>
+    <FieldShell id={id} label={label} rowPaddingClass="pr-2 pl-3.5">
+      <LockIcon className="flex-none text-(--neu-ink-55)" />
+      <input
+        id={id}
+        type={visible ? "text" : "password"}
+        className={fieldInputClass}
+        {...inputProps}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        title="비밀번호 표시"
+        aria-label="비밀번호 표시"
+        className="grid size-8.5 flex-none place-items-center rounded-full"
+        style={{
+          color: visible ? "var(--neu-hi)" : "var(--neu-ink-52)",
+          background: "var(--neu-surface)",
+          boxShadow: visible
+            ? "var(--neu-shadow-google-active)"
+            : "var(--neu-shadow-eye-btn)",
+        }}
+      >
+        <EyeIcon hidden={!visible} />
+      </button>
+    </FieldShell>
   );
 }
 
@@ -152,18 +168,20 @@ export function GoogleButton({
   );
 }
 
-export function Divider({ children }: { children: ReactNode }) {
-  const lineStyle = {
-    background: "var(--neu-surface-sunken)",
-    boxShadow: "var(--neu-shadow-divider-line)",
-  };
+export function Divider({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="h-0.5 flex-1 rounded-xs" style={lineStyle} />
+    <div className={`flex items-center gap-3 ${className}`}>
+      <div className="h-0.5 flex-1 rounded-xs" style={grooveLineStyle} />
       <div className="font-neu-mono text-[10px] tracking-[0.16em] text-(--neu-ink-55)">
         {children}
       </div>
-      <div className="h-0.5 flex-1 rounded-xs" style={lineStyle} />
+      <div className="h-0.5 flex-1 rounded-xs" style={grooveLineStyle} />
     </div>
   );
 }

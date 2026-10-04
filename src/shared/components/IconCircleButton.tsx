@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-// 원형 아이콘 버튼(라이브러리/검색결과 행의 재생 버튼, QueueCard의 재생목록 추가,
+// 원형 아이콘 버튼(라이브러리/검색결과 행의 재생 버튼, PlaylistNavList의 재생목록 추가,
 // PlayerPanel의 이전/다음/셔플/반복, AddToPlaylistButton의 아이콘 트리거, 재생목록
 // 정보·트랙 상세의 44px 액션 버튼)이 공유하는 크기·모양(rounded-full/bg-neu-surface)과
 // disabled 흐림만 책임집니다. 색상·그림자·hover/active/눌림 표현은 자리마다 의미가

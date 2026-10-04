@@ -1,4 +1,9 @@
 import { fieldBoxStyle } from "@/shared/styles/field-box-style";
+import {
+  ctaPillClass,
+  ctaPillSunkenDisabledClass,
+} from "@/shared/styles/cta-pill-class";
+import { FieldLabel } from "./LabeledSearchField";
 
 // 태그 직접 입력창(라벨+pill 입력+추가 버튼)과 제안/커스텀 태그 토글 목록을 두
 // 컴포넌트로 나눠 둡니다 — ExplorePage에서 입력 행은 비디오 ID 입력칸과 같은 줄에
@@ -16,9 +21,7 @@ export function TagInputRow({
 }) {
   return (
     <div>
-      <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-        태그
-      </div>
+      <FieldLabel className="mb-2.25">태그</FieldLabel>
       <div className="flex items-center gap-2.25">
         <div
           className="flex w-60 items-center gap-2 rounded-full border border-(--neu-border-80) px-3.75 py-2.25"
@@ -44,7 +47,7 @@ export function TagInputRow({
           type="button"
           onClick={onAddTagInput}
           disabled={!tagInput.trim()}
-          className="rounded-full px-4 py-2.25 text-[13px] font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 [background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:[background:var(--neu-ink-928)] disabled:text-(--neu-ink-58) disabled:shadow-neu-cta-pill-disabled disabled:cursor-default"
+          className={`rounded-full px-4 py-2.25 text-[13px] font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 ${ctaPillClass} ${ctaPillSunkenDisabledClass}`}
         >
           태그 추가
         </button>

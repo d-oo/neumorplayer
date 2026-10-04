@@ -43,7 +43,7 @@ export default function LandingCdPlayer({
   });
 
   return (
-    <section className="flex h-74.25 w-85 flex-none flex-col gap-3.75 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-4.5 shadow-neu-raised">
+    <section className="flex h-74.25 w-85 flex-none flex-col gap-3.75 rounded-3xl border border-(--neu-border-80) bg-neu-surface p-6 shadow-neu-raised">
       <div className="flex w-full items-center gap-3.5">
         <CdDisc
           discRef={physics.discRef}
@@ -54,7 +54,7 @@ export default function LandingCdPlayer({
           videoId={track?.videoId}
           onTogglePlayClick={() => guestPlayer.setPlaying(!isPlaying)}
         />
-        <div className="flex min-w-0 flex-1 flex-col items-center">
+        <div className="flex min-w-0 flex-1 flex-col items-end">
           <VolumeKnob
             knobRef={physics.knobRef}
             onPointerDown={physics.onKnobPointerDown}

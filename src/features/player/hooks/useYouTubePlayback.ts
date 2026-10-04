@@ -23,6 +23,14 @@ const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 // IFrame API onError의 "잘못된 매개변수"(11자가 아닌 ID 등) 코드.
 const INVALID_PARAM_ERROR_CODE = 2;
 
+// <YouTubeIframe>(PlaybackIframe)에 그대로 넘기는 이벤트 핸들러 묶음.
+export interface PlaybackIframeHandlers {
+  onReady: (event: YouTubeEvent) => void;
+  onStateChange: (event: YouTubeEvent<number>) => void;
+  onEnd: () => void;
+  onError: (event: YouTubeEvent<number>) => void;
+}
+
 interface UseYouTubePlaybackOptions {
   // 지금 <YouTubeIframe videoId>에 넘기는 값과 반드시 같은 videoId. react-youtube는
   // videoId가 바뀌면 기존 플레이어를 파괴하고 새로 만들기 때문에(shouldResetPlayer),
@@ -299,9 +307,11 @@ export function useYouTubePlayback({
     seek,
     setScrubbing,
     replay,
-    handleReady,
-    handleStateChange,
-    handleEnd,
-    handleError,
+    iframeHandlers: {
+      onReady: handleReady,
+      onStateChange: handleStateChange,
+      onEnd: handleEnd,
+      onError: handleError,
+    } satisfies PlaybackIframeHandlers,
   };
 }

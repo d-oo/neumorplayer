@@ -3,7 +3,7 @@ import BrandWordmark from "@/shared/components/BrandWordmark";
 
 // 고정폭이 아니라 내용만큼만 차지하는 최소 너비 헤더 — 좌측 로고마크+워드마크, 우측
 // "시작하기"(로그인 화면으로 이동). 로고마크는 favicon-round.png(브랜드 로고)를 그대로
-// 씁니다. 워드마크는 AuthLayout.tsx와 같은 Space Grotesk 패턴(크기만 16px).
+// 씁니다. 워드마크는 AuthLayout.tsx와 같은 두 줄(NEUMOR/PLAYER) 배치(크기만 16px).
 export default function LandingHeader() {
   return (
     <header
@@ -20,7 +20,7 @@ export default function LandingHeader() {
           className="h-8.5 w-8.5 flex-none rounded-full object-cover"
           style={{ boxShadow: "var(--neu-shadow-landing-logo)" }}
         />
-        <BrandWordmark />
+        <BrandWordmark stacked />
       </div>
 
       <Link

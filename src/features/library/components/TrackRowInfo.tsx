@@ -9,7 +9,7 @@ import type { Track } from "../lib/tracks";
 // dnd-kit transform)는 화면마다 달라서 호출부에 그대로 두고, 여기서는 두 자식만
 // 조각(Fragment)으로 돌려줍니다.
 //
-// 사이드바 QueueCard의 행은 겉보기엔 비슷해도 제목이 마퀴가 아니라 말줄임이고 글자
+// 사이드바 "재생 트랙" 탭(QueueTrackList)의 행은 겉보기엔 비슷해도 제목이 마퀴가 아니라 말줄임이고 글자
 // 크기도 달라서 일부러 합치지 않았습니다.
 export default function TrackRowInfo({
   track,

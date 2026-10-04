@@ -1,12 +1,12 @@
 import type { RefObject } from "react";
 import { tickStyle } from "../lib/volume-tick-style";
+import { isTickLit, volumeToKnobAngle } from "../lib/dial-geometry";
 
 function VolumeTicks({ volume, muted }: { volume: number; muted: boolean }) {
-  const vol = volume / 100;
   return (
     <>
       {Array.from({ length: 25 }, (_, i) => {
-        const lit = i / 24 <= vol + 0.001;
+        const lit = isTickLit(i, volume);
         const len = i % 6 === 0 ? 11 : 8;
         return (
           <div
@@ -23,7 +23,7 @@ function VolumeTicks({ volume, muted }: { volume: number; muted: boolean }) {
               transformOrigin: "50% 50%",
               ...tickStyle(lit, muted),
               transform: `rotate(${(-135 + 11.25 * i).toFixed(2)}deg) translateY(${-(
-                34 +
+                31 +
                 len / 2
               )}px)`,
             }}
@@ -57,14 +57,14 @@ export default function VolumeKnob({
   // onKnobPointerDown).
   muted: boolean;
 }) {
-  const knobAngle = (dialVolume / 100) * 270 - 135;
+  const knobAngle = volumeToKnobAngle(dialVolume);
 
   return (
     <div className="flex flex-col items-center gap-px">
       <div
         ref={knobRef}
         onPointerDown={onPointerDown}
-        className="relative h-23 w-23 cursor-grab touch-none select-none active:cursor-grabbing"
+        className="relative h-21.5 w-21.5 cursor-grab touch-none select-none active:cursor-grabbing"
       >
         <VolumeTicks volume={dialVolume} muted={muted} />
 
@@ -79,7 +79,7 @@ export default function VolumeKnob({
           }}
         >
           <div
-            className={`absolute left-1/2 top-1/2 h-15 w-15 -translate-x-1/2 -translate-y-1/2 rounded-full ${
+            className={`absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full ${
               muted ? "bg-(--neu-knob-hub-muted)" : "bg-neu-surface"
             }`}
             style={{
@@ -94,7 +94,7 @@ export default function VolumeKnob({
 
           <div
             data-dial
-            className="absolute left-1/2 top-1/2 h-12.5 w-12.5 overflow-hidden rounded-full"
+            className="absolute left-1/2 top-1/2 h-11.5 w-11.5 overflow-hidden rounded-full"
             style={{
               background: "var(--neu-knob-texture)",
               boxShadow: muted

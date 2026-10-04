@@ -1,4 +1,5 @@
 import Modal from "@/shared/components/Modal";
+import { ModalTitle } from "@/shared/components/ModalHeader";
 import CloseButton from "@/shared/components/CloseButton";
 import ModalCtaButton from "@/shared/components/ModalCtaButton";
 
@@ -21,9 +22,7 @@ export default function PrivacyPolicyModal({
       className="w-137.5 max-w-full px-6.5 pt-6 pb-5.5"
     >
       <div className="flex items-start justify-between gap-4">
-        <p className="text-base font-extrabold tracking-[-0.02em]">
-          개인정보 처리방침
-        </p>
+        <ModalTitle>개인정보 처리방침</ModalTitle>
         <CloseButton onClick={onClose} />
       </div>
 

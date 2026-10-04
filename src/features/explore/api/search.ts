@@ -87,6 +87,15 @@ function parseExploreResponse(data: {
     });
 }
 
+// YouTube 검색 결과 쿼리(탐색의 제목·아티스트 검색과 비디오 ID 조회, 랜딩 게스트
+// 검색)의 staleTime. 앱 기본값(30초, shared/lib/queryClient.ts)을 따르면 30초가 지난
+// 뒤 창으로 돌아오거나(refetchOnWindowFocus) 같은 검색어로 다시 검색할 때 API를 또
+// 불러, 검색 한 번에 YouTube 할당량 101 unit(search.list 100 + videos.list 1)이
+// 그대로 다시 나갔습니다. 몇 분 사이에 검색 결과가 바뀔 일은 거의 없으므로, 한 번
+// 받은 결과는 캐시에 남아 있는 동안(사용하지 않게 된 뒤 기본 5분) 계속 최신으로
+// 취급해 다시 부르지 않습니다.
+export const YOUTUBE_RESULTS_STALE_TIME = Infinity;
+
 // /api/youtube-search 한 번으로 후보와 각 영상의 재생시간·조회수·아동용 여부를 함께
 // 받아옵니다. 예전엔 이 두 가지를 브라우저가 순차로 두 번 호출했는데, 두 번째 요청이
 // 첫 번째 결과를 기다려야 해서 왕복 지연이 그대로 두 배가 됐습니다(자세한 배경은

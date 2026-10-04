@@ -1,15 +1,15 @@
 # neumorplayer — 개발 노트
 
 `old-src`(4년 전 CRA + IndexedDB 버전)를 Vite + TypeScript + Supabase + Vercel 스택으로
-다시 만드는 프로젝트입니다. 지금 상태는 **기능은 비어 있고 배선만 된 스캐폴딩**입니다.
+다시 만드는 프로젝트입니다. 이 문서는 로컬 개발 환경 셋업과 배포 환경변수를 다룹니다.
 
 ## 스택
 
-- **프론트엔드**: Vite + React 18 + TypeScript
+- **프론트엔드**: Vite + React 19 + TypeScript
 - **DB/Auth**: Supabase (Postgres, Row Level Security, Google OAuth + 이메일/비밀번호)
 - **서버 상태**: TanStack Query
 - **클라이언트 상태**: Zustand (재생 큐, 볼륨 등 UI 전용 상태만)
-- **드래그앤드롭**: dnd-kit (재생목록 순서 변경용, 아직 미사용)
+- **드래그앤드롭**: dnd-kit (재생목록 상세의 곡 순서 변경)
 - **호스팅**: Vercel — `/api`는 Vercel Functions(서버리스)로 자동 배포됨, Next.js 아님
 
 ## 처음 설정하기
@@ -48,7 +48,8 @@
    `vercel dev`, 기본 3000번 포트)를 같이 띄우세요. `vite.config.ts`의 `server.proxy`가
    `/api` 요청을 3000번으로 넘겨주므로, 브라우저는 계속 `npm run dev`의 5173번 포트만
    열면 됩니다 — `vercel dev`가 띄우는 주소를 직접 열면 `vercel.json`의 SPA rewrite가
-   Vite 전용 경로(`/@vite/client` 등)까지 가로채 화면이 안 뜹니다(CLAUDE.md 참고).
+   Vite 전용 경로(`/@vite/client` 등)까지 가로채 화면이 안 뜹니다(`docs/architecture.md`의
+   "`vercel.json`의 SPA rewrite" 참고).
 
 ## Vercel 배포 시 환경변수
 
@@ -62,5 +63,4 @@ Vercel 프로젝트 설정 → Environment Variables에 아래를 등록:
 프로젝트 → Settings → Cron Jobs에서 볼 수 있고, 거기서 수동 실행도 됩니다.
 
 `src/` 폴더 구조(feature 컨벤션, `shared/lib`·`shared/components`·`shared/styles` 분류
-기준)는 `CLAUDE.md`의 "Feature 폴더 컨벤션" 문단이 최신 기준입니다 — 여기 따로 옮겨
-적지 않습니다.
+기준)는 `docs/feature-conventions.md`가 최신 기준입니다 — 여기 따로 옮겨 적지 않습니다.

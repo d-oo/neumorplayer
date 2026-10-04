@@ -4,6 +4,8 @@ import { useAuth } from "../hooks/useAuth";
 import { deleteAccount } from "../api/account";
 import { themeQueryKey, updateThemeSetting } from "../api/settings";
 import Modal from "@/shared/components/Modal";
+import ModalHeader from "@/shared/components/ModalHeader";
+import { ConfirmDialogContent } from "@/shared/components/ConfirmModal";
 import { MoonIcon, SunIcon } from "@/shared/components/icons";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
@@ -56,48 +58,24 @@ export default function SettingsModal({
   return (
     <Modal open={open} onClose={handleClose} className="w-93 px-5.5 pt-5.5 pb-5">
       {confirmingDelete ? (
-        <>
-          <div>
-            <p className="text-base font-extrabold tracking-[-0.02em]">
-              정말 탈퇴하시겠어요?
-            </p>
-            <p className="mt-1.25 text-[12.5px] text-neu-muted">
-              계정과 저장된 트랙·재생목록이 모두 삭제되며 되돌릴 수 없습니다.
-            </p>
-          </div>
-
-          {deleteMutation.isError && (
-            <p className="text-xs text-red-500">
-              {deleteMutation.error instanceof Error
+        <ConfirmDialogContent
+          onCancel={() => setConfirmingDelete(false)}
+          onConfirm={() => deleteMutation.mutate()}
+          isPending={deleteMutation.isPending}
+          errorMessage={
+            deleteMutation.isError
+              ? deleteMutation.error instanceof Error
                 ? deleteMutation.error.message
-                : "회원 탈퇴에 실패했습니다."}
-            </p>
-          )}
-
-          <div className="flex items-center justify-end gap-2.5">
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(false)}
-              disabled={deleteMutation.isPending}
-              className={`px-4.5 py-2.25 text-[13px] text-(--neu-ink-40) hover:text-(--neu-ink-24) disabled:cursor-default disabled:opacity-60 ${secondaryPillButtonClass}`}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-              className="rounded-full bg-(--neu-danger) px-5 py-2.25 text-[13px] font-bold text-white shadow-neu-cta-pill enabled:hover:bg-(--neu-danger-hover) disabled:cursor-default disabled:opacity-60"
-            >
-              탈퇴
-            </button>
-          </div>
-        </>
+                : "회원 탈퇴에 실패했습니다."
+              : null
+          }
+          title="정말 탈퇴하시겠어요?"
+          description="계정과 저장된 트랙·재생목록이 모두 삭제되며 되돌릴 수 없습니다."
+          confirmLabel="탈퇴"
+        />
       ) : (
         <>
-          <div>
-            <p className="text-base font-extrabold tracking-[-0.02em]">설정</p>
-          </div>
+          <ModalHeader title="설정" />
 
           <div className="flex flex-col gap-2">
             <p className="text-[12.5px] font-semibold text-neu-muted">

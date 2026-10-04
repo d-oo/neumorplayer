@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import YouTubeIframe, { type YouTubeProps } from "react-youtube";
 import { useQueryClient } from "@tanstack/react-query";
-import { usePlayerStore } from "../lib/usePlayerStore";
+import { selectCurrentTrack, usePlayerStore } from "../lib/usePlayerStore";
 import { findPlayableIndex } from "../lib/queue-navigation";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { supabase } from "@/shared/lib/supabase";
@@ -10,13 +9,7 @@ import { useToastStore } from "@/shared/lib/useToastStore";
 import { trackQueryKey, tracksQueryKey } from "@/features/library/lib/tracks";
 import { useVideoSlot } from "../hooks/useVideoSlot";
 import { useYouTubePlayback } from "../hooks/useYouTubePlayback";
-
-const opts: YouTubeProps["opts"] = {
-  width: "100%",
-  height: "100%",
-  // old-src/src/components/YT.js의 playerVars를 그대로 옮겼습니다.
-  playerVars: { autoplay: 1, controls: 0, rel: 0, disablekb: 1 },
-};
+import PlaybackIframe from "./PlaybackIframe";
 
 // 미니 플레이어 박스 크기 — MusicInfoPage의 영상 영역(h-51.75 w-92)과 정확히
 // 같은 크기라, 도킹된 상태에서 그 자리를 크기 보간 없이 그대로 덮을 수 있습니다.
@@ -61,7 +54,7 @@ export default function YouTubePlayer() {
 
   const showToast = useToastStore((s) => s.show);
 
-  const currentTrack = currentIndex >= 0 ? queue[currentIndex] : undefined;
+  const currentTrack = selectCurrentTrack({ queue, currentIndex });
   const currentTrackId = currentTrack?.id;
 
   // 재생 오류로 연달아 건너뛴 곡 수. 실제로 재생이 시작되면(PLAYING) 0으로 돌아갑니다.
@@ -83,7 +76,7 @@ export default function YouTubePlayer() {
   function handlePlaybackError() {
     // 렌더 시점 값이 아니라 오류가 온 시점의 최신 큐를 봅니다.
     const state = usePlayerStore.getState();
-    const failed = state.queue[state.currentIndex];
+    const failed = selectCurrentTrack(state);
     if (!failed) return;
     consecutiveErrorsRef.current += 1;
     const step = state.navDirection;
@@ -251,15 +244,9 @@ export default function YouTubePlayer() {
       className="fixed top-0 left-0 z-30 h-51.75 w-92 overflow-hidden rounded-[14px] border border-(--neu-border-80) bg-black"
       style={{ boxShadow: "var(--neu-shadow-media-card)", willChange: "transform" }}
     >
-      <YouTubeIframe
+      <PlaybackIframe
         videoId={currentTrack.video_id}
-        opts={opts}
-        className="h-full w-full"
-        iframeClassName="h-full w-full"
-        onReady={playback.handleReady}
-        onStateChange={playback.handleStateChange}
-        onEnd={playback.handleEnd}
-        onError={playback.handleError}
+        handlers={playback.iframeHandlers}
       />
     </div>,
     document.body,

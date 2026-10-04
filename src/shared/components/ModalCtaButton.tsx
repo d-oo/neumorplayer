@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { ctaPillClass } from "@/shared/styles/cta-pill-class";
 
 // 모달 하단의 주 버튼(AddToPlaylistButton의 "추가", PrivacyPolicyModal의 "닫기")이
 // 공유하는 라벤더 알약 CTA. 탐색 화면의 ActionButton과는 배경·그림자 토큰만 같고
@@ -10,7 +11,7 @@ export default function ModalCtaButton({
   return (
     <button
       type="button"
-      className="rounded-full px-5 py-2.25 text-[13px] font-bold text-neu-hi [background:var(--neu-cta-pill-grad)] shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:cursor-default disabled:opacity-60"
+      className={`rounded-full px-5 py-2.25 text-[13px] font-bold ${ctaPillClass} disabled:cursor-default disabled:opacity-60`}
       {...props}
     >
       {children}

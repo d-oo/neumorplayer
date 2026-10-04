@@ -12,8 +12,10 @@
   아래 "YouTube API 데이터 30일 갱신" 참고.
 - `playlists`
 - `playlist_tracks` — `playlists`와 `tracks`를 잇는 join 테이블. 재생목록 row 자체에 순서
-  배열을 두는 대신 `position` 컬럼을 두는 방식으로 설계했습니다 — dnd-kit으로 재정렬할 때
-  변경된 항목들의 `position`만 batch update하는 로직과 짝을 이룹니다.
+  배열을 두는 대신 `position` 컬럼을 두는 방식으로 설계했습니다 — dnd-kit으로 재정렬하면
+  새 순서 전체를 `position`(0부터)으로 한 번에 upsert합니다(`reorderPlaylistTracks`). 곡을
+  빼도 빈 자리를 다시 매기지 않으므로, 곡을 추가할 땐 개수가 아니라 "현재 최대
+  `position` + 1"부터 붙입니다(`addTracksToPlaylist`).
 - `user_settings` — 사용자별 화면 테마(`theme`: `'light' | 'dark'`, 기본값 `'light'`) 하나만
   들어있는 1행 테이블. 새 사용자는 row가 없을 수 있어(첫 테마 변경 전) 읽을 때 없으면
   기본값으로 취급하고, 쓸 때는 upsert합니다. 로그인 화면·랜딩 페이지 같은 비로그인 화면은
@@ -25,7 +27,9 @@
 - `tracks.title`: 부분 검색을 위한 trigram 인덱스(`pg_trgm`)
 
 이 인덱스 구조는 old-src가 IndexedDB의 수동 `multiEntry` 인덱스와 커서 기반 검색 루프로
-하던 일을 Postgres 쪽 기능으로 대체한 것입니다.
+하던 일을 Postgres 쪽 기능으로 대체하려고 만든 것입니다. 다만 지금 화면의 라이브러리
+검색(라이브러리 화면, 헤더 검색 결과)은 사용자의 곡 전체를 불러온 뒤 브라우저에서
+거르기 때문에 이 인덱스를 쓰지 않습니다 — 서버 쪽 검색으로 바꿀 때 씁니다.
 
 ## Row Level Security
 
@@ -70,8 +74,8 @@ YouTube API Developer Policies III.E.4.d에 따르면 사용자 OAuth 동의 없
 
 `src/shared/lib/database.types.ts`는 `supabase login` + `supabase link --project-ref <ref>`로
 프로젝트를 연결한 뒤 `supabase gen types typescript --linked`로 생성한 파일입니다. 스키마를
-바꾸면(`docs/migrations/`에 SQL 추가 후 대시보드에 적용) 이 파일을 손으로 고치지 말고 같은
-명령을 다시 실행해 덮어쓰세요. 손으로 고치면 안 되는 이유: 이 SDK(`@supabase/supabase-js`,
+바꾸면(`docs/migrations/`에 SQL 추가 후 적용 — 아래 "마이그레이션 운영 방식") 이 파일을
+손으로 고치지 말고 같은 명령을 다시 실행해 덮어쓰세요. 손으로 고치면 안 되는 이유: 이 SDK(`@supabase/supabase-js`,
 내부적으로 `postgrest-js`)는 `Database` 타입이 `Relationships`/`Views`/`Functions`/
 `Enums`/`CompositeTypes` 등 특정 형태를 갖추고 있다고 가정하는데, 이 필드가 빠지면
 `supabase.from(...).insert(...)` 같은 호출이 타입 에러 없이 조용히 `never`로 무너집니다
@@ -81,5 +85,13 @@ YouTube API Developer Policies III.E.4.d에 따르면 사용자 OAuth 동의 없
 
 이 SQL은 Supabase CLI가 기본으로 인식하는 `supabase/migrations/` 위치가 아니라
 `docs/migrations/`에 있습니다. 그래서 `supabase db push` 같은 CLI 마이그레이션 명령은 이
-파일을 자동으로 집어가지 못하고, 지금은 Supabase 대시보드 SQL Editor에 수동으로 붙여넣는
-워크플로를 전제로 합니다.
+파일을 자동으로 집어가지 못하고, 새 파일을 하나씩 직접 적용합니다:
+
+1. `npx supabase db query --linked -f docs/migrations/<파일>.sql` — 연결된 프로젝트에
+   적용합니다(Management API를 거쳐서 DB 비밀번호가 필요 없음). 이 저장소는 이미
+   `supabase link`로 연결되어 있습니다(`supabase/.temp/project-ref`, git에는 안 올라감).
+   CLI를 쓸 수 없으면 Supabase 대시보드 SQL Editor에 그대로 붙여넣어 실행해도 됩니다.
+2. `npx supabase gen types typescript --linked > src/shared/lib/database.types.ts`로 타입을
+   다시 생성하고 `npm run build`로 확인합니다.
+
+연결된 DB가 배포된 앱이 실제로 쓰는 DB라, 적용 전에 무엇이 바뀌는지 확인하고 실행하세요.

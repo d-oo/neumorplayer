@@ -20,17 +20,6 @@
       다룹니다 … 그 자리에서 재생합니다"처럼 YouTube 콘텐츠를 음악 재생 서비스로 내세우는
       표현을 빼고, 태그 분류·직접 붙이는 제목/아티스트 같은 라이브러리 정리 기능을
       앞세운다. 문구가 바뀌는 디자인 변경이라 승인을 받고 진행한다.
-- [ ] **"Developed with YouTube" 배지 위치 수정(YouTube API 정책 위반 대응)**: 지금은
-      `AuthLayout.tsx`(로그인/회원가입 화면)에만 배지가 있는데, 정작 그 화면엔 YouTube
-      콘텐츠가 안 나온다. Branding Guidelines는 "YouTube API가 존재하는 모든 페이지"마다
-      배지를 요구하므로, `ExplorePage`(검색 결과)·`LibraryPage`/`PlaylistInfoPage`(썸네일
-      목록)·`MusicInfoPage`·`PlayerPanel`처럼 실제 YouTube 콘텐츠가 나오는 화면에도
-      있어야 한다 — 로그인 이후 전체 라우트에 공통으로 떠 있는 `HomeLayout`(사이드바/푸터)에
-      한 번 박아두면 이 화면들을 한꺼번에 커버할 수 있다. 추가로 지금 배지는 `<img>`
-      태그뿐이라 클릭이 안 되는데, 가이드라인이 "로고는 클릭 가능해야 하고 YouTube
-      콘텐츠나 YouTube 관련 컴포넌트로 링크되어야 한다"고 요구하므로 `<a>`로 감싸야 한다.
-      정확한 최소 크기/여백(clear space) 수치는 brand.youtube 사이트에 별도로 있으니
-      적용 전에 확인한다.
 - [ ] **회원가입을 초대제로 전환("대체 서비스" 리스크 축소)**: Supabase 대시보드
       Authentication → Settings에서 "Enable sign ups"를 끄고, 본인이 대시보드의
       "Invite user" 또는 `supabase.auth.admin.inviteUserByEmail()`(service role key,

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchExploreResults } from "@/features/explore/api/search";
+import {
+  YOUTUBE_RESULTS_STALE_TIME,
+  fetchExploreResults,
+} from "@/features/explore/api/search";
 
 // 탐색 화면(useExploreSearch)과 랜딩 게스트 검색(useLandingSearch)이 똑같이 들고
 // 있던 "제출된 검색어 → YouTube 검색 결과" 배선만 모은 훅입니다. 입력 필드 구성
@@ -21,6 +24,7 @@ export function useYoutubeSearchQuery(cacheKey: string) {
     queryKey: [cacheKey, submittedQuery],
     queryFn: () => fetchExploreResults(submittedQuery),
     enabled: submittedQuery !== "",
+    staleTime: YOUTUBE_RESULTS_STALE_TIME,
   });
 
   return {

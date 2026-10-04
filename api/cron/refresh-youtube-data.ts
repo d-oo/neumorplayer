@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "@supabase/supabase-js";
-import { YOUTUBE_API_BASE, getApiKeyOrThrow } from "../_youtube.js";
+import { buildVideosUrl, getApiKeyOrThrow } from "../_youtube.js";
+import { createSupabaseAdmin } from "../_supabase-admin.js";
 import { parseIsoDuration } from "../../src/shared/lib/format-time.js";
 
 // GET /api/cron/refresh-youtube-data — vercel.json의 crons가 하루 한 번 호출합니다.
@@ -47,19 +47,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return fail(res, 401, { error: "인증되지 않은 호출입니다." });
   }
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const secretKey = process.env.SUPABASE_SECRET_KEY;
-  if (!supabaseUrl || !secretKey) {
-    const missing = [
-      !supabaseUrl && "VITE_SUPABASE_URL",
-      !secretKey && "SUPABASE_SECRET_KEY",
-    ].filter(Boolean);
+  // secret key는 RLS를 우회합니다 — 여러 사용자의 tracks를 한꺼번에 다뤄야 해서 필요.
+  const { supabaseAdmin, missingEnv } = createSupabaseAdmin();
+  if (!supabaseAdmin) {
     return fail(res, 500, {
-      error: `서버 환경변수가 설정되지 않았습니다: ${missing.join(", ")}`,
+      error: `서버 환경변수가 설정되지 않았습니다: ${missingEnv.join(", ")}`,
     });
   }
-  // secret key는 RLS를 우회합니다 — 여러 사용자의 tracks를 한꺼번에 다뤄야 해서 필요.
-  const supabaseAdmin = createClient(supabaseUrl, secretKey);
 
   try {
     const apiKey = getApiKeyOrThrow();
@@ -88,11 +82,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     for (let i = 0; i < ids.length; i += VIDEOS_PER_REQUEST) {
       const chunk = ids.slice(i, i + VIDEOS_PER_REQUEST);
 
-      const videosUrl = new URL(`${YOUTUBE_API_BASE}/videos`);
-      videosUrl.searchParams.set("part", "contentDetails");
-      videosUrl.searchParams.set("fields", "items(id,contentDetails/duration)");
-      videosUrl.searchParams.set("id", chunk.join(","));
-      videosUrl.searchParams.set("key", apiKey);
+      const videosUrl = buildVideosUrl(
+        apiKey,
+        chunk,
+        "contentDetails",
+        "items(id,contentDetails/duration)",
+      );
 
       const videosRes = await fetch(videosUrl);
       const videosData = (await videosRes.json()) as { items?: VideoItem[] };

@@ -12,3 +12,20 @@ export function getApiKeyOrThrow(): string {
 }
 
 export { YOUTUBE_API_BASE };
+
+// videos.list 요청 주소. 검색 결과의 상세 조회·비디오 ID 단건 조회(youtube-search)와
+// 30일 갱신 배치(cron/refresh-youtube-data)가 씁니다. part/fields는 호출부마다 필요한
+// 값이 달라서 받습니다.
+export function buildVideosUrl(
+  apiKey: string,
+  ids: string[],
+  part: string,
+  fields: string,
+): URL {
+  const url = new URL(`${YOUTUBE_API_BASE}/videos`);
+  url.searchParams.set("part", part);
+  url.searchParams.set("fields", fields);
+  url.searchParams.set("id", ids.join(","));
+  url.searchParams.set("key", apiKey);
+  return url;
+}

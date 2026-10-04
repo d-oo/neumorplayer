@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DndContext,
@@ -16,7 +16,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
+import {
+  selectCurrentTrack,
+  usePlayerStore,
+} from "@/features/player/lib/usePlayerStore";
+import { playTrackAndOpenQueue } from "@/features/dashboard/lib/useQueueCardStore";
 import {
   selectIsAudible,
   selectIsLoading,
@@ -27,7 +31,7 @@ import {
   deletePlaylist,
   fetchPlaylist,
   fetchPlaylistTracks,
-  playlistMembershipQueryKey,
+  invalidatePlaylistMembership,
   playlistQueryKey,
   playlistTracksQueryKey,
   playlistsQueryKey,
@@ -37,6 +41,7 @@ import {
 import { isTrackPlayable, type Track } from "@/features/library/lib/tracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { useToastStore } from "@/shared/lib/useToastStore";
+import { toggleInSet } from "@/shared/lib/toggle-in-set";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import {
   CheckIcon,
@@ -129,6 +134,12 @@ function TrackSelectCell({
 // 아이콘(useSortable의 listeners)에만 걸려 있어서 번호 칸의 선택 체크박스와 서로
 // 간섭하지 않습니다. 재생은 재생시간 자리의 hover 버튼으로만 합니다 — 행/썸네일
 // 클릭은 재생을 트리거하지 않습니다(DurationPlayButton 주석 참고).
+//
+// 썸네일·제목·아티스트를 누르면 곡 상세 페이지로 이동합니다. 라이브러리 목록처럼 행
+// 전체를 링크로 두지 않는 건, 이 행에는 드래그 손잡이·선택 체크박스가 같이 있어서
+// 그 사이 빈 곳을 잘못 눌러도 페이지가 넘어가지 않게 하려는 것입니다. 그래서 링크는
+// flex-1 없이 내용 폭만큼만 차지하고(min-w-0으로 좁아질 땐 마퀴 제목이 줄어듦), 제목
+// 오른쪽 빈 공간은 눌리지 않습니다.
 function SortableTrackRow({
   track,
   index,
@@ -175,9 +186,12 @@ function SortableTrackRow({
           onToggle={onToggleSelect}
           title={track.title}
         />
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Link
+          to={`/music/${track.id}`}
+          className="flex min-w-0 items-center gap-3"
+        >
           <TrackRowInfo track={track} isCurrentTrack={isCurrentTrack} />
-        </div>
+        </Link>
       </div>
       <MarqueeText
         text={track.tags.map((tag) => `#${tag}`).join("  ")}
@@ -225,11 +239,10 @@ export default function PlaylistInfoPage() {
   const isLoading = usePlayerStore(selectIsLoading);
   const playingPlaylistId = usePlayerStore((s) => s.playingPlaylistId);
   const playQueue = usePlayerStore((s) => s.playQueue);
-  const playTrackFrom = usePlayerStore((s) => s.playTrackFrom);
   const setIsPlaying = usePlayerStore((s) => s.setIsPlaying);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
-  const detachCurrentFromPlaylist = usePlayerStore(
-    (s) => s.detachCurrentFromPlaylist,
+  const detachCurrentIfRemoved = usePlayerStore(
+    (s) => s.detachCurrentIfRemoved,
   );
 
   const {
@@ -257,8 +270,8 @@ export default function PlaylistInfoPage() {
   const isThisPlaylistPlaying =
     playlistId !== undefined && playingPlaylistId === playlistId;
   const currentTrackId =
-    isThisPlaylistPlaying && currentIndex >= 0
-      ? queue[currentIndex]?.id
+    isThisPlaylistPlaying
+      ? selectCurrentTrack({ queue, currentIndex })?.id
       : undefined;
 
   const selectedIds =
@@ -275,10 +288,7 @@ export default function PlaylistInfoPage() {
   }
 
   function toggleSelect(trackId: string) {
-    const next = new Set(selectedIds);
-    if (next.has(trackId)) next.delete(trackId);
-    else next.add(trackId);
-    setSelectedIds(next);
+    setSelectedIds(toggleInSet(selectedIds, trackId));
   }
 
   // 헤더 # 칸 체크박스 — 전체가 선택돼 있을 때만 전체 해제, 그 외(일부 선택
@@ -302,15 +312,10 @@ export default function PlaylistInfoPage() {
     mutationFn: (trackIds: string[]) =>
       removeTracksFromPlaylist(playlistId!, trackIds),
     onSuccess: (_data, trackIds) => {
-      queryClient.invalidateQueries({
-        queryKey: playlistTracksQueryKey(playlistId),
+      invalidatePlaylistMembership(queryClient, user?.id, {
+        playlistIds: [playlistId!],
+        trackIds,
       });
-      trackIds.forEach((trackId) =>
-        queryClient.invalidateQueries({
-          queryKey: playlistMembershipQueryKey(trackId),
-        }),
-      );
-      queryClient.invalidateQueries({ queryKey: playlistsQueryKey(user?.id) });
       setSelectedIds(new Set());
       showToast(`재생목록에서 ${trackIds.length}곡을 삭제했습니다.`);
     },
@@ -359,9 +364,7 @@ export default function PlaylistInfoPage() {
   function handleRemoveSelected() {
     const trackIds = selectedTracks.map((t) => t.id);
     if (trackIds.length === 0) return;
-    if (currentTrackId && trackIds.includes(currentTrackId)) {
-      detachCurrentFromPlaylist();
-    }
+    detachCurrentIfRemoved([playlistId!], trackIds);
     removeTracksMutation.mutate(trackIds);
   }
 
@@ -374,6 +377,11 @@ export default function PlaylistInfoPage() {
 
   return (
     <div>
+      {/* "재생목록" 라벨은 제목 위가 아니라 커버 위, 본문 왼쪽 끝에 둡니다(사용자 요청).
+          아래 여백(mb-2.5)은 예전 라벨↔제목 간격과 같은 값입니다. */}
+      <p className="mb-2.5 text-[11.5px] font-bold tracking-[0.08em] text-neu-hi">
+        재생목록
+      </p>
       <div className="flex items-end gap-5.5">
         <div
           className="h-34.75 w-62 flex-none overflow-hidden rounded-xl border border-(--neu-border-80)"
@@ -386,10 +394,7 @@ export default function PlaylistInfoPage() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[11.5px] font-bold tracking-[0.08em] text-neu-hi">
-            재생목록
-          </p>
-          <h1 className="mt-2.5 mb-3 text-[44px] font-extrabold leading-[1.04] tracking-[-0.045em] text-neu-ink">
+          <h1 className="mb-3 text-[40px] font-extrabold leading-[1.04] tracking-[-0.045em] text-neu-ink">
             <MarqueeText text={playlist.title} />
           </h1>
           <p className="text-[13px] text-neu-muted">
@@ -527,7 +532,8 @@ export default function PlaylistInfoPage() {
                     selected={selectedIds.has(track.id)}
                     onToggleSelect={() => toggleSelect(track.id)}
                     onPlay={() =>
-                      playlistId && playTrackFrom(tracks, index, playlistId)
+                      playlistId &&
+                      playTrackAndOpenQueue(tracks, index, playlistId)
                     }
                   />
                 ))}

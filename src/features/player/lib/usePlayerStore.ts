@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Database } from "@/shared/lib/database.types";
+import type { Track } from "@/features/library/lib/tracks";
 import { findPlayableIndex } from "./queue-navigation";
-
-type Track = Database["public"]["Tables"]["tracks"]["Row"];
 
 interface PlayerState {
   // 현재 재생 중인 트랙/큐 — 서버 데이터(tracks/playlists)는 TanStack Query가 들고 있고,
@@ -41,7 +39,7 @@ interface PlayerState {
   playNext: () => void;
   playPrev: () => void;
   jumpTo: (index: number) => void;
-  detachCurrentFromPlaylist: () => void;
+  detachCurrentIfRemoved: (playlistIds: string[], trackIds: string[]) => void;
   setIsPlaying: (playing: boolean) => void;
   setIsVideoPlaying: (playing: boolean) => void;
   setVideoOn: (on: boolean) => void;
@@ -56,6 +54,15 @@ interface PlayerState {
   setIsScrubbing: (scrubbing: boolean) => void;
   clearPendingSeek: () => void;
 }
+
+// 지금 재생 중인(또는 일시정지된) 곡. 큐가 비어 있으면(currentIndex -1) undefined입니다.
+// usePlayerStore(selectCurrentTrack)처럼 셀렉터로 넘겨도 되고, 이미 queue/currentIndex를
+// 꺼내 둔 컴포넌트는 그 값으로 직접 불러도 됩니다.
+export const selectCurrentTrack = (s: {
+  queue: Track[];
+  currentIndex: number;
+}): Track | undefined =>
+  s.currentIndex >= 0 ? s.queue[s.currentIndex] : undefined;
 
 export const usePlayerStore = create<PlayerState>()(
   persist(
@@ -97,7 +104,9 @@ export const usePlayerStore = create<PlayerState>()(
           navDirection: 1,
         }),
 
-      // 트랙 목록 행의 재생 버튼(라이브러리/검색 결과/재생목록 상세)이 공유하는 규칙.
+      // 사용자가 곡 하나를 골라 누르는 재생 버튼(라이브러리/검색 결과/재생목록 상세/곡
+      // 정보 페이지)이 공유하는 규칙 — 호출부는 사이드바 탭 열기까지 묶은
+      // dashboard/lib/useQueueCardStore.ts의 playTrackAndOpenQueue를 거쳐 여기로 옵니다.
       // "지금 재생 중인 곡"은 트랙 id + 재생 맥락(playingPlaylistId, 단일 곡이면 null)을
       // 함께 봅니다.
       // - 같은 곡 + 같은 맥락: 아무것도 안 합니다(일시정지 상태여도 다시 재생하지 않음).
@@ -109,8 +118,9 @@ export const usePlayerStore = create<PlayerState>()(
       playTrackFrom: (tracks, index, playlistId) => {
         const target = tracks[index];
         if (!target) return;
-        const { queue, currentIndex, playingPlaylistId } = get();
-        const current = currentIndex >= 0 ? queue[currentIndex] : undefined;
+        const state = get();
+        const current = selectCurrentTrack(state);
+        const { playingPlaylistId } = state;
         const context = playlistId ?? null;
         if (current?.id === target.id) {
           if (playingPlaylistId === context) return;
@@ -122,7 +132,7 @@ export const usePlayerStore = create<PlayerState>()(
 
       // 큐의 마지막 곡이 끝났고 반복도 꺼져 있으면(YouTubePlayer의 onEnd) 큐를 비우지
       // 않고 마지막 곡에서 멈춘 상태로 남깁니다 — old-src(Home.js playNext)처럼 재생목록
-      // 컨텍스트만 떼어내 그 곡 하나짜리 단일 곡 재생으로 바꾸고(detachCurrentFromPlaylist와
+      // 컨텍스트만 떼어내 그 곡 하나짜리 단일 곡 재생으로 바꾸고(detachCurrentIfRemoved와
       // 같은 모양), 곡 자체는 CD 플레이어에 그대로 남습니다. YouTube의 ENDED 상태는
       // PAUSED 이벤트를 보내지 않아서 isPlaying도 여기서 직접 false로 내립니다. 다시
       // 재생을 누르면 끝난 영상이 처음부터 재생됩니다. 다음 곡 버튼은 이 경우
@@ -180,14 +190,25 @@ export const usePlayerStore = create<PlayerState>()(
         });
       },
 
-      // old-src(PlaylistInfo.js)의 playSingle과 같은 역할 — 지금 재생 중인 곡이
-      // 자신이 속한 바로 그 재생목록에서 제거될 때, 실제 재생(isPlaying/currentTime)은
-      // 끊지 않은 채로 "이 재생목록 소속" 컨텍스트만 떼어내 단독 재생으로 바꿉니다.
+      // old-src(PlaylistInfo.js)의 playSingle과 같은 역할 — 재생목록(playlistIds)에서
+      // 곡(trackIds)을 빼기 직전에 부릅니다. 지금 재생 중인 곡이 지금 재생 중인 재생목록
+      // 에서 빠지는 경우에만, 실제 재생(isPlaying/currentTime)은 끊지 않은 채로 "이
+      // 재생목록 소속" 컨텍스트만 떼어내 단독 재생으로 바꿉니다(그 외엔 아무것도 안 함).
       // 큐를 그 곡 하나만 남기는 이유도 old-src와 같습니다 — 더 이상 존재하지 않는
-      // 재생목록 순서를 다음/이전 곡 탐색이 계속 참조하지 않도록.
-      detachCurrentFromPlaylist: () => {
-        const { queue, currentIndex } = get();
-        if (currentIndex < 0) return;
+      // 재생목록 순서를 다음/이전 곡 탐색이 계속 참조하지 않도록. 재생목록 상세의 선택
+      // 곡 삭제(PlaylistInfoPage)와 곡 상세 "재생목록에 추가" 모달의 체크 해제
+      // (AddToPlaylistButton)가 같이 씁니다 — 제거 mutation보다 먼저 불러야 합니다.
+      detachCurrentIfRemoved: (playlistIds, trackIds) => {
+        const { queue, currentIndex, playingPlaylistId } = get();
+        const current = selectCurrentTrack({ queue, currentIndex });
+        if (
+          !current ||
+          playingPlaylistId === null ||
+          !playlistIds.includes(playingPlaylistId) ||
+          !trackIds.includes(current.id)
+        ) {
+          return;
+        }
         set({
           queue: [queue[currentIndex]],
           currentIndex: 0,

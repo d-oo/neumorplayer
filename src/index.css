@@ -156,6 +156,7 @@
   --neu-ink-40: oklch(0.4 0.025 315);
   --neu-ink-42: oklch(0.42 0.025 315);
   --neu-ink-45: oklch(0.45 0.025 315);
+  --neu-ink-46: oklch(0.46 0.025 315);
   --neu-ink-50-a: oklch(0.5 0.025 315);
   --neu-ink-50-b: oklch(0.5 0.02 315);
   --neu-ink-52: oklch(0.52 0.02 315);
@@ -406,6 +407,7 @@
   --neu-ink-40: oklch(0.82 0.025 315);
   --neu-ink-42: oklch(0.8 0.025 315);
   --neu-ink-45: oklch(0.77 0.025 315);
+  --neu-ink-46: oklch(0.76 0.025 315);
   --neu-ink-50-a: oklch(0.72 0.025 315);
   --neu-ink-50-b: oklch(0.72 0.02 315);
   --neu-ink-52: oklch(0.7 0.02 315);
@@ -611,17 +613,5 @@ button:not(:disabled) {
   }
   100% {
     height: 100%;
-  }
-}
-
-/* MarqueeText.tsx(shared/components) 전용 — 폭을 넘치는 제목을 좌우로 끊기지 않게
-   흘려보냅니다. 콘텐츠를 두 번 이어붙인 뒤 정확히 절반(-50%)만큼 옮기면 두 번째
-   사본이 첫 번째가 시작한 자리에 그대로 겹쳐 루프가 끊기지 않습니다. */
-@keyframes neu-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
   }
 }

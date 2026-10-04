@@ -1,13 +1,11 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import {
-  fetchLibraryTracks,
-  tracksQueryKey,
-} from "@/features/library/lib/tracks";
-import { useQuery } from "@tanstack/react-query";
+import { useLibraryTracks } from "@/features/library/hooks/useLibraryTracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import InfoBox from "@/shared/components/InfoBox";
-import SearchFieldInput from "@/shared/components/SearchFieldInput";
-import { fieldBoxStyle } from "@/shared/styles/field-box-style";
+import PageTitle from "@/shared/components/PageTitle";
+import LabeledSearchField, {
+  FieldLabel,
+} from "@/features/explore/components/LabeledSearchField";
 import { useExploreSearch } from "@/features/explore/lib/useExploreSearch";
 import { useTagSelection } from "@/features/explore/lib/useTagSelection";
 import { useAddTrackMutation } from "@/features/explore/lib/useAddTrackMutation";
@@ -27,11 +25,7 @@ export default function ExplorePage() {
   useDocumentTitle("NeumorPlayer");
   const { user } = useAuth();
 
-  const { data: libraryTracks = [] } = useQuery({
-    queryKey: tracksQueryKey(user?.id),
-    queryFn: fetchLibraryTracks,
-    enabled: !!user,
-  });
+  const { data: libraryTracks = [] } = useLibraryTracks();
 
   const {
     titleQuery,
@@ -112,52 +106,30 @@ export default function ExplorePage() {
 
   return (
     <div>
-      <h1 className="mb-1.75 text-[26px] font-extrabold tracking-[-0.035em] text-neu-ink">
-        탐색
-      </h1>
+      <PageTitle className="mb-1.75">탐색</PageTitle>
       <p className="mb-6.5 text-[13px] text-neu-muted">
         아티스트와 제목으로 찾아 라이브러리에 추가합니다.
       </p>
 
       <div className="mb-7 grid grid-cols-2 gap-3.5">
-        <div>
-          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-            제목
-          </div>
-          <div
-            className="flex items-center rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.5"
-            style={fieldBoxStyle}
-          >
-            <SearchFieldInput
-              value={titleQuery}
-              onChange={(e) => setTitleQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
-              }}
-              placeholder="예: Bloom"
-              lineHeightPx={20.25}
-            />
-          </div>
-        </div>
-        <div>
-          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-            아티스트
-          </div>
-          <div
-            className="flex items-center rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.5"
-            style={fieldBoxStyle}
-          >
-            <SearchFieldInput
-              value={artistQuery}
-              onChange={(e) => setArtistQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
-              }}
-              placeholder="예: Mira Vell"
-              lineHeightPx={20.25}
-            />
-          </div>
-        </div>
+        <LabeledSearchField
+          label="제목"
+          value={titleQuery}
+          onChange={(e) => setTitleQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+          placeholder="예: Bloom"
+        />
+        <LabeledSearchField
+          label="아티스트"
+          value={artistQuery}
+          onChange={(e) => setArtistQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+          placeholder="예: Mira Vell"
+        />
       </div>
 
       <div className="mb-7 flex justify-end">
@@ -169,9 +141,7 @@ export default function ExplorePage() {
       </div>
 
       <div className="mb-3 flex items-baseline gap-2.25">
-        <div className="text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-          검색 결과
-        </div>
+        <FieldLabel>검색 결과</FieldLabel>
         <div className="text-xs text-(--neu-ink-55)">
           {hasSearched && !isFetching ? `${results.length}건` : ""}
         </div>
@@ -206,22 +176,12 @@ export default function ExplorePage() {
           onTagInputChange={setTagInput}
           onAddTagInput={handleAddTagInput}
         />
-        <div>
-          <div className="mb-2.25 text-[11.5px] font-bold tracking-[0.06em] text-neu-muted">
-            비디오 ID
-          </div>
-          <div
-            className="flex items-center rounded-[11px] border border-(--neu-border-80) px-3.5 py-2.5"
-            style={fieldBoxStyle}
-          >
-            <SearchFieldInput
-              value={videoIdInput}
-              onChange={(e) => handleVideoIdInputChange(e.target.value)}
-              placeholder="유튜브 영상을 검색 결과에서 고르거나, 비디오 ID를 붙여넣으세요"
-              lineHeightPx={20.25}
-            />
-          </div>
-        </div>
+        <LabeledSearchField
+          label="비디오 ID"
+          value={videoIdInput}
+          onChange={(e) => handleVideoIdInputChange(e.target.value)}
+          placeholder="유튜브 영상을 검색 결과에서 고르거나, 비디오 ID를 붙여넣으세요"
+        />
       </div>
 
       <TagChipList

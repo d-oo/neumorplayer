@@ -1,13 +1,6 @@
-import YouTubeIframe, { type YouTubeProps } from "react-youtube";
 import { PlayIcon } from "@/shared/components/icons";
+import PlaybackIframe from "@/features/player/components/PlaybackIframe";
 import type { useGuestPlayer } from "../lib/useGuestPlayer";
-
-const opts: YouTubeProps["opts"] = {
-  width: "100%",
-  height: "100%",
-  // old-src/src/components/YT.js의 playerVars를 그대로 옮겼습니다.
-  playerVars: { autoplay: 1, controls: 0, rel: 0, disablekb: 1 },
-};
 
 // 528×297 동영상 자리. 재생 중인 곡이 없으면 시안 그대로 정적 플레이스홀더, 검색→선택
 // →재생하면 실제 YouTube IFrame이 그 자리에서 재생을 시작합니다(포탈 없음 — 랜딩은
@@ -26,15 +19,9 @@ export default function LandingVideoArea({
   if (track && isVideoIdValid) {
     return (
       <div className="h-74.25 w-132 flex-1 overflow-hidden rounded-[20px] border border-(--neu-border-70)">
-        <YouTubeIframe
+        <PlaybackIframe
           videoId={track.videoId}
-          opts={opts}
-          className="h-full w-full"
-          iframeClassName="h-full w-full"
-          onReady={guestPlayer.onPlayerReady}
-          onStateChange={guestPlayer.onPlayerStateChange}
-          onEnd={guestPlayer.onPlayerEnd}
-          onError={guestPlayer.onPlayerError}
+          handlers={guestPlayer.iframeHandlers}
         />
       </div>
     );

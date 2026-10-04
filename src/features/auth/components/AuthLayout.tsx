@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useThemed } from "@/shared/lib/theme";
+import { BrandWordmarkStackedLines } from "@/shared/components/BrandWordmark";
 
 // LoginPage/SignupPage가 공유하는 바깥 껍데기(브랜드 패널 + 폼 패널 카드).
 // docs/design/의 "데스크탑 로그인 및 회원가입 화면" 시안을 옮긴 뒤, docs/design/
@@ -28,24 +30,30 @@ export default function AuthLayout({
         <div className="flex flex-col justify-between gap-7">
           <div className="flex flex-col gap-5.5">
             {/* 브랜드 로고 — public/favicon.png(정사각형 원본)를 씁니다. docs/design/
-                수정본2.zip(Auth Screens.dc.html)의 "브랜드 로고 132×132" 플레이스홀더가
-                모서리만 둥근 사각형(border-radius: 26px)이라 원형(rounded-full)으로
-                자르지 마세요 — 26px는 Tailwind 기본 radius 스케일에 없는 값이라
+                수정본2.zip(Auth Screens.dc.html)의 "브랜드 로고" 플레이스홀더가 모서리만
+                둥근 사각형이라 원형(rounded-full)으로 자르지 마세요. 시안은 132×132에
+                radius 26px였지만, 아래 두 줄 워드마크의 글자 폭(오른쪽 끝 기준 101px)에
+                가로 길이를 맞추려고 101px로 줄였고 radius도 같은 비율로
+                20px로 줄였습니다 — 20px는 Tailwind 기본 radius 스케일에 없는 값이라
                 임의값 문법을 그대로 씁니다. */}
-            <img
-              src="/favicon.png"
-              alt="neumorplayer"
-              className="size-33 rounded-[26px] border border-(--neu-border-70) object-cover"
-              style={{ boxShadow: logoShadow }}
-            />
+            {/* 로고와 워드마크는 둘 다 "/"(비로그인이면 랜딩)로 가는 링크입니다. */}
+            <Link to="/" className="self-start">
+              <img
+                src="/favicon.png"
+                alt="neumorplayer"
+                className="size-25.25 rounded-[20px] border border-(--neu-border-70) object-cover"
+                style={{ boxShadow: logoShadow }}
+              />
+            </Link>
 
             <div className="flex flex-col gap-2.5">
-              <div
-                className="font-['Space_Grotesk'] text-[27px] leading-[1.1] font-bold tracking-[-0.015em] whitespace-nowrap text-neu-hi"
+              <Link
+                to="/"
+                className="self-start font-['Space_Grotesk'] text-[27px] leading-[1.1] font-bold whitespace-nowrap text-neu-hi"
                 style={{ textShadow: "var(--neu-shadow-wordmark-lg)" }}
               >
-                NEUMORPLAYER
-              </div>
+                <BrandWordmarkStackedLines />
+              </Link>
               <h1 className="text-[22px] leading-[1.1] font-extrabold tracking-[-0.03em]">
                 {title}
               </h1>
@@ -54,12 +62,9 @@ export default function AuthLayout({
               </p>
             </div>
           </div>
-
-          <img
-            src="/developed-with-youtube.png"
-            alt="Developed with YouTube"
-            className="w-40 opacity-85"
-          />
+          {/* 이 패널 하단엔 원래 YouTube 배지(이후 "Powered by YouTube" pill)가
+              있었지만, 로그인/회원가입 화면엔 YouTube 콘텐츠가 없어 표기가 필요 없어서
+              뺐습니다. */}
         </div>
 
         <div className="flex flex-col gap-4">

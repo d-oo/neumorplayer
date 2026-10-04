@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVideoSlot } from "@/features/player/hooks/useVideoSlot";
-import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
+import {
+  selectCurrentTrack,
+  usePlayerStore,
+} from "@/features/player/lib/usePlayerStore";
+import { playTrackAndOpenQueue } from "@/features/dashboard/lib/useQueueCardStore";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
   deleteTrack,
@@ -33,6 +37,20 @@ const statBoxStyle = {
   boxShadow: "var(--neu-shadow-stat-box)",
 };
 
+// 재생 횟수/재생 시간 통계 칸 하나.
+function StatBox({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0 flex-1 rounded-[11px] px-3.25 py-2.25" style={statBoxStyle}>
+      <p className="text-[9.5px] font-bold tracking-[0.08em] text-neu-muted">
+        {label}
+      </p>
+      <p className="mt-0.75 font-neu-mono text-sm font-medium text-neu-ink">
+        {children}
+      </p>
+    </div>
+  );
+}
+
 // old-src/src/components/MusicInfo.js 를 대체합니다. docs/design/수정본2.zip
 // (1b-B 트랙 상세)의 레이아웃을 그대로 옮겼습니다.
 // TODO: 제목/아티스트/태그 수정 폼(react-hook-form + zod 추천)은 아직 없고, "수정"
@@ -53,7 +71,6 @@ export default function MusicInfoPage() {
   const { setAnchorEl } = useVideoSlot();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const playQueue = usePlayerStore((s) => s.playQueue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const queue = usePlayerStore((s) => s.queue);
 
@@ -74,7 +91,7 @@ export default function MusicInfoPage() {
   // 않으면(다른 곡이 재생 중이거나 아무것도 재생 중이 아니면) 앵커를 등록하지
   // 않고, 여기는 TrackThumbnail만 보여줍니다.
   const isThisTrackPlaying =
-    !!track && currentIndex >= 0 && queue[currentIndex]?.id === track.id;
+    !!track && selectCurrentTrack({ queue, currentIndex })?.id === track.id;
 
   useEffect(() => {
     if (!isThisTrackPlaying) return;
@@ -99,7 +116,7 @@ export default function MusicInfoPage() {
 
   function handlePlayClick() {
     if (!track) return;
-    playQueue([track], 0);
+    playTrackAndOpenQueue([track], 0);
   }
 
   if (isLoading) {
@@ -154,24 +171,14 @@ export default function MusicInfoPage() {
 
         <div className="flex min-w-0 flex-1 flex-col items-start gap-4">
           <div className="flex gap-2.5 self-stretch">
-            <div className="min-w-0 flex-1 rounded-[11px] px-3.25 py-2.25" style={statBoxStyle}>
-              <p className="text-[9.5px] font-bold tracking-[0.08em] text-neu-muted">
-                재생 횟수
-              </p>
-              <p className="mt-0.75 font-neu-mono text-sm font-medium text-neu-ink">
-                {track.play_count.toLocaleString()}
-              </p>
-            </div>
-            <div className="min-w-0 flex-1 rounded-[11px] px-3.25 py-2.25" style={statBoxStyle}>
-              <p className="text-[9.5px] font-bold tracking-[0.08em] text-neu-muted">
-                재생 시간
-              </p>
-              <p className="mt-0.75 font-neu-mono text-sm font-medium text-neu-ink">
-                {track.duration === null
-                  ? "재생 불가"
-                  : formatDuration(track.duration)}
-              </p>
-            </div>
+            <StatBox label="재생 횟수">
+              {track.play_count.toLocaleString()}
+            </StatBox>
+            <StatBox label="재생 시간">
+              {track.duration === null
+                ? "재생 불가"
+                : formatDuration(track.duration)}
+            </StatBox>
           </div>
 
           <div className="flex items-center gap-3">

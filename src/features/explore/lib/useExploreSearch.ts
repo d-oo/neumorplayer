@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchExploreResultByVideoId } from "@/features/explore/api/search";
+import {
+  YOUTUBE_RESULTS_STALE_TIME,
+  fetchExploreResultByVideoId,
+} from "@/features/explore/api/search";
 import { useYoutubeSearchQuery } from "./useYoutubeSearchQuery";
 
 // 탐색 화면의 검색 입력·쿼리 상태를 모읍니다. 제목/아티스트를 입력하고 "검색"
@@ -39,6 +42,7 @@ export function useExploreSearch() {
     queryKey: ["youtube-search-by-id", lookupVideoId],
     queryFn: () => fetchExploreResultByVideoId(lookupVideoId!),
     enabled: lookupVideoId !== null,
+    staleTime: YOUTUBE_RESULTS_STALE_TIME,
   });
 
   const inIdMode = lookupVideoId !== null;

@@ -1,4 +1,8 @@
 import type { ReactNode } from "react";
+import {
+  ctaPillClass,
+  ctaPillSunkenDisabledClass,
+} from "@/shared/styles/cta-pill-class";
 
 // 탐색 화면의 "검색"/"추가", 랜딩 탐색 카드의 "재생"이 공유하는 알약 모양 CTA 버튼 —
 // docs/design/ 시안의 "추가" 버튼 스타일 그대로입니다. 활성 상태일 때만 라벤더
@@ -34,7 +38,7 @@ export default function ActionButton({
       type="button"
       onClick={onClick}
       disabled={!enabled}
-      className="flex items-center gap-2.25 rounded-full px-6 py-2.75 text-sm font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 [background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active disabled:[background:var(--neu-ink-928)] disabled:text-(--neu-ink-58) disabled:shadow-neu-cta-pill-disabled disabled:cursor-default"
+      className={`flex items-center gap-2.25 rounded-full px-6 py-2.75 text-sm font-bold whitespace-nowrap transition-[background,box-shadow] duration-150 ${ctaPillClass} ${ctaPillSunkenDisabledClass}`}
     >
       {icon}
       {label}

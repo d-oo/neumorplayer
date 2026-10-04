@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/lib/supabase";
+import { isUniqueViolation } from "@/shared/lib/is-unique-violation";
 import { tracksQueryKey } from "@/features/library/lib/tracks";
 import { parseArtists, type ExploreResult } from "@/features/explore/api/search";
 
@@ -48,7 +49,7 @@ export function useAddTrackMutation({
   // 중복 추가는 tracks의 (user_id, video_id) unique 제약(Postgres 코드 23505)이
   // 막아주므로, 에러 메시지만 사용자가 이해할 수 있는 문구로 바꿔줍니다.
   const errorMessage = mutation.isError
-    ? (mutation.error as { code?: string } | null)?.code === "23505"
+    ? isUniqueViolation(mutation.error)
       ? "이미 라이브러리에 있는 곡입니다."
       : "추가에 실패했습니다. 다시 시도해주세요."
     : null;

@@ -112,11 +112,15 @@ are the actual verification surface.
   that file throws if `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY`
   are missing. A placeholder value is enough to boot; it doesn't need
   to be a real project unless you're actually testing login.
-- **`/api/*` (the YouTube proxy functions) are invisible to `npm run
-  dev`.** Vite's dev server has no idea `api/` exists — a page that
-  calls `/api/youtube-search` will just 404 under this driver. That
-  needs `vercel dev` instead, which this skill has not verified (not
-  covered here — add a section if you get it working).
+- **`/api/*` (the YouTube proxy functions) are not served by `npm run
+  dev` itself.** `vite.config.ts`'s `server.proxy` forwards `/api` to
+  `http://localhost:3000`, where `vercel dev` is expected to be running
+  (see `docs/note.md`). This driver never starts `vercel dev`, so unless
+  you started it yourself, a page that calls `/api/youtube-search` gets a
+  proxy error under this driver. Keep pointing the browser at 5173 even
+  when `vercel dev` is up — opening the `vercel dev` port directly blanks
+  the app (`docs/architecture.md`). For a UI check that only needs
+  search results, stub the call instead (e.g. Playwright `page.route`).
 - **Spawning `npm` with `shell: true` and a separate args array logs a
   Node `DEP0190` deprecation warning** (arg-escaping concerns). The
   driver avoids it by passing the whole `npm run dev -- --port ...`

@@ -1,5 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { usePlayerStore } from "@/features/player/lib/usePlayerStore";
+import {
+  selectCurrentTrack,
+  usePlayerStore,
+} from "@/features/player/lib/usePlayerStore";
+import { playTrackAndOpenQueue } from "@/features/dashboard/lib/useQueueCardStore";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
 import MarqueeText from "@/shared/components/MarqueeText";
 import DurationPlayButton from "@/features/player/components/DurationPlayButton";
@@ -15,7 +19,8 @@ const trackRowGridColumns = "minmax(0,1fr) 190px 74px 60px";
 // 넘깁니다.
 //
 // 행 클릭 = 곡 상세 페이지 이동, 재생은 행 hover 때 재생시간 자리에 나타나는
-// 버튼(DurationPlayButton)으로만 합니다.
+// 버튼(DurationPlayButton)으로만 합니다. 재생 버튼을 누르면 사이드바 "재생 트랙" 탭도
+// 엽니다(playTrackAndOpenQueue 참고).
 //
 // 현재 곡 강조(행 배경·제목 색)는 트랙 id만 보고 하지만, 재생시간 자리의 이퀄라이저는
 // 단일 곡으로 재생 중일 때만 보여줍니다. 재생목록에서 재생 중인 곡이면 여기서는
@@ -23,10 +28,7 @@ const trackRowGridColumns = "minmax(0,1fr) 190px 74px 60px";
 // 합니다(usePlayerStore.playTrackFrom의 "같은 곡 + 다른 맥락").
 export default function LibraryTrackList({ tracks }: { tracks: Track[] }) {
   const navigate = useNavigate();
-  const playTrackFrom = usePlayerStore((s) => s.playTrackFrom);
-  const currentTrackId = usePlayerStore((s) =>
-    s.currentIndex >= 0 ? s.queue[s.currentIndex]?.id : undefined,
-  );
+  const currentTrackId = usePlayerStore((s) => selectCurrentTrack(s)?.id);
   const isSingleTrackPlayback = usePlayerStore(
     (s) => s.playingPlaylistId === null,
   );
@@ -71,7 +73,7 @@ export default function LibraryTrackList({ tracks }: { tracks: Track[] }) {
               </div>
               <DurationPlayButton
                 duration={track.duration}
-                onPlay={() => playTrackFrom([track], 0)}
+                onPlay={() => playTrackAndOpenQueue([track], 0)}
                 label={`${track.title} 재생`}
                 align="end"
                 textClassName="font-neu-mono text-[12.5px] text-neu-muted"

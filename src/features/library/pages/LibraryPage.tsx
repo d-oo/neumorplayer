@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { fetchLibraryTracks, tracksQueryKey } from "../lib/tracks";
+import { useLibraryTracks } from "../hooks/useLibraryTracks";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import {
   segmentTabClass,
@@ -10,6 +8,7 @@ import {
 } from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 import InfoBox from "@/shared/components/InfoBox";
+import PageTitle from "@/shared/components/PageTitle";
 import LibraryTrackList from "../components/LibraryTrackList";
 import { SortArrowIcon } from "@/shared/components/icons";
 
@@ -41,17 +40,8 @@ const chipStyle = (on: boolean) => ({
 export default function LibraryPage() {
   useDocumentTitle("NeumorPlayer");
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
 
-  const {
-    data: tracks = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: tracksQueryKey(user?.id),
-    queryFn: fetchLibraryTracks,
-    enabled: !!user,
-  });
+  const { data: tracks = [], isLoading, isError } = useLibraryTracks();
 
   const query = searchParams.get("q") ?? "";
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -103,9 +93,7 @@ export default function LibraryPage() {
   return (
     <div>
       <div className="mb-5.5">
-        <h1 className="text-[26px] font-extrabold tracking-[-0.035em] text-neu-ink">
-          라이브러리
-        </h1>
+        <PageTitle>라이브러리</PageTitle>
       </div>
 
       <div className="mb-5.5 flex flex-wrap items-center justify-between gap-4.5">

@@ -35,17 +35,18 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
 `shared/`는 네 갈래입니다:
 
 - **`shared/lib/`** — 어떤 feature도 도메인으로 소유하지 않는 진짜 인프라/범용 유틸
-  (`database.types.ts`, `darkify.ts`, `format-time.ts`, `queryClient.ts`,
-  `supabase.ts`, `theme.ts`, `useDocumentTitle.ts`, `useOutsideClick.ts`,
-  `useToastStore.ts`, `youtube-thumbnail.ts`). 도메인이 있는 클라이언트 상태 스토어는
+  (`database.types.ts`, `darkify.ts`, `format-time.ts`, `is-unique-violation.ts`,
+  `queryClient.ts`, `supabase.ts`, `theme.ts`, `toggle-in-set.ts`,
+  `useDocumentTitle.ts`, `useOutsideClick.ts`, `useToastStore.ts`,
+  `youtube-thumbnail.ts`). 도메인이 있는 클라이언트 상태 스토어는
   그 상태를 소유하는 feature의 `lib/`에 둡니다(`usePlayerStore.ts`는
   `features/player/lib/`) — 별도 `stores/`는 없습니다. 테마·토스트 스토어처럼 어떤
   도메인에도 속하지 않는 스토어만 여기 둡니다.
 - **`shared/components/`** — 어떤 feature의 도메인도 대표하지 않는 순수 UI 프리미티브
   (`icons.tsx`, `ActionButton.tsx`, `BrandWordmark.tsx`, `CheckBox.tsx`,
   `CloseButton.tsx`, `ConfirmModal.tsx`, `IconCircleButton.tsx`, `InfoBox.tsx`,
-  `MarqueeText.tsx`, `Modal.tsx`, `ModalCtaButton.tsx`, `MutedNote.tsx`,
-  `SearchFieldInput.tsx`, `ThumbBox.tsx`, `Toast.tsx`, `TrackThumbnail.tsx`). `auth`엔
+  `MarqueeText.tsx`, `Modal.tsx`, `ModalCancelButton.tsx`, `ModalCtaButton.tsx`,
+  `ModalHeader.tsx`, `MutedNote.tsx`, `PageTitle.tsx`, `PoweredByYouTube.tsx`, `SearchFieldInput.tsx`, `ThumbBox.tsx`, `Toast.tsx`, `TrackThumbnail.tsx`). `auth`엔
   `AuthForm.tsx` 전용의 별도 `features/auth/components/icons.tsx`가 있으니 혼동하지
   마세요. 반대로 `PlaylistCoverGrid.tsx`는 "재생목록 커버"라는 playlist 도메인 개념을
   대표하므로 `features/playlist/components/`에 둡니다 — UI가 재사용 가능하다고 전부
@@ -56,8 +57,8 @@ library/playlist가 소유하는 도메인 모듈이라 옮기지 않습니다.
 - **`shared/styles/`** — 호출부의 마크업/요소/동작이 서로 달라서 컴포넌트로 뽑을 수
   없고 계산된 style 값(또는 클래스 문자열 상수)만 완전히 동일할 때
   (`segment-tab-style.ts`, `sunken-panel-style.ts`, `current-track-row-style.ts`,
-  `thumbnail-placeholder-style.ts`, `field-box-style.ts`,
-  `secondary-button-class.ts`). **판단 기준**: 마크업(태그 종류, 자식 구조,
+  `thumbnail-placeholder-style.ts`, `field-box-style.ts`, `groove-line-style.ts`,
+  `secondary-button-class.ts`, `cta-pill-class.ts`). **판단 기준**: 마크업(태그 종류, 자식 구조,
   동작)까지 동일하면 `shared/components/`의 컴포넌트로, 마크업은 다르고 계산된 값만
   동일하면 `shared/styles/`의 함수/상수로 — 억지로 하나로 합치면 "버튼도 되고 링크도
   되는" 애매한 API가 됩니다. 클래스 문자열을 공유할 땐 **어느 호출부도 덮어쓰지 않는

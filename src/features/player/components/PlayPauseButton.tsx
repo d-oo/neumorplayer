@@ -1,5 +1,6 @@
 import IconCircleButton from "@/shared/components/IconCircleButton";
-import { PauseIcon, PlayIcon, SpinnerIcon } from "@/shared/components/icons";
+import { ctaPillClass } from "@/shared/styles/cta-pill-class";
+import PlaybackIcon from "./PlaybackIcon";
 
 // 트랙 상세/재생목록 정보의 44px 주 CTA(라벤더 알약 원형) 재생·일시정지 버튼.
 // 두 화면이 className은 물론 "재생 중이면 일시정지 아이콘/라벨" 분기까지 똑같이
@@ -32,15 +33,9 @@ export default function PlayPauseButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="[background:var(--neu-cta-pill-grad)] text-neu-hi shadow-neu-cta-pill enabled:hover:[background:var(--neu-cta-pill-grad-hover)] enabled:hover:shadow-neu-cta-pill-hover enabled:active:shadow-neu-pill-active"
+      className={ctaPillClass}
     >
-      {loading ? (
-        <SpinnerIcon className="animate-spin" />
-      ) : playing ? (
-        <PauseIcon />
-      ) : (
-        <PlayIcon className="ml-0.5" />
-      )}
+      <PlaybackIcon playing={playing} loading={loading} />
     </IconCircleButton>
   );
 }

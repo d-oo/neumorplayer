@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/lib/supabase";
 import type { Database } from "@/shared/lib/database.types";
 import type { Track } from "@/features/library/lib/tracks";
@@ -36,7 +37,29 @@ export function playlistMembershipQueryKey(trackId: string | undefined) {
 export const allPlaylistMembershipsQueryKey = ["playlist-membership"] as const;
 export const allPlaylistTracksQueryKey = ["playlist-tracks"] as const;
 
-// QueueCard의 "재생목록" 탭 + 재생목록 추가 드롭다운(AddToPlaylistButton) + 커버
+// 재생목록에 곡을 넣거나 뺀 뒤 다시 불러올 데이터 — 재생목록 목록(곡 수·커버), 바뀐
+// 재생목록들의 트랙 목록, 바뀐 곡들의 소속 재생목록(곡 상세 "재생목록에 추가" 모달의
+// 체크 상태). 곡 상세의 추가/해제(AddToPlaylistButton), 선택 곡 추가
+// (AddTracksToPlaylistModal), 선택 곡 삭제(PlaylistInfoPage)가 같이 씁니다.
+export function invalidatePlaylistMembership(
+  queryClient: QueryClient,
+  userId: string | undefined,
+  { playlistIds, trackIds }: { playlistIds: string[]; trackIds: string[] },
+) {
+  queryClient.invalidateQueries({ queryKey: playlistsQueryKey(userId) });
+  playlistIds.forEach((playlistId) =>
+    queryClient.invalidateQueries({
+      queryKey: playlistTracksQueryKey(playlistId),
+    }),
+  );
+  trackIds.forEach((trackId) =>
+    queryClient.invalidateQueries({
+      queryKey: playlistMembershipQueryKey(trackId),
+    }),
+  );
+}
+
+// 사이드바 "재생목록" 탭(PlaylistNavList) + 재생목록 추가 드롭다운(AddToPlaylistButton) + 커버
 // 콜라주가 공유하는 목록 조회. playlist_tracks(count)는 PostgREST의 임베디드 카운트
 // 문법으로, 각 행마다 [{ count: N }] 형태로 내려옵니다.
 // 커버용 video_id는 재생목록마다 따로 쿼리하면 N+1이 되므로, 이 화면에 보이는
@@ -133,16 +156,9 @@ export async function deletePlaylist(playlistId: string): Promise<void> {
   if (error) throw error;
 }
 
-// 새로 추가되는 트랙은 항상 맨 뒤에 붙습니다(addTracksToPlaylist 참고). 곡 상세의
-// "재생목록에 추가" 모달은 아직 이 곡이 없는 재생목록에만 이걸 부릅니다.
-export async function addTrackToPlaylist(
-  playlistId: string,
-  trackId: string,
-): Promise<void> {
-  await addTracksToPlaylist(playlistId, [trackId]);
-}
-
-// 재생목록 상세의 선택 곡 일괄 추가(AddTracksToPlaylistModal). 대상 재생목록에 이미
+// 재생목록 상세의 선택 곡 일괄 추가(AddTracksToPlaylistModal)와 곡 상세의 "재생목록에
+// 추가" 모달(AddToPlaylistButton — 곡 하나, 아직 이 곡이 없는 재생목록에만)이 씁니다.
+// 새로 추가되는 곡은 항상 맨 뒤에 붙습니다. 대상 재생목록에 이미
 // 있는 곡은 건너뛰고(PK가 (playlist_id, track_id)라 넣을 수도 없음), 나머지를 넘겨받은
 // 순서 그대로 맨 뒤에 이어 붙입니다. 실제로 추가된 곡 수를 돌려줍니다.
 //
@@ -174,8 +190,9 @@ export async function addTracksToPlaylist(
   return newIds.length;
 }
 
-// 재생목록 상세의 선택 곡 일괄 삭제(선택 액션 바). 빠진 자리의 position은 다시
-// 매기지 않습니다 — 단건 제거와 마찬가지로 정렬(order by position)엔 문제가 없습니다.
+// 재생목록 상세의 선택 곡 일괄 삭제(선택 액션 바)와 곡 상세 "재생목록에 추가" 모달의
+// 체크 해제(곡 하나)가 씁니다. 빠진 자리의 position은 다시 매기지 않습니다 — 정렬
+// (order by position)엔 문제가 없습니다.
 export async function removeTracksFromPlaylist(
   playlistId: string,
   trackIds: string[],
@@ -185,18 +202,6 @@ export async function removeTracksFromPlaylist(
     .delete()
     .eq("playlist_id", playlistId)
     .in("track_id", trackIds);
-  if (error) throw error;
-}
-
-export async function removeTrackFromPlaylist(
-  playlistId: string,
-  trackId: string,
-): Promise<void> {
-  const { error } = await supabase
-    .from("playlist_tracks")
-    .delete()
-    .eq("playlist_id", playlistId)
-    .eq("track_id", trackId);
   if (error) throw error;
 }
 

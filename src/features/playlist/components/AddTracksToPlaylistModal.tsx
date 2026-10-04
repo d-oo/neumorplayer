@@ -1,17 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import type { Track } from "@/features/library/lib/tracks";
 import {
   addTracksToPlaylist,
-  fetchPlaylists,
-  playlistMembershipQueryKey,
-  playlistTracksQueryKey,
-  playlistsQueryKey,
+  invalidatePlaylistMembership,
   type PlaylistWithCount,
 } from "../lib/playlists";
+import { usePlaylists } from "../hooks/usePlaylists";
 import { useToastStore } from "@/shared/lib/useToastStore";
-import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
 import Modal from "@/shared/components/Modal";
+import ModalHeader from "@/shared/components/ModalHeader";
+import ModalCancelButton from "@/shared/components/ModalCancelButton";
 
 // 재생목록 상세에서 선택한 곡들을 다른 재생목록 하나에 추가하는 모달(선택 액션 바의
 // [재생목록에 추가]). 곡 상세의 AddToPlaylistButton 모달(여러 재생목록 체크/해제 →
@@ -37,11 +36,7 @@ export default function AddTracksToPlaylistModal({
   const queryClient = useQueryClient();
   const showToast = useToastStore((s) => s.show);
 
-  const { data: playlists = [] } = useQuery({
-    queryKey: playlistsQueryKey(user?.id),
-    queryFn: fetchPlaylists,
-    enabled: !!user && open,
-  });
+  const { data: playlists = [] } = usePlaylists(open);
   const targets = playlists.filter((p) => p.id !== currentPlaylistId);
 
   const addMutation = useMutation({
@@ -51,15 +46,10 @@ export default function AddTracksToPlaylistModal({
         tracks.map((t) => t.id),
       ),
     onSuccess: (addedCount, target) => {
-      queryClient.invalidateQueries({ queryKey: playlistsQueryKey(user?.id) });
-      queryClient.invalidateQueries({
-        queryKey: playlistTracksQueryKey(target.id),
+      invalidatePlaylistMembership(queryClient, user?.id, {
+        playlistIds: [target.id],
+        trackIds: tracks.map((t) => t.id),
       });
-      tracks.forEach((t) =>
-        queryClient.invalidateQueries({
-          queryKey: playlistMembershipQueryKey(t.id),
-        }),
-      );
       showToast(
         addedCount > 0
           ? `「${target.title}」에 ${addedCount}곡을 추가했습니다.`
@@ -81,12 +71,7 @@ export default function AddTracksToPlaylistModal({
 
   return (
     <Modal open={open} onClose={close} className="w-93 px-5.5 pt-5.5 pb-5">
-      <div>
-        <p className="text-base font-extrabold tracking-[-0.02em]">
-          재생목록에 추가
-        </p>
-        <p className="mt-1.25 text-[12.5px] text-neu-muted">{subtitle}</p>
-      </div>
+      <ModalHeader title="재생목록에 추가" subtitle={subtitle} />
 
       <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
         {targets.length === 0 ? (
@@ -120,13 +105,7 @@ export default function AddTracksToPlaylistModal({
       <div className="h-px bg-neu-divider" />
 
       <div className="flex items-center justify-end">
-        <button
-          type="button"
-          onClick={close}
-          className={`px-4.5 py-2.25 text-[13px] text-(--neu-ink-40) hover:text-(--neu-ink-24) ${secondaryPillButtonClass}`}
-        >
-          취소
-        </button>
+        <ModalCancelButton onClick={close} />
       </div>
     </Modal>
   );

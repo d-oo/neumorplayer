@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { countTagUsage, type Track } from "@/features/library/lib/tracks";
+import { toggleInSet } from "@/shared/lib/toggle-in-set";
 
 // 탐색 화면의 태그 선택 상태(제안 태그/직접 입력한 커스텀 태그/선택된 태그)를
 // 모읍니다. 이전 추가 결과(성공/실패 메시지)를 지우는 건 이 훅의 책임이 아니라
@@ -25,12 +26,7 @@ export function useTagSelection(libraryTracks: Track[]) {
   ];
 
   function toggleTag(tag: string) {
-    setSelectedTags((prev) => {
-      const next = new Set(prev);
-      if (next.has(tag)) next.delete(tag);
-      else next.add(tag);
-      return next;
-    });
+    setSelectedTags((prev) => toggleInSet(prev, tag));
   }
 
   function handleAddTagInput() {

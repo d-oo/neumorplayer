@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { useAuth } from "../hooks/useAuth";
+import { useAuthSubmit } from "../hooks/useAuthSubmit";
 import AuthLayout from "../components/AuthLayout";
 import {
   AgreeCheckbox,
@@ -18,8 +19,8 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { error, setError, submitting, submit } =
+    useAuthSubmit("회원가입에 실패했습니다.");
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -34,16 +35,9 @@ export default function SignupPage() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await signUpWithEmail(email, password);
-      // 가입 확인 이메일을 꺼둔 상태라 성공하면 바로 세션이 생기고,
-      // GuestOnly가 이를 감지해서 자동으로 메인 화면으로 보내줍니다.
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    // 가입 확인 이메일을 꺼둔 상태라 성공하면 바로 세션이 생기고,
+    // GuestOnly가 이를 감지해서 자동으로 메인 화면으로 보내줍니다.
+    await submit(() => signUpWithEmail(email, password));
   }
 
   return (

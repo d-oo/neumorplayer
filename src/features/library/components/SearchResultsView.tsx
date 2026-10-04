@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { fetchLibraryTracks, tracksQueryKey, type Track } from "../lib/tracks";
+import type { Track } from "../lib/tracks";
+import { useLibraryTracks } from "../hooks/useLibraryTracks";
 import {
   segmentTabClass,
   segmentTabStyle,
 } from "@/shared/styles/segment-tab-style";
 import { sunkenPanelStyle } from "@/shared/styles/sunken-panel-style";
 import MutedNote from "@/shared/components/MutedNote";
+import PageTitle from "@/shared/components/PageTitle";
 import LibraryTrackList from "./LibraryTrackList";
 
 // 검색어가 들어간 값(아티스트명/태그)이 같은 곡끼리 모이도록 정렬해서 돌려줍니다.
@@ -61,7 +61,6 @@ const RESULT_TABS: { key: ResultTab; label: string }[] = [
 // 검색어를 커밋하면 아래에서 탭을 되돌립니다(useLibrarySearchQuery와 같은 "prop 변경 시
 // 상태 조정" 패턴). 같은 검색어로 다시 엔터를 치면 query가 그대로라 탭도 유지됩니다.
 export default function SearchResultsView({ query }: { query: string }) {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ResultTab>("title");
   const [tabQuery, setTabQuery] = useState(query);
   if (query !== tabQuery) {
@@ -69,11 +68,7 @@ export default function SearchResultsView({ query }: { query: string }) {
     setActiveTab("title");
   }
 
-  const { data: tracks = [] } = useQuery({
-    queryKey: tracksQueryKey(user?.id),
-    queryFn: fetchLibraryTracks,
-    enabled: !!user,
-  });
+  const { data: tracks = [] } = useLibraryTracks();
 
   const q = query.trim().toLowerCase();
   const results =
@@ -86,9 +81,7 @@ export default function SearchResultsView({ query }: { query: string }) {
   return (
     <div>
       <div className="mb-5 flex items-baseline gap-2.5">
-        <h1 className="text-[26px] font-extrabold tracking-[-0.035em] text-neu-ink">
-          검색 결과
-        </h1>
+        <PageTitle>검색 결과</PageTitle>
         <span className="text-[13px] font-semibold text-neu-muted">
           &ldquo;{query}&rdquo;
         </span>

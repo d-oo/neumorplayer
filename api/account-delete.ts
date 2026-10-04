@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "@supabase/supabase-js";
+import { createSupabaseAdmin } from "./_supabase-admin.js";
 
 // POST /api/account-delete — Authorization: Bearer <access_token>
 // docs/todos.md의 "회원 탈퇴" 항목: auth.admin.deleteUser()는 secret key(구:
@@ -18,15 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: "인증 토큰이 없습니다." });
   }
 
-  // URL은 공개되어도 안전한 값이라 클라이언트와 같은 VITE_SUPABASE_URL을 그대로
-  // 씁니다. secret key만 별도 서버 전용 환경변수로 읽습니다(VITE_ 접두사 금지).
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const secretKey = process.env.SUPABASE_SECRET_KEY;
-  if (!supabaseUrl || !secretKey) {
+  const { supabaseAdmin } = createSupabaseAdmin();
+  if (!supabaseAdmin) {
     return res.status(500).json({ error: "서버 환경변수가 설정되지 않았습니다." });
   }
-
-  const supabaseAdmin = createClient(supabaseUrl, secretKey);
 
   const { data: userData, error: userError } =
     await supabaseAdmin.auth.getUser(accessToken);

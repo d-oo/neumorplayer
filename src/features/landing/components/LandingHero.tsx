@@ -1,7 +1,8 @@
+import PoweredByYouTube from "@/shared/components/PoweredByYouTube";
 import NoteGlyph from "./NoteGlyph";
 
-// 1236px 폭(부모가 배치), 가운데 정렬. "Developed with YouTube" 배지(AuthLayout.tsx·
-// public/developed-with-youtube.png와 같은 파일) + 92px 2행 타이틀(각인 효과) + 본문.
+// 1236px 폭(부모가 배치), 가운데 정렬. "Powered by YouTube" pill(대시보드 헤더와
+// 같은 shared/components/PoweredByYouTube) + 92px 2행 타이틀(각인 효과) + 본문.
 // 타이틀 서체는 docs/design/음표 타이포그래피.zip(2a)을 그대로 반영해 Fredoka 500 +
 // 일부 글자를 NoteGlyph 음표 SVG로 치환했습니다(N·M·m·p·P) — 나머지 글자는 평범한
 // 텍스트 노드입니다. 두 줄의 filter 값은 index.css의 --neu-shadow-hero-title(-hi)
@@ -14,13 +15,11 @@ const LINE2_FILTER =
 export default function LandingHero() {
   return (
     <div className="flex flex-col items-center gap-6.5 pt-6.5 text-center">
-      <img
-        src="/developed-with-youtube.png"
-        alt="Developed with YouTube"
-        className="w-40 opacity-85"
-      />
+      <PoweredByYouTube />
 
-      <h1 className="font-['Fredoka'] flex flex-col items-center gap-1 text-[92px] leading-[0.96] font-medium tracking-[-0.015em]">
+      {/* 타이틀은 글자 + 음표 SVG를 섞어 그린 장식 타이포그래피라 드래그 선택되면
+          글자와 SVG가 따로따로 하이라이트돼 모양이 깨져 보여서 select-none입니다. */}
+      <h1 className="font-['Fredoka'] flex flex-col items-center gap-1 text-[92px] leading-[0.96] font-medium tracking-[-0.015em] select-none">
         <span
           aria-label="Neumorphism"
           style={{
