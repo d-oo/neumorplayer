@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 // 모달 제목 글자. 제목 옆에 다른 요소(닫기 버튼 등)를 나란히 두는 모달
-// (PrivacyPolicyModal)은 이것만 따로 씁니다.
+// (LegalDocumentModal)은 이것만 따로 씁니다.
 export function ModalTitle({ children }: { children: ReactNode }) {
   return (
     <p className="text-base font-extrabold tracking-[-0.02em]">{children}</p>

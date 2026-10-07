@@ -112,7 +112,7 @@ export default function SettingsModal({
             </div>
           </div>
 
-          <div className="h-px bg-neu-divider" />
+          <div className="border-t border-neu-divider" />
 
           <div className="flex items-center justify-between">
             <div>

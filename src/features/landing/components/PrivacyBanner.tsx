@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CloseButton from "@/shared/components/CloseButton";
 import { secondaryPillButtonClass } from "@/shared/styles/secondary-button-class";
-import PrivacyPolicyModal from "./PrivacyPolicyModal";
+import LegalDocumentModal from "@/features/legal/components/LegalDocumentModal";
 
 const DISMISSED_KEY = "neumorplayer-privacy-banner-dismissed";
 
@@ -22,10 +22,11 @@ function persistDismissed() {
 }
 
 // YouTube API Developer Policies III.A: 게스트가 검색·재생 기능에 접근하기 전에
-// 개인정보 처리방침을 눈에 띄게 고지해야 합니다. 로그인 사용자는 SignupPage의
-// 동의 체크박스를 이미 거쳤으므로, 이 배너는 LandingPage(비로그인 전용 화면)에만
-// 둡니다. 모달/체크박스로 강제 동의를 받는 대신 가볍게 고지만 하고, "자세히 보기"나
-// "확인" 어느 쪽을 눌러도 이후 재방문 시 다시 뜨지 않도록 로컬에 기록합니다.
+// 개인정보처리방침을 눈에 띄게 고지해야 합니다. 로그인 사용자는 SignupPage의
+// 동의 체크박스나 LoginPage의 Google 안내 문구에서 이미 동의했으므로, 이 배너는
+// LandingPage(비로그인 전용 화면)에만 둡니다. 모달/체크박스로 강제 동의를 받는 대신
+// 가볍게 고지만 하고, "자세히 보기"나 "확인" 어느 쪽을 눌러도 이후 재방문 시 다시 뜨지
+// 않도록 로컬에 기록합니다.
 export default function PrivacyBanner() {
   const [dismissed, setDismissed] = useState(readDismissed);
   const [modalOpen, setModalOpen] = useState(false);
@@ -66,7 +67,10 @@ export default function PrivacyBanner() {
         </div>
       )}
 
-      <PrivacyPolicyModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <LegalDocumentModal
+        doc={modalOpen ? "privacy" : null}
+        onClose={() => setModalOpen(false)}
+      />
     </>
   );
 }

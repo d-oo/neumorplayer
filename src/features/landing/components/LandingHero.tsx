@@ -1,8 +1,8 @@
 import PoweredByYouTube from "@/shared/components/PoweredByYouTube";
 import NoteGlyph from "./NoteGlyph";
 
-// 1236px 폭(부모가 배치), 가운데 정렬. "Powered by YouTube" pill(대시보드 헤더와
-// 같은 shared/components/PoweredByYouTube) + 92px 2행 타이틀(각인 효과) + 본문.
+// 1236px 폭(부모가 배치), 가운데 정렬. "Powered by YouTube" pill
+// (shared/components/PoweredByYouTube) + 92px 2행 타이틀(각인 효과) + 본문.
 // 타이틀 서체는 docs/design/음표 타이포그래피.zip(2a)을 그대로 반영해 Fredoka 500 +
 // 일부 글자를 NoteGlyph 음표 SVG로 치환했습니다(N·M·m·p·P) — 나머지 글자는 평범한
 // 텍스트 노드입니다. 두 줄의 filter 값은 index.css의 --neu-shadow-hero-title(-hi)

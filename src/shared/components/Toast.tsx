@@ -15,6 +15,11 @@ const VISIBLE_MS = 3000;
 // 사라집니다(duration-0 — 사용자 요청). 모양은 PrivacyBanner(떠 있는 하단 배너)와
 // 같은 surface/테두리/그림자 토큰을 써서 라이트/다크 테마를 그대로 따라갑니다.
 // HomeLayout에 한 번만 마운트합니다.
+//
+// 높이는 50px로 고정입니다(메시지는 한 줄 말줄임, 닫기 버튼 28px + py-2.5 + 테두리).
+// 미니 플레이어(YouTubePlayer)는 이 토스트와 겹치지 않도록 토스트 윗변보다 위로만 옮길 수
+// 있게 되어 있어서, 위치(bottom-5)나 높이를 바꾸면 YouTubePlayer의 TOAST_CLEARANCE도
+// 같이 고치세요.
 export default function Toast() {
   const message = useToastStore((s) => s.message);
   const id = useToastStore((s) => s.id);

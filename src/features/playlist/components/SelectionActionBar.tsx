@@ -7,8 +7,8 @@ const actionButtonClass = `whitespace-nowrap px-4 py-2 text-[12.5px] disabled:cu
 // surface/테두리/그림자 토큰, 모달·배너의 보조 알약 버튼(secondaryPillButtonClass)으로
 // 맞췄습니다 — 전부 --neu-* 토큰이라 라이트/다크 테마를 그대로 따라갑니다.
 //
-// 위치: HomeLayout의 본문 패널(relative)을 기준으로 absolute 배치해서, 본문(main)이
-// 스크롤돼도 패널 하단에 떠 있습니다(HomeLayout 주석 참고). 가운데가 아니라 왼쪽
+// 위치: HomeLayout의 본문 영역 래퍼(relative)를 기준으로 absolute 배치해서, 본문(main)이
+// 스크롤돼도 본문 영역 하단(푸터 바로 위)에 떠 있습니다(HomeLayout 주석 참고). 가운데가 아니라 왼쪽
 // (본문 좌우 여백 26px에 맞춤)에 두는 이유는 화면 오른쪽 하단의 미니 플레이어
 // (YouTubePlayer, 368×207)와 겹치지 않게 하기 위해서입니다.
 export default function SelectionActionBar({

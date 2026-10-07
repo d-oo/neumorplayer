@@ -134,6 +134,30 @@ export function AgreeCheckbox({
   );
 }
 
+// 동의 문구 안의 "서비스 이용약관"/"개인정보처리방침" 글자 버튼(회원가입 체크박스,
+// 로그인의 Google 안내 문구). AgreeCheckbox 줄 전체가 클릭으로 체크를 토글하므로,
+// 문서만 열고 체크 상태는 바꾸지 않도록 클릭 전파를 막습니다.
+export function LegalDocButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className="font-bold text-neu-hi hover:underline"
+    >
+      {children}
+    </button>
+  );
+}
+
 // docs/design/수정본2.zip(Auth Screens.dc.html)부터 이 버튼은 앱 전역 pill CTA와
 // 같은 --neu-cta-pill-grad/text-neu-hi/--neu-shadow-cta-pill을 씁니다 — 9/19 원본
 // 시안의 진보라 배경+흰 글자(--neu-cta-grad)는 이 zip으로 대체된 값이니 되돌리지

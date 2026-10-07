@@ -138,7 +138,7 @@ function TrackSelectCell({
 // 썸네일·제목·아티스트를 누르면 곡 상세 페이지로 이동합니다. 라이브러리 목록처럼 행
 // 전체를 링크로 두지 않는 건, 이 행에는 드래그 손잡이·선택 체크박스가 같이 있어서
 // 그 사이 빈 곳을 잘못 눌러도 페이지가 넘어가지 않게 하려는 것입니다. 그래서 링크는
-// flex-1 없이 내용 폭만큼만 차지하고(min-w-0으로 좁아질 땐 마퀴 제목이 줄어듦), 제목
+// flex-1 없이 내용 폭만큼만 차지하고(min-w-0으로 좁아질 땐 제목이 말줄임으로 줄어듦), 제목
 // 오른쪽 빈 공간은 눌리지 않습니다.
 function SortableTrackRow({
   track,
@@ -193,10 +193,9 @@ function SortableTrackRow({
           <TrackRowInfo track={track} isCurrentTrack={isCurrentTrack} />
         </Link>
       </div>
-      <MarqueeText
-        text={track.tags.map((tag) => `#${tag}`).join("  ")}
-        className="text-xs text-neu-muted"
-      />
+      <p className="truncate text-xs text-neu-muted">
+        {track.tags.map((tag) => `#${tag}`).join("  ")}
+      </p>
       <div className="text-right font-neu-mono text-[12.5px] text-neu-muted">
         {track.play_count.toLocaleString()}
       </div>

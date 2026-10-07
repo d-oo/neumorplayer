@@ -11,11 +11,15 @@
 
 - `auth` — 로그인/회원가입 + 계정(프로필 메뉴, 설정 모달, 테마 설정, 회원탈퇴)
 - `player` — 미니 플레이어 + 유튜브 iframe + 재생 상태
-- `dashboard` — 사이드바+헤더 셸
+- `dashboard` — 사이드바+헤더+푸터 셸
 - `explore` — YouTube 검색으로 곡 추가
 - `library` — 트랙 도메인
 - `playlist` — 재생목록 도메인
-- `landing` — 비로그인 사용자가 `/`에서 보는 랜딩(게스트 검색·CD 플레이어, 개인정보 고지)
+- `landing` — 비로그인 사용자가 `/`에서 보는 랜딩(게스트 검색·CD 플레이어, 개인정보 고지 배너)
+- `legal` — 개인정보처리방침·서비스 이용약관 본문과 이를 띄우는 모달
+  (`LegalDocumentModal`), 푸터용 두 문서 링크(`LegalDocLinks`). 별도 페이지(URL) 없이
+  모달로만 보여주며, 랜딩 배너, 로그인/회원가입 동의 문구, 랜딩·대시보드 푸터가 이
+  모달을 엽니다
 
 예: `features/auth/`는 `pages/`(`LoginPage.tsx`/`SignupPage.tsx`), `components/`
 (`AuthLayout.tsx`/`AuthForm.tsx`/`icons.tsx`), `hooks/`(`useAuth.ts`/`auth-context.ts`)로

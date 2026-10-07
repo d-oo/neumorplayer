@@ -146,7 +146,7 @@ export default function AddToPlaylistButton({ track }: { track: Track }) {
           )}
         </div>
 
-        <div className="h-px bg-neu-divider" />
+        <div className="border-t border-neu-divider" />
 
         <div className="flex items-center justify-end gap-2.5">
           <ModalCancelButton onClick={() => setOpen(false)} />

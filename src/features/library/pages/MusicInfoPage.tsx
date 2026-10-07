@@ -134,7 +134,10 @@ export default function MusicInfoPage() {
       <h1 className="mt-2.5 mb-3 text-[40px] leading-[1.05] font-extrabold tracking-[-0.045em] text-neu-ink">
         <MarqueeText text={track.title} />
       </h1>
-      <p className="text-[13px] text-neu-muted">{track.artist.join(", ")}</p>
+      <MarqueeText
+        text={track.artist.join(", ")}
+        className="text-[13px] text-neu-muted"
+      />
 
       {track.tags.length > 0 && (
         <div className="mt-6 flex flex-wrap gap-2">
@@ -149,7 +152,7 @@ export default function MusicInfoPage() {
         </div>
       )}
 
-      <div className="my-6.5 h-px bg-neu-divider" />
+      <div className="my-6.5 border-t border-neu-divider" />
 
       <div className="flex items-start gap-6.5">
         <div

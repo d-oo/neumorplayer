@@ -102,7 +102,7 @@ export default function AddTracksToPlaylistModal({
         <p className="text-xs text-red-500">추가하지 못했습니다.</p>
       )}
 
-      <div className="h-px bg-neu-divider" />
+      <div className="border-t border-neu-divider" />
 
       <div className="flex items-center justify-end">
         <ModalCancelButton onClick={close} />

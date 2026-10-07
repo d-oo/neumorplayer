@@ -27,6 +27,9 @@ export default function Modal({
       onClick={onClose}
     >
       <div
+        // data-modal-card: 미니 플레이어(features/player/components/YouTubePlayer)가 매
+        // 프레임 이 카드를 찾아 겹치지 않게 비켜 갑니다(플레이어는 이 모달보다 위 층).
+        data-modal-card
         onClick={(e) => e.stopPropagation()}
         className={`flex flex-col gap-4 rounded-[20px] border border-(--neu-border-85) bg-neu-surface ${className ?? ""}`}
         style={{ boxShadow: shadow }}

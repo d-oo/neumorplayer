@@ -57,7 +57,7 @@ export default function ProfileDropdown() {
               {user?.email}
             </p>
           </div>
-          <div className="mx-1.5 mb-1.5 h-px bg-(--neu-shc-142-26)" />
+          <div className="mx-1.5 mb-1.5 border-t border-(--neu-shc-142-26)" />
           <button
             type="button"
             onClick={() => {

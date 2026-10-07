@@ -4,9 +4,9 @@ import { useLibrarySearchQuery } from "../lib/useLibrarySearchQuery";
 import { useThemeSync } from "@/features/auth/hooks/useThemeSync";
 import ProfileDropdown from "@/features/auth/components/ProfileDropdown";
 import BrandWordmark from "@/shared/components/BrandWordmark";
-import PoweredByYouTube from "@/shared/components/PoweredByYouTube";
 import PlayerPanel from "@/features/player/components/PlayerPanel";
 import QueueCard from "../components/QueueCard";
+import DashboardFooter from "../components/DashboardFooter";
 import YouTubePlayer from "@/features/player/components/YouTubePlayer";
 import { VideoSlotProvider } from "@/features/player/VideoSlotProvider";
 import { SearchGlyphIcon } from "@/shared/components/icons";
@@ -47,6 +47,15 @@ function HeaderNavTab({
   );
 }
 
+// 헤더/본문, 본문/푸터 사이 구분선 — 평평한 1px 회색 border 대신 로그인 화면 "또는"
+// 구분선과 같은 음각 홈(grooveLineStyle)입니다. 카드 끝까지 긋지 않고 헤더·푸터 좌우
+// 여백(px-5.5)만큼 안쪽에서 둥글게 끝내서 카드 표면에 파인 홈처럼 보이게 합니다.
+function GrooveDivider() {
+  return (
+    <div className="mx-5.5 h-0.5 flex-none rounded-xs" style={grooveLineStyle} />
+  );
+}
+
 // old-src/src/Home.js(Player + Playlists 사이드바 + 메인 컨텐츠 레이아웃)를 대체합니다.
 // docs/design/의 "1b 뉴모피즘 대시보드" 시안 톤(--neu-* 토큰)을 그대로 씁니다 — 로그인
 // 페이지는 아직 다크 톤이지만, 그건 나중에 이 디자인으로 옮길 예정이라 지금은 신경 쓰지
@@ -72,8 +81,11 @@ export default function HomeLayout() {
       <div className="h-dvh bg-neu-bg p-3 text-neu-ink">
         <div className="mx-auto grid h-full max-w-300 grid-cols-[320px_minmax(0,1fr)] gap-3 font-neu">
           {/* 시안(docs/design/)처럼 CD 플레이어와 다음 트랙/재생목록 카드를 grid-rows로
-              쌓습니다(각자 독립된 shadow-neu-raised 카드, 12px gap). */}
-          <aside className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
+              쌓습니다(각자 독립된 shadow-neu-raised 카드, 12px gap).
+              grid-cols-1(= minmax(0,1fr) 열)을 빼면 열이 암묵적인 auto가 되어, 재생 중인
+              곡 제목처럼 줄바꿈 없는 긴 글자 폭만큼 카드가 320px 칸 밖으로 늘어납니다 —
+              그러면 제목이 넘치지 않는 것으로 계산돼 마퀴/말줄임도 동작하지 않습니다. */}
+          <aside className="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-3">
             <PlayerPanel />
             {/* "재생목록" 탭에 내 재생목록 목록 + 새 재생목록 만들기가 있습니다. */}
             <QueueCard />
@@ -83,32 +95,22 @@ export default function HomeLayout() {
           {/* 헤더와 본문을 하나의 카드로 묶습니다 — 각자 shadow-neu-raised를 따로 두면
               둘 사이 좁은 간격에서 한쪽 그림자의 어두운 번짐과 다른 쪽의 밝은 하이라이트가
               충돌해 윤곽선처럼 보이는 문제가 있었습니다. */}
-          {/* relative: 재생목록 상세의 선택 액션 바(SelectionActionBar)가 이 패널을
-              기준으로 absolute 배치됩니다 — main은 positioned가 아니라서 액션 바가 main의
-              스크롤에 딸려 움직이지 않고 패널 하단에 떠 있습니다. main에 relative 등을
-              주면 이 동작이 깨지니 주의하세요. */}
-          <div className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
+          <div className="flex h-full w-full flex-col overflow-hidden rounded-3xl border border-(--neu-border-80) bg-neu-surface shadow-neu-raised">
             <header className="flex items-center gap-3.5 px-5.5 py-3.5">
               {/* 로고+워드마크를 누르면 "/"(라이브러리)로 갑니다. ?q=가 빠진 주소라
                   검색 결과 화면을 보던 중이면 검색도 같이 닫힙니다(라이브러리 탭과 동일). */}
-              {/* 워드마크 옆의 YouTube 표기(YouTube API Branding Guidelines 대응)는
-                  가이드라인상 "YouTube와 함께 동작한다"는 설명 문구라 앱 이름 옆에 둬도
-                  되지만, 이름의 일부처럼 읽히지 않도록 크기·서체·색을 워드마크와 확실히
-                  다르게 유지하고 "/" 링크에도 넣지 않습니다(로고+워드마크만 링크).
-                  YouTube 로고 이미지는 앱 이름과 함께 쓰는 게 금지라 여기엔 절대 넣지
-                  마세요. */}
-              <div className="flex flex-none items-center gap-2.5">
-                <Link to="/" className="flex flex-none items-center gap-2.25">
-                  <img
-                    src="/favicon.png"
-                    alt=""
-                    className="h-5.5 w-5.5 rounded-full object-cover"
-                    style={{ boxShadow: "var(--neu-shadow-logo)" }}
-                  />
-                  <BrandWordmark />
-                </Link>
-                <PoweredByYouTube size="sm" />
-              </div>
+              {/* YouTube 표기(Powered by YouTube)는 예전엔 워드마크 옆에 있었지만 푸터
+                  (DashboardFooter)로 옮겼습니다. YouTube 로고 이미지는 앱 이름과 함께
+                  쓰는 게 금지(Branding Guidelines)라 여기엔 절대 넣지 마세요. */}
+              <Link to="/" className="flex flex-none items-center gap-2.25">
+                <img
+                  src="/favicon.png"
+                  alt=""
+                  className="h-5.5 w-5.5 rounded-full object-cover"
+                  style={{ boxShadow: "var(--neu-shadow-logo)" }}
+                />
+                <BrandWordmark />
+              </Link>
 
               <nav
                 className="ml-1.5 flex flex-none gap-0.75 rounded-xl border border-(--neu-border-70) p-1"
@@ -149,26 +151,28 @@ export default function HomeLayout() {
               <ProfileDropdown />
             </header>
 
-            {/* 헤더/본문 구분선 — 평평한 1px 회색 border 대신 로그인 화면 "또는"
-                구분선과 같은 음각 홈(grooveLineStyle)입니다. 카드 끝까지 긋지 않고 헤더
-                좌우 여백(px-5.5)만큼 안쪽에서 둥글게 끝내서 카드 표면에 파인 홈처럼
-                보이게 합니다. */}
-            <div
-              className="mx-5.5 h-0.5 flex-none rounded-xs"
-              style={grooveLineStyle}
-            />
+            <GrooveDivider />
 
-            {/* 시안대로 본문은 px-6.5/py-6(24px 26px) 안에 max-w-195(780px) 중앙
-                정렬 래퍼를 한 번 더 둡니다 — 모든 탭이 같은 축·같은 폭을 씁니다. */}
-            <main className="flex-1 overflow-y-auto px-6.5 py-6">
-              <div className="mx-auto max-w-195">
-                {query.trim() ? (
-                  <SearchResultsView query={query} />
-                ) : (
-                  <Outlet />
-                )}
-              </div>
-            </main>
+            {/* relative: 재생목록 상세의 선택 액션 바(SelectionActionBar)가 이 래퍼를
+                기준으로 absolute 배치됩니다 — 스크롤되는 건 안쪽 main이라 액션 바가
+                main의 스크롤에 딸려 움직이지 않고 본문 영역 하단(푸터 바로 위)에 떠
+                있습니다. main 자체에 relative 등을 주면 이 동작이 깨지니 주의하세요. */}
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              {/* 시안대로 본문은 px-6.5/py-6(24px 26px) 안에 max-w-195(780px) 중앙
+                  정렬 래퍼를 한 번 더 둡니다 — 모든 탭이 같은 축·같은 폭을 씁니다. */}
+              <main className="flex-1 overflow-y-auto px-6.5 py-6">
+                <div className="mx-auto max-w-195">
+                  {query.trim() ? (
+                    <SearchResultsView query={query} />
+                  ) : (
+                    <Outlet />
+                  )}
+                </div>
+              </main>
+            </div>
+
+            <GrooveDivider />
+            <DashboardFooter />
           </div>
         </div>
       </div>

@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import { useDocumentTitle } from "@/shared/lib/useDocumentTitle";
 import { useAuth } from "../hooks/useAuth";
 import { useAuthSubmit } from "../hooks/useAuthSubmit";
+import LegalDocumentModal, {
+  type LegalDoc,
+} from "@/features/legal/components/LegalDocumentModal";
 import AuthLayout from "../components/AuthLayout";
 import {
   AgreeCheckbox,
   Field,
   FormError,
+  LegalDocButton,
   PasswordField,
   PrimaryButton,
 } from "../components/AuthForm";
@@ -19,6 +23,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
   const { error, setError, submitting, submit } =
     useAuthSubmit("회원가입에 실패했습니다.");
 
@@ -31,7 +36,7 @@ export default function SignupPage() {
       return;
     }
     if (!agreed) {
-      setError("이용약관과 개인정보 처리방침에 동의해야 합니다.");
+      setError("이용약관과 개인정보처리방침에 동의해야 합니다.");
       return;
     }
 
@@ -91,13 +96,22 @@ export default function SignupPage() {
           minLength={8}
         />
         <AgreeCheckbox checked={agreed} onChange={setAgreed}>
-          서비스 이용약관과 개인정보 처리방침에 동의합니다.
+          <LegalDocButton onClick={() => setLegalDoc("terms")}>
+            서비스 이용약관
+          </LegalDocButton>
+          과{" "}
+          <LegalDocButton onClick={() => setLegalDoc("privacy")}>
+            개인정보처리방침
+          </LegalDocButton>
+          에 동의합니다.
         </AgreeCheckbox>
         {error ? <FormError>{error}</FormError> : null}
         <PrimaryButton type="submit" disabled={submitting}>
           {submitting ? "가입 중..." : "회원가입"}
         </PrimaryButton>
       </form>
+
+      <LegalDocumentModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
     </AuthLayout>
   );
 }

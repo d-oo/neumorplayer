@@ -4,6 +4,7 @@ import DurationPlayButton from "./DurationPlayButton";
 import TrackThumbnail from "@/shared/components/TrackThumbnail";
 import ThumbBox from "@/shared/components/ThumbBox";
 import MutedNote from "@/shared/components/MutedNote";
+import MarqueeText from "@/shared/components/MarqueeText";
 
 // 사이드바 QueueCard(dashboard)의 "재생 트랙" 탭 내용. 지금 큐 전체(단일 곡 재생이면
 // 그 곡 하나, 재생목록 재생이면 이미 들은 곡까지 포함한 재생목록 전체)를 보여주고
@@ -40,17 +41,19 @@ export default function QueueTrackList() {
               />
             </ThumbBox>
             <div className="min-w-0 flex-1">
-              <p
-                className="truncate text-[13px] font-semibold leading-4.5"
+              {/* 제목·아티스트 모두 넘치면 마퀴입니다(사용자 요청 — 좁은 사이드바라
+                  말줄임으로는 알아보기 어려움). */}
+              <MarqueeText
+                text={track.title}
+                className="text-[13px] font-semibold leading-4.5"
                 style={{
                   color: isCurrent ? "var(--neu-hi)" : "var(--neu-ink)",
                 }}
-              >
-                {track.title}
-              </p>
-              <p className="mt-0.5 truncate text-[11.5px] leading-3.75 text-neu-muted">
-                {track.artist.join(", ")}
-              </p>
+              />
+              <MarqueeText
+                text={track.artist.join(", ")}
+                className="mt-0.5 text-[11.5px] leading-3.75 text-neu-muted"
+              />
             </div>
             <DurationPlayButton
               duration={track.duration}

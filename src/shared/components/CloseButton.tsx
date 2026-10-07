@@ -1,6 +1,6 @@
 import { XIcon } from "./icons";
 
-// 모달/배너 우측 상단의 X 닫기 버튼(PrivacyPolicyModal, PrivacyBanner).
+// 모달/배너 우측 상단의 X 닫기 버튼(LegalDocumentModal, PrivacyBanner).
 export default function CloseButton({ onClick }: { onClick: () => void }) {
   return (
     <button

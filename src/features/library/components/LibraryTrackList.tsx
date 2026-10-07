@@ -5,7 +5,6 @@ import {
 } from "@/features/player/lib/usePlayerStore";
 import { playTrackAndOpenQueue } from "@/features/dashboard/lib/useQueueCardStore";
 import { currentTrackRowStyle } from "@/shared/styles/current-track-row-style";
-import MarqueeText from "@/shared/components/MarqueeText";
 import DurationPlayButton from "@/features/player/components/DurationPlayButton";
 import TrackRowInfo from "./TrackRowInfo";
 import type { Track } from "../lib/tracks";
@@ -64,10 +63,9 @@ export default function LibraryTrackList({ tracks }: { tracks: Track[] }) {
               <div className="flex items-center gap-3">
                 <TrackRowInfo track={track} isCurrentTrack={isCurrentTrack} />
               </div>
-              <MarqueeText
-                text={track.tags.map((tag) => `#${tag}`).join("  ")}
-                className="text-xs text-neu-muted"
-              />
+              <p className="truncate text-xs text-neu-muted">
+                {track.tags.map((tag) => `#${tag}`).join("  ")}
+              </p>
               <div className="text-right font-neu-mono text-[12.5px] text-neu-muted">
                 {track.play_count.toLocaleString()}
               </div>
